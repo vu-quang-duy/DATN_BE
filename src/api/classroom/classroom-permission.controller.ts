@@ -24,7 +24,7 @@ export class ClassRoomPermissionController implements Record<ClassRoomAction, an
   })
   async [ClassRoomAction.GET_ALL_STUDENT](
     @Param('id') id: number,
-    @Req() req: RequestAuth,
+    @Req() req: RequestAuth, 
     @Query() query: PageOptionsDto,
   ) {
     return await this.classroomService.getAllStudent(id, req.user, query, ClassRoomAction.GET_ALL_STUDENT);

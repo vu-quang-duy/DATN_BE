@@ -65,7 +65,7 @@ export class UserHelper {
     await this.retryAverageScore(userId);
   };
 
-  static retryViewVocabulary = async (userId) => {
+  static retryViewVocabulary = async (userId: number) => {
     const userStatistic = await this.findOrCreateUserStatistic(userId);
     const viewCount = await VocabularyView.createQueryBuilder('vocabularyView')
       // .select('sum(vocabularyView.viewCount)', 'viewCount')

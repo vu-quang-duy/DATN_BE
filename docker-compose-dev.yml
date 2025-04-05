@@ -1,56 +1,114 @@
-version: '3.5'
+# version: '3.5'
+
+# networks:
+#   sign-school-network-dev:
+#     driver: bridge
+
+# volumes: # add this section
+#   sign-school-pg-volume-dev:
+#   sign-school-redis-volume-dev:
+#   sign-school-minio-volume-dev:
+
+# services:
+#   db:
+#     container_name: sign-school-database-pg-dev
+#     image: postgres:15.2
+#     restart: always
+#     env_file:
+#       - .env
+#     networks:
+#       - sign-school-network-dev
+#     environment:
+#       POSTGRES_USER: ${DB_USERNAME}
+#       POSTGRES_PASSWORD: ${DB_PASSWORD}
+#       POSTGRES_DB: ${DB_NAME}
+#     volumes:
+#       - sign-school-pg-volume-dev:/var/lib/pg/data
+#     ports:
+#       - ${DB_PORT}:5432
+#   redis:
+#     container_name: sign-school-redis-dev
+#     image: redis:7.2.4
+#     restart: always
+#     env_file:
+#       - .env
+#     networks:
+#       - sign-school-network-dev
+#     volumes:
+#       - sign-school-redis-volume-dev:/data
+#     ports:
+#       - ${REDIS_PORT}:6379
+#   minio:
+#     container_name: sign-school-minio-dev
+#     image: minio/minio:latest
+#     restart: always
+#     env_file:
+#       - .env
+#     networks:
+#       - sign-school-network-dev
+#     environment:
+#       MINIO_ROOT_USER: ${API_KEY} # Access key
+#       MINIO_ROOT_PASSWORD: ${API_SECRET} # Secret key
+#     volumes:
+#       - sign-school-minio-volume-dev:/data # Volume để lưu trữ dữ liệu
+#     ports:
+#       - ${MINIO_PORT}:${MINIO_PORT}
+#       - ${MINIO_CONSOLE}:${MINIO_CONSOLE}
+#     command: server --console-address ":9001" /data # Lệnh khởi động MinIO server với thư mục /data
+version: '3.6'
 
 networks:
-  sign-school-network-dev:
+  datn-network-dev:
     driver: bridge
 
 volumes: # add this section
-  sign-school-pg-volume-dev:
-  sign-school-redis-volume-dev:
-  sign-school-minio-volume-dev:
+  datn-mysql-volume-dev:
+  datn-redis-volume-dev:
+  datn-minio-volume-dev:
 
 services:
   db:
-    container_name: sign-school-database-pg-dev
-    image: postgres:15.2
+    container_name: datn-database-mysql-dev
+    image: mysql:8.0
     restart: always
     env_file:
       - .env
     networks:
-      - sign-school-network-dev
+      - datn-network-dev
     environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      # MYSQL_USER: ${DB_USERNAME}
+      # MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
     volumes:
-      - sign-school-pg-volume-dev:/var/lib/pg/data
+      - datn-mysql-volume-dev:/var/lib/mysql
     ports:
-      - ${DB_PORT}:5432
+      - 3307:3306
   redis:
-    container_name: sign-school-redis-dev
+    container_name: datn-redis-dev
     image: redis:7.2.4
     restart: always
     env_file:
       - .env
     networks:
-      - sign-school-network-dev
+      - datn-network-dev
     volumes:
-      - sign-school-redis-volume-dev:/data
+      - datn-redis-volume-dev:/data
     ports:
       - ${REDIS_PORT}:6379
   minio:
-    container_name: sign-school-minio-dev
+    container_name: datn-minio-dev
     image: minio/minio:latest
     restart: always
     env_file:
       - .env
     networks:
-      - sign-school-network-dev
+      - datn-network-dev
     environment:
       MINIO_ROOT_USER: ${API_KEY} # Access key
       MINIO_ROOT_PASSWORD: ${API_SECRET} # Secret key
     volumes:
-      - sign-school-minio-volume-dev:/data # Volume để lưu trữ dữ liệu
+      - datn-minio-volume-dev:/data # Volume để lưu trữ dữ liệu
     ports:
       - ${MINIO_PORT}:${MINIO_PORT}
       - ${MINIO_CONSOLE}:${MINIO_CONSOLE}

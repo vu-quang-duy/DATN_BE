@@ -280,26 +280,32 @@ export class UserService {
   };
 
   viewVocabulary = async (userId: number, vocabularyId: number) => {
-    const vocabulary = await Vocabulary.findOne({ where: { vocabularyId } });
+    if (!userId) throw new Error('userId is required'); // Check nếu thiếu userId
+    if (!vocabularyId) throw new Error('vocabularyId is required');
+
+    const vocabulary = await Vocabulary.findOne({ where: { vocabularyId: vocabularyId } });
     if (!vocabulary) throw new App404Exception('id', { vocabularyId });
 
-    let vocabularyView = await VocabularyView.findOne({
-      where: {
-        vocabularyId: vocabularyId,
-        userId,
-      },
-    });
+    let vocabularyView = await VocabularyView.findOneBy({ vocabularyId, userId });
 
+    // if (!vocabularyView) {
+    //   vocabularyView = new VocabularyView();
+    //   vocabularyView.vocabularyId = vocabularyId;
+    //   vocabularyView.userId = userId;
+    //   vocabularyView.viewCount = 0;
+    // }
     if (!vocabularyView) {
-      vocabularyView = new VocabularyView();
-      vocabularyView.vocabularyId = vocabulary.vocabularyId;
-      vocabularyView.userId = userId;
-      vocabularyView.viewCount = 0;
+      vocabularyView = Object.assign(new VocabularyView(), {
+        vocabularyId,
+        userId,
+        viewCount: 0,
+      });
     }
 
     vocabularyView.lastViewedAt = new Date();
-    vocabularyView.viewCount = vocabularyView.viewCount + 1;
+    vocabularyView.viewCount = Number(vocabularyView.viewCount) + 1;
     await vocabularyView.save();
+    return vocabularyView;
   };
 
   // Thống kê
@@ -323,7 +329,7 @@ export class UserService {
     return GenerateUtil.paginate({ data, itemCount, query });
   };
 
-  getClassJoined = async (user) => {
+  getClassJoined = async (userId) => {
     // const classJoinedCount = await ExamAttempt.createQueryBuilder('examAttempt')
     //   .innerJoinAndSelect('examAttempt.exam', 'exam')
     //   .innerJoinAndSelect('exam.classroom', 'classRoom')
@@ -342,13 +348,13 @@ export class UserService {
         .innerJoinAndSelect('classStudent.classroom', 'classRoom') // Join để lấy thông tin lớp học
         .select('classRoom.classroomId', 'classRoomId')
         .addSelect('classRoom.name', 'name')
-        .addSelect('classRoom.thumbnailPath', 'thumbnailPath')
-        .addSelect('classRoom.classCode', 'classCode')
-        .where('classStudent.studentId = :userId', { userId: user.userId }) // Chỉ lấy lớp học của học sinh
+        .addSelect('classRoom.content', 'content')
+        .addSelect('classRoom.imageLocation', 'imageLocation')
+        .where('classStudent.studentId = :userId', { userId }) // Chỉ lấy lớp học của học sinh
         .groupBy('classRoom.classroomId')
         .addGroupBy('classRoom.name')
-        .addGroupBy('classRoom.thumbnailPath')
-        .addGroupBy('classRoom.classCode')
+        .addGroupBy('classRoom.content')
+        .addGroupBy('classRoom.imageLocation')
         .getRawMany();
     
     return classJoinedCount;

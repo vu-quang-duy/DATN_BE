@@ -16,6 +16,7 @@ import { VocabularyModule } from './api/vocabulary/vocabulary.module';
 import { TopicModule } from './api/topic/topic.module';
 import { QuestionModule } from './api/question/question.module';
 import { ExamModule } from './api/exam/exam.module';
+import { LessonsModule } from './api/classroom/lesson.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ExamModule } from './api/exam/exam.module';
     JobModule,
     // ENTITY MODULE
     AuthModule,
+    LessonsModule,
     UserModule,
     UploadModule,
     ClassroomModule,
