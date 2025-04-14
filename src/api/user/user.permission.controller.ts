@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Body, Get, Param, Post, Put, Req, Query} from '@nestjs/common';
+import { Body, Get, Param, Post, Put, Req, Query, UseGuards} from '@nestjs/common';
 import { EntityNameConst } from 'src/constant/entity-name';
 import { ApiHandleResponse } from 'src/decorator/api.decorator';
 import { IsAuthController } from 'src/decorator/auth.decorator';
@@ -9,6 +9,7 @@ import { User } from 'src/entities/user/user.entity';
 import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { UserAction, UserSummary } from './user.permission.interface';
 import { UserService } from './user.service';
+import {AccessTokenGuard} from '../../auth/access-token.guard'
 
 @IsAuthController(`${EntityNameConst.USER}`, false)
 export class UserPermissionController implements Record<UserAction, any> {
@@ -20,11 +21,13 @@ export class UserPermissionController implements Record<UserAction, any> {
     return await this.userService.getProfile(req.user);
   }
 
-  // @Get('/class-joined')
-  // @ApiHandleResponse({ type: User, summary: 'Get class joined' })
-  // async getClassJoined(@Req() req: RequestAuth) {
-  //   return await this.userService.getClassJoined(req.user);
-  // }
+  @Get('/class-joined')
+  @ApiHandleResponse({ type: User, summary: 'Get class joined' })
+  async getClassJoined(@Req() req: RequestAuth) {
+    console.log('Authorization header:', req.headers.authorization);
+    console.log(req.user);
+    return await this.userService.getClassJoined(req.user);
+  }
   // @Get('/class-joined')
   // @ApiHandleResponse({ type: User, summary: 'Get class joined' })
   // // async getClassJoined(@Query('userId') userId: number) {
@@ -61,17 +64,17 @@ export class UserPermissionController implements Record<UserAction, any> {
 //   // Hardcode userId=27 for testing
 //   return await this.userService.getClassJoined(27);
 // }
-@Get('/class-joined')
-async getClassJoined(@Query('userId') userId: any) {
-  console.log('Raw userId received:', userId);
-  console.log('Type of userId:', typeof userId);
+// @Get('/class-joined')
+// async getClassJoined(@Query('userId') userId: any) {
+//   console.log('Raw userId received:', userId);
+//   console.log('Type of userId:', typeof userId);
   
-  const parsedUserId = parseInt(userId, 10);
-  console.log('Parsed userId:', parsedUserId);
-  console.log('Is parsed userId NaN?', isNaN(parsedUserId));
+//   const parsedUserId = parseInt(userId, 10);
+//   console.log('Parsed userId:', parsedUserId);
+//   console.log('Is parsed userId NaN?', isNaN(parsedUserId));
   
-  return await this.userService.getClassJoined(parsedUserId);
-}
+//   return await this.userService.getClassJoined(parsedUserId);
+// }
 
   @Put('/profile')
   @ApiHandleResponse({ type: User, summary: UserSummary.GetMyProfile })
@@ -96,19 +99,19 @@ async getClassJoined(@Query('userId') userId: any) {
   // async viewVocabulary(@Req() req: RequestAuth, @Param('id') id: number) {
   //   return await this.userService.viewVocabulary(req.user.userId, id);
   // }
-  @Post('/vocabulary/view')
-  @ApiHandleResponse({ type: VocabularyView, summary: 'add vocabulary view' })
-  async viewVocabulary(
-    // @Param('id', ParseIntPipe) vocabularyId: number, 
-    @Body('vocabularyId') vocabularyId: number,
-    // @Body() body: any
-    @Body('userId') userId: number
-  ) {
-    console.log('Received vocabularyId:', vocabularyId);
-    console.log('Received userId:', userId);
-    if (!userId) {
-      throw new Error('userId is required');
-    }
-    return await this.userService.viewVocabulary(userId, vocabularyId); 
-  }
+  // @Post('/vocabulary/view')
+  // @ApiHandleResponse({ type: VocabularyView, summary: 'add vocabulary view' })
+  // async viewVocabulary(
+  //   // @Param('id', ParseIntPipe) vocabularyId: number, 
+  //   @Body('vocabularyId') vocabularyId: number,
+  //   // @Body() body: any
+  //   @Body('userId') userId: number
+  // ) {
+  //   console.log('Received vocabularyId:', vocabularyId);
+  //   console.log('Received userId:', userId);
+  //   if (!userId) {
+  //     throw new Error('userId is required');
+  //   }
+  //   return await this.userService.viewVocabulary(userId, vocabularyId); 
+  // }
 }

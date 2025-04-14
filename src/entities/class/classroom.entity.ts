@@ -11,6 +11,7 @@ import { EXAM } from '../exam/exam.entity';
 import { StringUtil } from 'src/utils/string';
 import { ClassLevel } from 'src/types/classroom';
 import { Topic } from '../vocabulary/topic.entity';
+import { Lesson } from './lesson.entity';
 
 @Entity(EntityNameConst.CLASSROOM)
 export class ClassRoom extends AbstractTimeEntity {
@@ -93,6 +94,9 @@ export class ClassRoom extends AbstractTimeEntity {
 
   @OneToMany(() => ClassStudent, (classStudent) => classStudent.classroom)
   classStudents: ClassStudent[];
+
+  @OneToMany(() => Lesson, (lesson) => lesson.classroom)
+  lesson: Lesson[];
 
   @OneToOne(() => User, (User) => User.classroomTeacher)
   @JoinColumn({ name: 'teacher_id' })

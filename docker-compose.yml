@@ -83,6 +83,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - datn-mysql-volume:/var/lib/mysql
+      - C:/Users/Tran Anh Duc/Desktop/backup.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - 3307:3306
   redis:
@@ -99,10 +100,10 @@ services:
       - ${REDIS_PORT}:6379
   app:
     container_name: datn-app-container-${NODE_ENV}
-    image: pinkey563/datn_be-app:latest
-    build:
-      context: .
-      target: production
+    image: datn:v5
+    # build:
+    #   context: .
+    #   target: production
     env_file:
       - .env
     restart: unless-stopped

@@ -1,4 +1,4 @@
-import { Body, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Get, Param, Post, Query, ParseIntPipe } from '@nestjs/common';
 import { EntityNameConst } from 'src/constant/entity-name';
 import { ApiHandleResponse } from 'src/decorator/api.decorator';
 import { IsAuthController } from 'src/decorator/auth.decorator';
@@ -10,6 +10,8 @@ import { UserService } from './user.service';
 import { RegisterDto, VerifyEmailDto } from 'src/dto/user-dto/register.dto';
 import { UserStatistic } from 'src/entities/user/user-statistic.entity';
 import { ExamAttempt } from 'src/entities/exam/exam-attempt.entity';
+import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
+import { PartView } from 'src/entities/class/part-view.entity';
 
 @IsAuthController(EntityNameConst.USER, false)
 export class UserController {
@@ -84,5 +86,57 @@ export class UserController {
   @Post('/register/verify-otp')
   async verify(@Body() body: VerifyEmailDto): Promise<string> {
     return this.userService.verify(body.email, body.otpNum);
+  }
+
+  @Post('/vocabulary/view')
+  @ApiHandleResponse({ type: VocabularyView, summary: 'add vocabulary view' })
+  async viewVocabulary(
+    // @Param('id', ParseIntPipe) vocabularyId: number, 
+    @Body('vocabularyId') vocabularyId: number,
+    // @Body() body: any
+    @Body('userId') userId: number
+  ) {
+    console.log('Received vocabularyId:', vocabularyId);
+    console.log('Received userId:', userId);
+    if (!userId) {
+      throw new Error('userId is required');
+    }
+    return await this.userService.viewVocabulary(userId, vocabularyId); 
+  }
+
+  @Get('/vocabulary/recent-view/:id')
+  @ApiHandleResponse({type: VocabularyView, summary: 'Get recent vocabulary views by user ID', isArray: true})
+  async getRecentVocabViews(
+    // @Body('userId') userId: number, 
+    @Param('id', ParseIntPipe)  userId: number
+  ) {
+    return this.userService.getRecentVocabularyViews(userId);
+  }
+
+  @Post('/lesson/view')
+  @ApiHandleResponse({ type: PartView, summary: 'add lesson view' })
+  async viewLesson(
+    // @Param('id', ParseIntPipe) vocabularyId: number, 
+    // @Body('partId') partId: number,
+    @Body('lessonId') lessonId: number,
+    // @Body() body: any
+    @Body('userId') userId: number
+  ) {
+    // console.log('Received partId:', partId);
+    console.log('Received lessonId:', lessonId);
+    console.log('Received userId:', userId);
+    if (!userId) {
+      throw new Error('userId is required');
+    }
+    return await this.userService.viewLesson(userId, lessonId); 
+  }
+
+  @Get('/lesson/recent-view/:id')
+  @ApiHandleResponse({type: PartView, summary: 'Get recent lesson views by user ID', isArray: true})
+  async getRecentLessonViews(
+    // @Body('userId') userId: number, 
+    @Param('id', ParseIntPipe)  userId: number
+  ) {
+    return this.userService.getRecentLessonViews(userId);
   }
 }

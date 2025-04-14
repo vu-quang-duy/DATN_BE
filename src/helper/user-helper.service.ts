@@ -6,7 +6,7 @@ import { User } from 'src/entities/user/user.entity';
 import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { ConditionWhere } from 'src/types/query.type';
 import { FindOptionsSelect, ILike } from 'typeorm';
-
+import { PartView } from 'src/entities/class/part-view.entity';
 export class UserHelper {
   static selectBasicInfo: FindOptionsSelect<User> = {
     userId: true,
@@ -61,6 +61,7 @@ export class UserHelper {
   static handleUserStatistic = async (userId) => {
     await this.retryViewVocabulary(userId);
     await this.retryClassJoined(userId);
+    await this.retryViewLesson(userId);
     await this.retryTestCompleted(userId);
     await this.retryAverageScore(userId);
   };
@@ -76,6 +77,20 @@ export class UserHelper {
       .getRawOne();
 
     userStatistic.vocabularyViews = Number(viewCount.viewCount || 0);
+    return await userStatistic.save();
+  };
+// Baoh duy chỉnh lại thành part thì sửa lại controller, service, entity(part, user)
+// model Learning, lessonlist
+  static retryViewLesson = async (userId: number) => {
+    const userStatistic = await this.findOrCreateUserStatistic(userId);
+    const viewCount = await PartView.createQueryBuilder('partView')
+      // .select('sum(vocabularyView.viewCount)', 'viewCount')
+      // .where('vocabularyView.userId = :userId', { userId })
+      // .getRawOne();
+      .select('COUNT(DISTINCT partView.lessonId)', 'viewCount') // Đếm số lượng từ duy nhất đã xem
+      .where('partView.userId = :userId', { userId })
+      .getRawOne();
+    userStatistic.lessonViews = Number(viewCount.viewCount || 0);
     return await userStatistic.save();
   };
 

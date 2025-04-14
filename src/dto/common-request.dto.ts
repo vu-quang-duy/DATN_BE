@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request } from 'express';
 import { IsSwaggerNumber, IsSwaggerString } from 'src/decorator/swagger.decorator';
 
@@ -8,11 +9,17 @@ export interface IRequestResponse<T> {
 }
 
 export class JWTPayload {
-  @IsSwaggerNumber()
-  sub: number;
+  // @IsSwaggerNumber()
+  // sub: number;
 
+  // @IsSwaggerString()
+  // username: string;
   @IsSwaggerString()
-  username: string;
+  sub: string;
+  @IsSwaggerNumber()
+  iat?: number;
+  @IsSwaggerNumber()
+  exp?: number;
 }
 
 export interface CacheUser {

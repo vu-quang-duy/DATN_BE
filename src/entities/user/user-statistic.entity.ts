@@ -16,6 +16,9 @@ export class UserStatistic extends AbstractTimeEntity {
   @DBColumn({ type: 'bigint', name: 'vocabulary_views', default: 0 })
   vocabularyViews: number;
 
+  @DBColumn({ type: 'bigint', name: 'lesson_views', default: 0 })
+  lessonViews: number;
+
   @DBColumn({ type: 'bigint', name: 'tests_completed', default: 0 })
   testsCompleted: number;
 

@@ -3,7 +3,7 @@ import { JWTPayload } from 'src/dto/common-request.dto';
 import { PageDto, PageMetaDto } from 'src/dto/paginate.dto';
 
 export class GenerateUtil {
-  static keyAuth = (payload: JWTPayload) => `auth_${payload.sub}_${payload.username}`;
+  static keyAuth = (payload: JWTPayload) => `auth_${payload.sub}`;
 
   static randomDate = (start, end, startHour, endHour) => {
     const date = new Date(+start + Math.random() * (end - start));

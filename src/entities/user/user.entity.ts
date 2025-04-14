@@ -18,6 +18,7 @@ import { Gender } from 'src/constant/enum-common';
 import { StudentProfile } from './student-profile.entity';
 import { Topic } from '../vocabulary/topic.entity';
 import { UserStatistic } from './user-statistic.entity';
+import { PartView } from '../class/part-view.entity';
 
 export enum UserStatus {
   ACTIVE = 'ACTIVE',
@@ -113,6 +114,9 @@ export class User extends AbstractTimeEntity {
 
   @OneToMany(() => VocabularyView, (vocabularyView) => vocabularyView.user)
   vocabularyViews: VocabularyView[];
+
+  @OneToMany(() => PartView, (partView) => partView.user)
+  partViews: PartView[];
 
   @OneToMany(() => Vocabulary, (vocabulary) => vocabulary.creator)
   vocabularies: Vocabulary[];

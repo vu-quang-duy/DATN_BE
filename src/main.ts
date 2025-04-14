@@ -36,8 +36,8 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  logger.verbose(`====== App url: http://localhost:${port}/${globalPrefix}`);
-  logger.verbose(`====== Swagger url: http://localhost:${port}/${swaggerEndpoint}`);
+  logger.verbose(`====== App url: http://202.191.56.11:8088/${globalPrefix}`);
+  logger.verbose(`====== Swagger url: http://202.191.56.11:8088/${swaggerEndpoint}`);
 }
 
 bootstrap();

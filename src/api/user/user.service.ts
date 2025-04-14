@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +20,9 @@ import { UserStatistic } from 'src/entities/user/user-statistic.entity';
 import { User } from 'src/entities/user/user.entity';
 import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { Vocabulary } from 'src/entities/vocabulary/vocabulary.entity';
+import { PartView } from 'src/entities/class/part-view.entity';
+import { Part } from 'src/entities/class/part.entity';
+import { Lesson } from 'src/entities/class/lesson.entity';
 import { PermissionHelper } from 'src/helper/permisson-helper.service';
 import { RoleHelper } from 'src/helper/role-helper.service';
 import { UserHelper } from 'src/helper/user-helper.service';
@@ -80,10 +84,10 @@ export class UserService {
     });
 
     if (!user) throw new App404Exception('email', body);
-    const isPasswordMatch = body.password === HashUtil.aesDecrypt(user.password);
+    const isPasswordMatch = body.password === user.password;
     if (!isPasswordMatch) throw new AppException(ERROR_MSG.PASSWORD_NOT_CORRECT);
 
-    const data = await HashUtil.signAccessToken(user.userId, user.email, this.jwtService);
+    const data = await HashUtil.signAccessToken(user.email, this.jwtService);
 
     const cacheKeyAuth = GenerateUtil.keyAuth(data.payload);
 
@@ -136,7 +140,7 @@ export class UserService {
     }
     user.username = body.username;
     user.name = body.name;
-    user.password = HashUtil.aesEncrypt(body.password);
+    user.password = body.password;
     user.email = body.email;
     user.phoneNumber = body.phoneNumber;
 
@@ -274,7 +278,7 @@ export class UserService {
     if (!isMatch) throw new AppException(ERROR_MSG.PASSWORD_NOT_CORRECT);
 
     if (body.newPassword !== body.confirmPassword) throw new AppException(ERROR_MSG.PASSWORD_NOT_MATCH);
-    user.password = HashUtil.aesEncrypt(body.newPassword);
+    user.password = body.newPassword;
     await user.save();
     return true;
   };
@@ -308,6 +312,69 @@ export class UserService {
     return vocabularyView;
   };
 
+  // getRecentVocabularyViews = async (userId: number) => {
+  //   const recentViews = await VocabularyView.createQueryBuilder('vocabularyView')
+  //     .where('vocabularyView.userId = :userId', { userId })
+  //     .orderBy('vocabularyView.lastViewedAt', 'ASC')
+  //     .limit(5)
+  //     .getMany();
+  //   return recentViews;
+  // };
+      getRecentVocabularyViews = async (userId: number) => {
+        const recentViews = await VocabularyView.createQueryBuilder('vocabularyView')
+          .leftJoinAndSelect('vocabularyView.vocabulary', 'vocabulary') // JOIN bảng vocabulary
+          .where('vocabularyView.userId = :userId', { userId })
+          .orderBy('vocabularyView.lastViewedAt', 'DESC')
+          .limit(5)
+          .getMany();
+      
+        // Trả về dữ liệu đã gọn gàng cho FE
+        return recentViews.map((view) => ({
+          vocabularyId: view.vocabularyId,
+          name: view.vocabulary.content,
+          viewCount: view.viewCount,
+        }));
+      };
+  
+  viewLesson = async (userId: number, lessonId: number) => {
+    if (!userId) throw new Error('userId is required'); // Check nếu thiếu userId
+    if (!lessonId ) throw new Error('partId is required');
+
+    const lesson = await Lesson.findOne({ where: { lessonId: lessonId } });
+    // const lesson = await Part.findOne({ where: { lessonId: lessonId } });
+    if (!lesson) throw new App404Exception('lessonId', { lessonId });
+
+    let partView = await PartView.findOneBy({ lessonId, userId });
+    if (!partView) {
+      partView = Object.assign(new PartView(), {
+        lessonId,
+        userId,
+        viewCount: 0,
+      });
+    }
+
+    partView.lastViewedAt = new Date();
+    partView.viewCount = Number(partView.viewCount) + 1;
+    await partView.save();
+    return partView;
+  };
+
+  getRecentLessonViews = async (userId: number) => {
+    const recentViews = await PartView.createQueryBuilder('partView')
+      .leftJoinAndSelect('partView.lesson', 'lesson') // JOIN bảng vocabulary
+      .where('partView.userId = :userId', { userId })
+      .orderBy('partView.lastViewedAt', 'DESC')
+      .limit(5)
+      .getMany();
+  
+    // Trả về dữ liệu đã gọn gàng cho FE
+    return recentViews.map((view) => ({
+      lessonId: view.lessonId,
+      name: view.lesson.lessonName,
+      viewCount: view.viewCount,
+    }));
+  };
+
   // Thống kê
   getStatisticsById = async (userId) => {
     const user = await User.findOneBy({ userId: userId });
@@ -329,35 +396,37 @@ export class UserService {
     return GenerateUtil.paginate({ data, itemCount, query });
   };
 
-  getClassJoined = async (userId) => {
-    // const classJoinedCount = await ExamAttempt.createQueryBuilder('examAttempt')
-    //   .innerJoinAndSelect('examAttempt.exam', 'exam')
-    //   .innerJoinAndSelect('exam.classroom', 'classRoom')
-    //   .select('exam.classRoomId', 'classRoomId')
-    //   .addSelect('COUNT(examAttempt.id)', 'attemptCount')
-    //   .addSelect('classRoom.name', 'name')
-    //   .addSelect('classRoom.thumbnailPath', 'thumbnailPath')
-    //   .addSelect('classRoom.classCode', 'classCode')
-    //   .where('examAttempt.studentId = :userId', { userId: user.userId })
-    //   .groupBy('exam.classRoomId')
-    //   .addGroupBy('classRoom.name')
-    //   .addGroupBy('classRoom.thumbnailPath')
-    //   .addGroupBy('classRoom.classCode')
-    //   .getRawMany();
-      const classJoinedCount = await ClassStudent.createQueryBuilder('classStudent')
-        .innerJoinAndSelect('classStudent.classroom', 'classRoom') // Join để lấy thông tin lớp học
-        .select('classRoom.classroomId', 'classRoomId')
-        .addSelect('classRoom.name', 'name')
-        .addSelect('classRoom.content', 'content')
-        .addSelect('classRoom.imageLocation', 'imageLocation')
-        .where('classStudent.studentId = :userId', { userId }) // Chỉ lấy lớp học của học sinh
-        .groupBy('classRoom.classroomId')
-        .addGroupBy('classRoom.name')
-        .addGroupBy('classRoom.content')
-        .addGroupBy('classRoom.imageLocation')
-        .getRawMany();
-    
+  getClassJoined = async (user) => {
+    const classJoinedCount = await ClassStudent.createQueryBuilder('classStudent')
+    .innerJoinAndSelect('classStudent.classroom', 'classRoom') // Join để lấy thông tin lớp học
+    .select('classRoom.id', 'classRoomId')
+    .addSelect('classRoom.name', 'name')
+    .addSelect('classRoom.thumbnailPath', 'thumbnailPath')
+    .addSelect('classRoom.classCode', 'classCode')
+    .where('classStudent.studentId = :userId', { userId: user.userId }) // Chỉ lấy lớp học của học sinh
+    .groupBy('classRoom.id')
+    .addGroupBy('classRoom.name')
+    .addGroupBy('classRoom.thumbnailPath')
+    .addGroupBy('classRoom.classCode')
+    .getRawMany();
+
     return classJoinedCount;
+
+    // getClassJoined = async (userId) => {
+    //   const classJoinedCount = await ClassStudent.createQueryBuilder('classStudent')
+    //     .innerJoinAndSelect('classStudent.classroom', 'classRoom') // Join để lấy thông tin lớp học
+    //     .select('classRoom.classroomId', 'classRoomId')
+    //     .addSelect('classRoom.name', 'name')
+    //     .addSelect('classRoom.content', 'content')
+    //     .addSelect('classRoom.imageLocation', 'imageLocation')
+    //     .where('classStudent.studentId = :userId', { userId }) // Chỉ lấy lớp học của học sinh
+    //     .groupBy('classRoom.classroomId')
+    //     .addGroupBy('classRoom.name')
+    //     .addGroupBy('classRoom.content')
+    //     .addGroupBy('classRoom.imageLocation')
+    //     .getRawMany();
+    
+    // return classJoinedCount;
   };
 
   getStudentList = async (query: SearchStudentDto) => {
