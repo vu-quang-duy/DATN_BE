@@ -26,7 +26,7 @@ export class VocabularyService {
       select: {
         vocabularyId: true,
         content: true,
-        createdAt: true,
+        createdDate: true,
         description: true,
         imagesPath: true,
         videosPath: true,

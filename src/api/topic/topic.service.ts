@@ -27,7 +27,7 @@ export class TopicService {
         classroomId: true,
         imageLocation: true,
         description: true,
-        createdAt: true,
+        createdDate: true,
         creatorId: true,
         isCommon: true,
         classroom: {

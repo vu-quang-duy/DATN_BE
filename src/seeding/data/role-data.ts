@@ -11,7 +11,7 @@ export const RoleData: Partial<Role>[] = [
     name: 'Teacher on system',
   },
   {
-    roleCode: RoleCode.STUDENT,
+    roleCode: RoleCode.USER,
     name: 'Student on system',
   },
   {

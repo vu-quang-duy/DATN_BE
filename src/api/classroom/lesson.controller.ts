@@ -37,10 +37,10 @@ export class LessonsController {
           'lessonName', 
           'imageLocation', 
           'videoLocation',
-          'createdAt'
+          'createdDate'
         ],
         order: {
-          createdAt: 'ASC' // Order by creation date
+          createdDate: 'ASC' // Order by creation date
         }
       });
       

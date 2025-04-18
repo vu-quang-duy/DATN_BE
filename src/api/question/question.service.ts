@@ -30,7 +30,7 @@ export class QuestionService {
         imageLocation: true,
         videoLocation: true,
         description: true,
-        createdAt: true,
+        createdDate: true,
         creatorId: true,
         classroom: {
           classroomId: true,

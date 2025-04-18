@@ -55,7 +55,7 @@ export class CreatorResponse {
 
 export class GetUploadListResponse {
   @IsSwaggerDateTime()
-  createdAt: string;
+  createdDate: string;
 
   @IsSwaggerString()
   path: string;

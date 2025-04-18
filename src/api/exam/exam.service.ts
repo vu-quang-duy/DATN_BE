@@ -32,7 +32,7 @@ export class ExamService {
         name: true,
         classRoomId: true,
         description: true,
-        createdAt: true,
+        createdDate: true,
         creatorId: true,
         numberOfQuestions: true,
         private: true,
@@ -62,7 +62,7 @@ export class ExamService {
       select: {
         userExamId: true,
         score: true,
-        createdAt: true,
+        createdDate: true,
         studentId: true,
         isFinished: true,
         exam: {
@@ -135,7 +135,7 @@ export class ExamService {
           classLevel: true,
         },
         creator: {
-          createdAt: true,
+          createdDate: true,
           name: true,
         },
         questions: {

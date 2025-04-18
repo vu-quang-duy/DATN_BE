@@ -100,10 +100,12 @@ services:
       - ${REDIS_PORT}:6379
   app:
     container_name: datn-app-container-${NODE_ENV}
-    image: datn:v5
-    # build:
-    #   context: .
-    #   target: production
+    # untag image, tag build khi chạy bằng docker
+    # tag image, untag build khi build cái mới
+    # image: datn:v5
+    build:
+      context: .
+      target: production
     env_file:
       - .env
     restart: unless-stopped

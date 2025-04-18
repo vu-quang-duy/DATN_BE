@@ -21,7 +21,7 @@ export class UpdateUserProfileDto {
   readonly gender: Gender;
 
   @IsSwaggerString({}, false)
-  readonly schoolName: string;
+  readonly schoolId: string;
 
   @IsSwaggerString({}, false)
   readonly houseStreet: string;

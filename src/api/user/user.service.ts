@@ -3,13 +3,14 @@ import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Audit } from 'entity-diff';
+import { ILike } from "typeorm";
 import { ERROR_MSG } from 'src/constant/error';
 import { RoleCode } from 'src/constant/role-code';
 import { CacheUser } from 'src/dto/common-request.dto';
 import { PageDto } from 'src/dto/paginate.dto';
 import { LoginDto } from 'src/dto/user-dto/login.dto';
 import { RegisterDto } from 'src/dto/user-dto/register.dto';
-import { SearchStudentDto, SearchUserDto, SearchUserStatisticDto } from 'src/dto/user-dto/search-user.dto';
+import { SearchSchoolDto, SearchStudentDto, SearchTeacherDto, SearchUserDto, SearchUserStatisticDto } from 'src/dto/user-dto/search-user.dto';
 import { ChangeUserPasswordDto, UpdateUserProfileDto } from 'src/dto/user-dto/update-user-profile.dto';
 import { ClassStudent } from 'src/entities/class/class-student.entity';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -23,6 +24,7 @@ import { Vocabulary } from 'src/entities/vocabulary/vocabulary.entity';
 import { PartView } from 'src/entities/class/part-view.entity';
 import { Part } from 'src/entities/class/part.entity';
 import { Lesson } from 'src/entities/class/lesson.entity';
+import { School } from 'src/entities/class/school.entity';
 import { PermissionHelper } from 'src/helper/permisson-helper.service';
 import { RoleHelper } from 'src/helper/role-helper.service';
 import { UserHelper } from 'src/helper/user-helper.service';
@@ -52,12 +54,12 @@ export class UserService {
     const user = await User.findOne({
       select: {
         ...UserHelper.selectBasicInfo,
-        createdAt: true,
+        createdDate: true,
         updatedAt: true,
         status: true,
         address: true,
         birthday: true,
-        schoolName: true,
+        schoolId: true,
         district: true,
         city: true,
         ward: true,
@@ -148,7 +150,7 @@ export class UserService {
 
     await user.save();
 
-    if (body.role.roleCode === RoleCode.STUDENT) {
+    if (body.role.roleCode === RoleCode.USER) {
       const studentCode = UserHelper.generateStudentCode(user.userId);
       const studentProfile = new StudentProfile();
       studentProfile.studentCode = studentCode;
@@ -194,7 +196,7 @@ export class UserService {
       user.phoneNumber = body.phoneNumber;
     }
 
-    CondUtil.saveIfChanged(user, body, ['schoolName', 'houseStreet', 'ward', 'district', 'city']);
+    CondUtil.saveIfChanged(user, body, ['schoolId', 'houseStreet', 'ward', 'district', 'city']);
 
     const permission = await PermissionHelper.getPermissionByCode(permissionCode);
     if (!permission) throw new App404Exception('permissionCode', { permissionCode });
@@ -226,9 +228,9 @@ export class UserService {
         ...UserHelper.selectBasicInfo,
         isSupperAdmin: true,
         status: true,
-        createdAt: true,
+        createdDate: true,
         role: { roleCode: true },
-        schoolName: true,
+        schoolId: true,
         address: true,
         studentProfile: {
           studentCode: true,
@@ -247,7 +249,7 @@ export class UserService {
         classStudents: {
           classroom: true,
         },
-        classroomTeacher: true,
+        classTeachers: true,
         studentProfile: true,
       },
 
@@ -428,33 +430,205 @@ export class UserService {
     
     // return classJoinedCount;
   };
-
   getStudentList = async (query: SearchStudentDto) => {
-    const [data, itemCount] = await ClassStudent.findAndCount({
-      select: {
-        classroom: {
-          classroomId: true,
-          name: true,
-          thumbnailPath: true,
-          classCode: true,
-          slug: true,
-        },
-        student: {
-          userId: true,
-          name: true,
-        },
-      },
-      where: UserHelper.getFilterSearchStudent(query),
-      relations: {
-        classroom: true,
-        student: true,
-      },
+  //   const [data, itemCount] = await User.findAndCount({
+  //     select: {
+  //       userId: true,
+  //       name: true,
+  //       birthday: true,
+  //       schoolId: true,
+  //       address: true,
+  //       email: true,
+  //       createdDate: true,
+  //     },
+  //     where: {
+  //       code: "user",
+  //       ...(query.name && {
+  //         name: ILike(`%${query.name}%`),
+  //       }),
+  //     },
+  //     relations: {
+  //       classStudents: {
+  //         classroom: true,
+  //       },
+  //       school: true,
+  //     },
+  //     order: QueryUtil.getSort(query.orderBy, query.sortBy),
+  //     skip: query.skip,
+  //     take: query.take,
+  //   });
+    
+  
+  //   const formattedData = data.map((student) => {
+  //     const firstClassName =
+  //     student.classStudents?.length > 0 && student.classStudents[0]?.classroom?.name || "Không có";
+  
+  //     return {
+  //       userId: student.userId,
+  //       name: student.name,
+  //       birthDay: student.birthday?.toISOString().split("T")[0] || "Không có",
+  //       schoolId: student.schoolId || "Không có",
+  //       schoolName: student.school?.name || "Không có",
+  //       city: student.address || "Không có",
+  //       email: student.email || "Không có",
+  //       classRoomName: firstClassName,
+  //     };
+  //   });
+  
+  //   return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+  const [data, itemCount] = await User.createQueryBuilder('user')
+  .leftJoinAndSelect('user.school', 'school')
+  .leftJoinAndSelect('user.classStudents', 'classStudent')
+  .leftJoinAndSelect('classStudent.classroom', 'classroom')
+  .where('user.code = :code', { code: 'user' })
+  .andWhere(query.name ? 'user.name ILIKE :name' : 'TRUE', {
+    name: `%${query.name}%`,
+  })
+  .orderBy(`user.${query.orderBy ?? 'createdDate'}`, query.sortBy ?? 'DESC')
+  .skip(query.skip)
+  .take(query.take)
+  .select([
+    'user.userId',
+    'user.name',
+    'user.birthday',
+    'user.address',
+    'user.email',
+    'user.createdDate',
+    'school.schoolId',
+    'school.name',
+    'classStudent.classStudentId', // ít nhất 1 field của classStudent
+    'classroom.name',
+    'classroom.classroomId' 
+  ])
+  .getManyAndCount();
+  const formattedData = data.map((student) => {
+    const firstClassName =
+      student.classStudents?.[0]?.classroom?.name || 'Không có';
+    return {
+      userId: student.userId,
+      name: student.name,
+      birthDay: student.birthday?.toISOString().split('T')[0] || 'Không có',
+      schoolId: student.school?.schoolId || 'Không có',
+      schoolName: student.school?.name || 'Không có',
+      city: student.address || 'Không có',
+      email: student.email || 'Không có',
+      classRoomName: firstClassName,
+    };
+  });
+  
+return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+};
 
-      order: QueryUtil.getSort(query.orderBy, query.sortBy),
-      skip: query.skip,
-      take: query.take,
-    });
+  getTeacherList = async (query: SearchTeacherDto) => {
+    // const [data, itemCount] = await User.findAndCount({
+    //   select: {
+    //     userId: true,
+    //     name: true,
+    //     birthday: true,
+    //     schoolId: true,
+    //     address: true,
+    //     email: true,
+    //     createdDate: true,
+    //     // Không chọn created_date trong select
+    //   },
+    //   where: {
+    //     code: "teacher",
+    //     ...(query.name && {
+    //       name: ILike(`%${query.name}%`),
+    //     }),
+    //   },
+    //   relations: {
+    //     classTeachers: {
+    //       classroom: true,
+    //     },
+    //     school: true,
+    //   },
+    //   order: QueryUtil.getSort(query.orderBy, query.sortBy),
+    //   skip: query.skip,
+    //   take: query.take,
+    // });
+    
+  
+    // const formattedData = data.map((teacher) => {
+    //   const firstClassName =
+    //   teacher.classTeachers?.length > 0 && teacher.classTeachers[0]?.classroom?.name || "Không có";
 
-    return GenerateUtil.paginate({ data, itemCount, query });
+  
+    //   return {
+    //     userId: teacher.userId,
+    //     name: teacher.name,
+    //     birthDay: teacher.birthday?.toISOString().split("T")[0] || "Không có",
+    //     schoolId: teacher.schoolId || "Không có",
+    //     schoolName: teacher.school?.name || "Không có",
+    //     city: teacher.address || "Không có",
+    //     email: teacher.email || "Không có",
+    //     classRoomName: firstClassName,
+    //   };
+    // });
+  
+    // return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+    const [data, itemCount] = await User.createQueryBuilder('user')
+  .leftJoinAndSelect('user.school', 'school')
+  .leftJoinAndSelect('user.classTeachers', 'classTeacher')
+  .leftJoinAndSelect('classTeacher.classroom', 'classroom')
+  .where('user.code = :code', { code: 'teacher' })
+  .andWhere(query.name ? 'user.name ILIKE :name' : 'TRUE', {
+    name: `%${query.name}%`,
+  })
+  .orderBy(`user.${query.orderBy ?? 'createdDate'}`, query.sortBy ?? 'DESC')
+  .skip(query.skip)
+  .take(query.take)
+  .select([
+    'user.userId',
+    'user.name',
+    'user.birthday',
+    'user.address',
+    'user.email',
+    'user.createdDate',
+    'school.schoolId',
+    'school.name',
+    'classroom.name',
+  ])
+  .getManyAndCount();
+  const formattedData = data.map((teacher) => {
+    const firstClassName =
+    teacher.classStudents?.[0]?.classroom?.name || 'Không có';
+  
+    return {
+      userId: teacher.userId,
+      name: teacher.name,
+      birthDay: teacher.birthday?.toISOString().split('T')[0] || 'Không có',
+      schoolId: teacher.school?.schoolId || 'Không có',
+      schoolName: teacher.school?.name || 'Không có',
+      city: teacher.address || 'Không có',
+      email: teacher.email || 'Không có',
+      classRoomName: firstClassName,
+    };
+  });
+  
+return GenerateUtil.paginate({ data: formattedData, itemCount, query });
   };
+
+  getSchoolList = async (query: SearchSchoolDto) => {
+    const [data, itemCount] = await School.createQueryBuilder('school')
+      .orderBy('school.schoolId', query.sortBy ?? 'DESC')
+      .skip(query.skip)
+      .take(query.take)
+      .select([
+        'school.schoolId',
+        'school.name',
+        'school.imageLocation',
+      ])
+      .getManyAndCount();
+  
+    const formattedData = data.map((school) => ({
+      schoolId: school.schoolId,
+      name: school.name,
+      imageLocation: school.imageLocation || 'Không có',
+    }));
+  
+    return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+  };
+  
+
 }

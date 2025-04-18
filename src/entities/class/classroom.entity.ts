@@ -1,8 +1,10 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { BeforeUpdate, PrimaryGeneratedColumn, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import { BeforeUpdate, PrimaryGeneratedColumn, Entity, JoinColumn, OneToMany, ManyToOne, OneToOne} from 'typeorm';
 import { AbstractTimeEntity } from '../entity.interface';
 import { ClassStudent } from './class-student.entity';
+import { ClassTeacher } from './class-teacher.entity';
+import { School } from './school.entity';
 import { User } from '../user/user.entity';
 import { Vocabulary } from '../vocabulary/vocabulary.entity';
 import { Question } from '../question/question.entity';
@@ -59,6 +61,13 @@ export class ClassRoom extends AbstractTimeEntity {
   classCode: string;
 
   @DBColumn({
+    name: 'school_id',
+    type: 'bigint',
+    nullable: true,
+  })
+  schoolId: number;
+
+  @DBColumn({
     name: 'is_teacher_created',
     type: 'boolean',
     default: false,
@@ -95,10 +104,17 @@ export class ClassRoom extends AbstractTimeEntity {
   @OneToMany(() => ClassStudent, (classStudent) => classStudent.classroom)
   classStudents: ClassStudent[];
 
+  @OneToOne(() => ClassTeacher, (classTeacher) => classTeacher.classroom)
+  classTeachers: ClassTeacher[];
+
   @OneToMany(() => Lesson, (lesson) => lesson.classroom)
   lesson: Lesson[];
 
-  @OneToOne(() => User, (User) => User.classroomTeacher)
+  @ManyToOne(() => School, (school) => school.classRooms)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
+
+  @ManyToOne(() => User, (User) => User.classTeachers)
   @JoinColumn({ name: 'teacher_id' })
   teacher: User;
 

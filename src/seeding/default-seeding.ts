@@ -95,7 +95,7 @@ const defaultSeeding = async () => {
 
   const adminRole = await RoleHelper.getRoleByCode(RoleCode.ADMIN);
   const teacherRole = await RoleHelper.getRoleByCode(RoleCode.TEACHER);
-  const studentRole = await RoleHelper.getRoleByCode(RoleCode.STUDENT);
+  const studentRole = await RoleHelper.getRoleByCode(RoleCode.USER);
   const volunteerRole = await RoleHelper.getRoleByCode(RoleCode.VOLUNTEER);
   const admCodeServiceRole = await RoleHelper.getRoleByCode(RoleCode.ADMIN_CODE_SERVICE);
 
@@ -131,7 +131,7 @@ const defaultSeeding = async () => {
 
   await seedingRolePermission(PermissionAdminRoleCode, RoleCode.ADMIN);
   await seedingRolePermission(PermissionTeacherRoleCode, RoleCode.TEACHER);
-  await seedingRolePermission(PermissionUserRoleCode, RoleCode.STUDENT);
+  await seedingRolePermission(PermissionUserRoleCode, RoleCode.USER);
   await seedingRolePermission(PermissionUserRoleCode, RoleCode.VOLUNTEER);
   await seedingRolePermission(PermissionAdminRoleCode, RoleCode.ADMIN_CODE_SERVICE);
   await seedingRolePermission(PermissionVolunteerRoleCode, RoleCode.VOLUNTEER);

@@ -12,8 +12,8 @@ export class SearchUserDto extends PageOptionsDto {
   @IsSwaggerEnum({ enum: AppStatus }, false)
   readonly status: AppStatus;
 
-  @IsSwaggerEnum({ enum: RoleCode, default: RoleCode.STUDENT }, false)
-  readonly roleCode: 'STUDENT' | 'TEACHER';
+  @IsSwaggerEnum({ enum: RoleCode, default: RoleCode.USER }, false)
+  readonly roleCode: 'USER' | 'TEACHER';
 }
 
 export class SearchUserStatisticDto extends PageOptionsDto {
@@ -32,4 +32,19 @@ export class SearchStudentDto extends PageOptionsDto {
 
   @IsSwaggerNumber({}, false)
   readonly classRoomId: number;
+}
+
+export class SearchTeacherDto extends PageOptionsDto {
+  @IsSwaggerString({}, false)
+  @Transform(({ value }) => value.trim())
+  readonly name: string;
+
+  @IsSwaggerNumber({}, false)
+  readonly classRoomId: number;
+}
+
+export class SearchSchoolDto extends PageOptionsDto {
+  @IsSwaggerString({}, false)
+  @Transform(({ value }) => value.trim())
+  readonly name: string;
 }

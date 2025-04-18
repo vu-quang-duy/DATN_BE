@@ -24,7 +24,7 @@ export class JWTPayload {
 
 export interface CacheUser {
   userId: number;
-  username: string;
+  name: string;
   // code: number;
   code: string;
   actions: string[];

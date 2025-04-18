@@ -4,7 +4,7 @@ import { ApiHandleResponse } from 'src/decorator/api.decorator';
 import { IsAuthController } from 'src/decorator/auth.decorator';
 import { LoginResponse } from 'src/dto/common-response.dto';
 import { LoginDto } from 'src/dto/user-dto/login.dto';
-import { SearchStudentDto, SearchUserDto, SearchUserStatisticDto } from 'src/dto/user-dto/search-user.dto';
+import { SearchStudentDto, SearchTeacherDto, SearchUserDto, SearchSchoolDto, SearchUserStatisticDto } from 'src/dto/user-dto/search-user.dto';
 import { User } from 'src/entities/user/user.entity';
 import { UserService } from './user.service';
 import { RegisterDto, VerifyEmailDto } from 'src/dto/user-dto/register.dto';
@@ -39,9 +39,21 @@ export class UserController {
   }
 
   @Get('/student-list')
-  @ApiHandleResponse({ type: User, summary: 'Get class joined' })
+  @ApiHandleResponse({ type: User, summary: 'Get student list' })
   async getStudentList(@Query() query: SearchStudentDto) {
     return await this.userService.getStudentList(query);
+  }
+
+  @Get('/teacher-list')
+  @ApiHandleResponse({ type: User, summary: 'Get teacher list' })
+  async getTeacherList(@Query() query: SearchTeacherDto) {
+    return await this.userService.getTeacherList(query);
+  }
+
+  @Get('/school-list')
+  @ApiHandleResponse({ type: User, summary: 'Get school list' })
+  async getSchoolList(@Query() query: SearchSchoolDto) {
+    return await this.userService.getSchoolList(query);
   }
 
   @Get('/search')

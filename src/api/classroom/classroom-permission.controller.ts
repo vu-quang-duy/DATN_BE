@@ -12,7 +12,7 @@ import { User } from 'src/entities/user/user.entity';
 import { ClassRoomAction, ClassRoomSummary } from './classroom-permission.interface';
 import { ClassroomService } from './classroom.service';
 
-@IsAuthController(EntityNameConst.CLASSROOM, true)
+@IsAuthController(EntityNameConst.CLASSROOM, false)
 export class ClassRoomPermissionController implements Record<ClassRoomAction, any> {
   constructor(private readonly classroomService: ClassroomService) {}
   classroom__ApproveClass: any;

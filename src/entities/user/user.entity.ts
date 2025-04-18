@@ -3,7 +3,7 @@ import { DBColumn } from 'src/decorator/swagger.decorator';
 import { AppStatus } from 'src/types/common';
 import { StringUtil } from 'src/utils/string';
 import { PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
-import { ClassRoom } from '../class/classroom.entity';
+import { ClassTeacher } from '../class/class-teacher.entity';
 import { AbstractTimeEntity } from '../entity.interface';
 import { EXAM } from '../exam/exam.entity';
 import { Role } from '../role/role.entity';
@@ -19,6 +19,7 @@ import { StudentProfile } from './student-profile.entity';
 import { Topic } from '../vocabulary/topic.entity';
 import { UserStatistic } from './user-statistic.entity';
 import { PartView } from '../class/part-view.entity';
+import { School } from '../class/school.entity';
 
 export enum UserStatus {
   ACTIVE = 'ACTIVE',
@@ -112,6 +113,11 @@ export class User extends AbstractTimeEntity {
   @OneToMany(() => UserLog, (userLog) => userLog.user)
   userLogs: UserLog[];
 
+  @ManyToOne(() => School, (school) => school.users)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
+
+
   @OneToMany(() => VocabularyView, (vocabularyView) => vocabularyView.user)
   vocabularyViews: VocabularyView[];
 
@@ -121,8 +127,8 @@ export class User extends AbstractTimeEntity {
   @OneToMany(() => Vocabulary, (vocabulary) => vocabulary.creator)
   vocabularies: Vocabulary[];
 
-  @OneToOne(() => ClassRoom, (vocabulary) => vocabulary.teacher)
-  classroomTeacher: ClassRoom;
+  @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.teacher)
+  classTeachers: ClassTeacher[];
 
   @OneToMany(() => EXAM, (exam) => exam.creator)
   exams: EXAM[];
@@ -146,11 +152,11 @@ export class User extends AbstractTimeEntity {
   userStatistic: UserStatistic;
 
   @DBColumn({
-    name: 'school_name',
-    type: 'varchar',
+    name: 'school_id',
+    type: 'bigint',
     nullable: true,
   })
-  schoolName: string;
+  schoolId: number;
 
   @DBColumn({
     name: 'house_street',

@@ -79,7 +79,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
       cacheUser = {
         userId: user.userId,
-        username: user.username,
+        name: user.name,
         // code: user.code,
         code: user.code,
         isSupperAdmin: user.isSupperAdmin,

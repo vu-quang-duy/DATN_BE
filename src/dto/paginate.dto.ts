@@ -9,8 +9,8 @@ export enum Sort {
 }
 
 export class PageOptionsDto {
-  @IsSwaggerString({ default: 'createdAt' }, false)
-  readonly orderBy?: string = 'createdAt';
+  @IsSwaggerString({ default: 'createdDate' }, false)
+  readonly orderBy?: string = 'createdDate';
 
   @IsSwaggerEnum({ enum: Sort, default: Sort.DESC }, false)
   readonly sortBy?: Sort = Sort.DESC;

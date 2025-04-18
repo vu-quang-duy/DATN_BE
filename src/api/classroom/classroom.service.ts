@@ -29,7 +29,7 @@ export class ClassroomService {
       select: {
         classroomId: true,
         name: true,
-        createdAt: true,
+        createdDate: true,
         description: true,
         thumbnailPath: true,
         status: true,
