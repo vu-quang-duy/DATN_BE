@@ -62,7 +62,6 @@ export class ClassroomService {
         studentId: true,
         student: {
           userId: true,
-          username: true,
           email: true,
         },
       },
@@ -111,7 +110,6 @@ export class ClassroomService {
       select: {
         teacher: {
           userId: true,
-          username: true,
         },
       },
       where: { classroomId },

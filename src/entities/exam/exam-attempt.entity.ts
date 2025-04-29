@@ -1,13 +1,12 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
-import { AbstractCreatedIdEntity } from '../entity.interface';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { StudentAnswer } from '../question/student-answer.entity';
 import { User } from '../user/user.entity';
 import { EXAM } from './exam.entity';
 
 @Entity(EntityNameConst.EXAM_ATTEMPT)
-export class ExamAttempt extends AbstractCreatedIdEntity {
+export class ExamAttempt extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'user_exam_id' }) // Định nghĩa ID mới
     userExamId: number;
   @DBColumn({
@@ -32,9 +31,27 @@ export class ExamAttempt extends AbstractCreatedIdEntity {
   score: number;
 
   @DBColumn({
+    type: 'bit',
     name: 'is_finish',
-    type: 'boolean',
-    default: false,
+    width: 1,
+    default: 0, // mặc định là 0 (false)
+    transformer: {
+      from: (value) => {
+        console.log('Raw value from DB:', value);
+        console.log('Type of value:', typeof value);
+    
+        if (Buffer.isBuffer(value)) {
+          const result = value.readUInt8(0) === 1;
+          console.log('Converted (buffer) isFinished:', result);
+          return result;
+        }
+    
+        const result = value === 1;
+        console.log('Converted (number) isFinished:', result);
+        return result;
+      },
+      to: (value) => (value ? 1 : 0),
+    },
   })
   isFinished: boolean;
 

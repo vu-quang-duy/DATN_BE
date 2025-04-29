@@ -7,17 +7,17 @@ import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { ConditionWhere } from 'src/types/query.type';
 import { FindOptionsSelect, ILike } from 'typeorm';
 import { PartView } from 'src/entities/class/part-view.entity';
+// import { ExamB } from 'src/entitiesB/exam.entity';
+
 export class UserHelper {
   static selectBasicInfo: FindOptionsSelect<User> = {
     userId: true,
-    username: true,
     name: true,
     email: true,
     phoneNumber: true,
     avatarLocation: true,
     gender: true,
     role: { roleCode: true },
-    slug: true,
   };
 
   static getFilterSearchUser = (q: SearchUserDto): ConditionWhere<User> => {
@@ -58,7 +58,7 @@ export class UserHelper {
     return { ...where };
   }
 
-  static handleUserStatistic = async (userId) => {
+  static handleUserStatistic = async (userId:number) => {
     await this.retryViewVocabulary(userId);
     await this.retryClassJoined(userId);
     await this.retryViewLesson(userId);
@@ -69,9 +69,6 @@ export class UserHelper {
   static retryViewVocabulary = async (userId: number) => {
     const userStatistic = await this.findOrCreateUserStatistic(userId);
     const viewCount = await VocabularyView.createQueryBuilder('vocabularyView')
-      // .select('sum(vocabularyView.viewCount)', 'viewCount')
-      // .where('vocabularyView.userId = :userId', { userId })
-      // .getRawOne();
       .select('COUNT(DISTINCT vocabularyView.vocabularyId)', 'viewCount') // Đếm số lượng từ duy nhất đã xem
       .where('vocabularyView.userId = :userId', { userId })
       .getRawOne();
@@ -84,9 +81,6 @@ export class UserHelper {
   static retryViewLesson = async (userId: number) => {
     const userStatistic = await this.findOrCreateUserStatistic(userId);
     const viewCount = await PartView.createQueryBuilder('partView')
-      // .select('sum(vocabularyView.viewCount)', 'viewCount')
-      // .where('vocabularyView.userId = :userId', { userId })
-      // .getRawOne();
       .select('COUNT(DISTINCT partView.lessonId)', 'viewCount') // Đếm số lượng từ duy nhất đã xem
       .where('partView.userId = :userId', { userId })
       .getRawOne();
@@ -99,32 +93,42 @@ export class UserHelper {
     const classJoinedCount = await ClassStudent.createQueryBuilder('classStudent')
       .where('classStudent.studentId = :userId', { userId })
       .getCount(); // Lấy số lượng bản ghi thay vì `getRawMany()`
-      // .innerJoinAndSelect('examAttempt.exam', 'exam')
-      // .select('exam.classRoomId', 'classRoomId')
-      // .addSelect('COUNT(examAttempt.id)', 'attemptCount')
-      // .where('examAttempt.studentId = :userId', { userId })
-      // .groupBy('exam.classRoomId')
-      // .getRawMany();
     userStatistic.totalClassesJoined = classJoinedCount;
     return await userStatistic.save();
   };
 
-  static retryTestCompleted = async (userId) => {
+  static retryTestCompleted = async (userId: number) => {
     const userStatistic = await this.findOrCreateUserStatistic(userId);
-    const testCompletedCount = await ExamAttempt.countBy({ studentId: userId, isFinished: true });
-    userStatistic.testsCompleted = testCompletedCount;
-    return await userStatistic.save();
+    const result = await ExamAttempt.createQueryBuilder('examAttempt')
+    .select('COUNT(DISTINCT examAttempt.examId)', 'testCompletedCount')
+    .where('examAttempt.studentId = :userId', { userId })
+    .andWhere('examAttempt.isFinished = true')
+    .getRawOne();
+
+  userStatistic.testsCompleted = Number(result?.testCompletedCount || 0);
+  return await userStatistic.save();
   };
 
-  static retryAverageScore = async (userId) => {
+  static retryAverageScore = async (userId: number) => {
     const userStatistic = await this.findOrCreateUserStatistic(userId);
-    const averageScore = await ExamAttempt.createQueryBuilder('examAttempt')
-      .select('AVG(examAttempt.score)', 'averageScore')
-      .where('examAttempt.studentId = :userId', { userId })
+
+    const result = await ExamAttempt.createQueryBuilder('examAttempt')
+      .select('AVG(sub.maxScore)', 'averageScore')
+      .from(subQuery => {
+        return subQuery
+          .select('examAttempt.examId', 'examId')
+          .addSelect('MAX(examAttempt.score)', 'maxScore')
+          .from(ExamAttempt, 'examAttempt')
+          .where('examAttempt.studentId = :userId', { userId })
+          .andWhere('examAttempt.isFinished = true')
+          .groupBy('examAttempt.examId');
+      }, 'sub')
       .getRawOne();
-    userStatistic.averageScore = averageScore.averageScore || 0;
+  
+    userStatistic.averageScore = Number(result?.averageScore || 0);
     return await userStatistic.save();
   };
+  
 
   static findOrCreateUserStatistic = async (userId) => {
     const userStatistic = await UserStatistic.findOneBy({ userId });

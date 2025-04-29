@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Body, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { EntityNameConst } from 'src/constant/entity-name';
 import { ApiHandleResponse } from 'src/decorator/api.decorator';
@@ -10,22 +11,19 @@ import { ExamService } from './exam.service';
 import { ExamAttempt } from 'src/entities/exam/exam-attempt.entity';
 import { SearchExamAttemptDto } from 'src/dto/exam/search-exam.dto';
 import { SaveExamDto } from 'src/dto/exam/save-exam.dto';
+import { ExamScoringDto, ResetExamDto } from 'src/dto/exam/exam-score.dto';
 
-@IsAuthController(EntityNameConst.EXAM, true)
+@IsAuthController(EntityNameConst.EXAM, false)
 export class ExamPermissionController implements Record<ExamAction, any> {
   constructor(private readonly examService: ExamService) {}
 
-  @Get('/all-exams-of-user')
+  @Get('/all-exams')
   @ApiHandleResponse({
     type: ExamAttempt,
-    summary: ExamSummary.SEARCH_ALL_EXAMS_FOR_USER,
+    summary: 'Get list exam for user'
   })
-  async [ExamAction.SEARCH_ALL_EXAMS_FOR_USER](@Req() req: RequestAuth, @Query() query: SearchExamAttemptDto) {
-    return await this.examService.searchAllExamAttemptForUser(
-      req.user.userId,
-      query,
-      ExamAction.SEARCH_ALL_EXAMS_FOR_USER,
-    );
+  async getListExam(@Query() query: SearchExamAttemptDto) {
+    return await this.examService.getListExam(query)
   }
 
   @Post('/')
@@ -88,4 +86,29 @@ export class ExamPermissionController implements Record<ExamAction, any> {
   async [ExamAction.DELETE_EXAM](@Req() req: RequestAuth, @Param('id') id: number) {
     return await this.examService.deleteById(id, req.user, ExamAction.DELETE_EXAM);
   }
+
+  @Post('/exam-scoring')
+  @ApiHandleResponse({
+    type: ExamAttempt,
+    summary: 'Scoring exam',
+  })
+  async examScoring(@Body() body: ExamScoringDto) {
+    return await this.examService.examScoring(body);
+  }
+
+  @Post('/reset/:examId')
+  @ApiHandleResponse({
+    type: ExamAttempt,
+    summary: 'Reset exam for redo',
+  })
+  async resetExam(
+    @Param('examId') examId: number,
+    @Body() body: ResetExamDto
+  ) {
+    return await this.examService.resetExam(
+      examId,
+      body
+    );
+  }
 }
+

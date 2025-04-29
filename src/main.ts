@@ -36,10 +36,10 @@ async function bootstrap() {
 
   await app.listen(port);
 // chinh lai khi dung deploy
-  logger.verbose(`====== App url: http://202.191.56.11:8088/${globalPrefix}`);
-  logger.verbose(`====== Swagger url: http://202.191.56.11:8088/${swaggerEndpoint}`);
-  // logger.verbose(`====== App url: http://localhost:8088/${globalPrefix}`);
-  // logger.verbose(`====== Swagger url: http://localhost:8088/${swaggerEndpoint}`);
+  // logger.verbose(`====== App url: http://202.191.56.11:8088/${globalPrefix}`);
+  // logger.verbose(`====== Swagger url: http://202.191.56.11:8088/${swaggerEndpoint}`);
+  logger.verbose(`====== App url: http://localhost:8088/${globalPrefix}`);
+  logger.verbose(`====== Swagger url: http://localhost:8088/${swaggerEndpoint}`);
 }
 
 bootstrap();

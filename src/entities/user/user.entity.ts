@@ -1,8 +1,6 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { AppStatus } from 'src/types/common';
-import { StringUtil } from 'src/utils/string';
-import { PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { PrimaryGeneratedColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { ClassTeacher } from '../class/class-teacher.entity';
 import { AbstractTimeEntity } from '../entity.interface';
 import { EXAM } from '../exam/exam.entity';
@@ -31,13 +29,6 @@ export class User extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'user_id' }) // Định nghĩa ID mới
   userId: number;
 
-  @DBColumn({
-    name: 'username',
-    type: 'varchar',
-    nullable: true,
-    unique: true,
-  })
-  username: string;
 
   @DBColumn({
     name: 'password',
@@ -82,13 +73,10 @@ export class User extends AbstractTimeEntity {
   address: string;
 
   @DBColumn({ type: 'datetime', name: 'birth_day', precision: 6, nullable: true })
-  birthday:Date;
+  birthDay:Date;
 
   @DBColumn({ type: 'enum', name: 'gender', enum: Gender, default: Gender.MALE })
   gender: Gender;
-
-  @DBColumn({ type: 'boolean', name: 'is_super_admin', default: false })
-  isSupperAdmin: boolean;
 
   // @DBColumn({ type: 'bigint', name: 'code', nullable: true })
   // code: number;
@@ -96,11 +84,21 @@ export class User extends AbstractTimeEntity {
   @DBColumn({ type: 'varchar', name: 'code', nullable: true })
   code: string;
 
-  @DBColumn({ name: 'slug', type: 'varchar', nullable: true })
-  slug: string;
+  @DBColumn({
+    type: 'bit',
+    name: 'is_deleted',
+    width: 1,
+    default: 0, // mặc định là 0 (false)
+  })
+  isDeleted: boolean;
 
-  @DBColumn({ name: 'status', type: 'enum', enum: AppStatus, default: AppStatus.APPROVED })
-  status: AppStatus;
+  @DBColumn({
+    type: 'bit',
+    name: 'is_approved',
+    width: 1,
+    default: 0, // mặc định là 0 (false)
+  })
+  isApproved: boolean;
 
   // RELATIONSHIP
   @ManyToOne(() => Role, (role) => role.users, { onDelete: 'SET NULL' })
@@ -185,14 +183,4 @@ export class User extends AbstractTimeEntity {
     nullable: true,
   })
   city: string;
-
-  @BeforeInsert()
-  handleBeforeInsert() {
-    this.slug = StringUtil.createSlug(this.name);
-  }
-
-  @BeforeUpdate()
-  handleBeforeUpdate() {
-    this.slug = StringUtil.createSlug(this.name);
-  }
 }

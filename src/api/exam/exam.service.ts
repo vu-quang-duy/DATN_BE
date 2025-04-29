@@ -20,10 +20,15 @@ import { HelperUtils } from 'src/utils/helpers';
 import { QueryUtil } from 'src/utils/query';
 import { DataSource, In } from 'typeorm';
 import { ExamAttempt } from './../../entities/exam/exam-attempt.entity';
-
+// import { ExamAttemptB } from './../../entitiesB/exam-attempt.entity';
+import { ExamB } from './../../entitiesB/exam.entity';
+import { ExamScoringDto, ResetExamDto } from 'src/dto/exam/exam-score.dto';
 @Injectable()
 export class ExamService {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectDataSource('dbB') private readonly dataSourceB: DataSource) {}
+  
 
   search = async (query: SearchExamDto): Promise<PageDto<EXAM>> => {
     const [data, itemCount] = await EXAM.findAndCount({
@@ -31,10 +36,8 @@ export class ExamService {
         examId: true,
         name: true,
         classRoomId: true,
-        description: true,
         createdDate: true,
         creatorId: true,
-        numberOfQuestions: true,
         private: true,
         classroom: {
           classroomId: true,
@@ -52,45 +55,103 @@ export class ExamService {
     return GenerateUtil.paginate({ data, itemCount, query });
   };
 
-  searchAllExamAttemptForUser = async (userId, query: SearchExamAttemptDto, permissionCode) => {
-    const isPermission = await PermissionHelper.isPermissionChange(userId, permissionCode);
-    if (!isPermission) {
-      throw new App404Exception('permissionCode', { permissionCode });
-    }
+  getListExam = async (query: SearchExamAttemptDto) => {
+    const examRepo = this.dataSourceB.getRepository(ExamB);
+    const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+  
+    // 1. Lấy toàn bộ bài kiểm tra (exam)
+    const exams = await examRepo
+      .createQueryBuilder("exam")
+      .select(["exam.examId", "exam.name"])
+      .getMany();
 
-    const [data, itemCount] = await ExamAttempt.findAndCount({
-      select: {
-        userExamId: true,
-        score: true,
-        createdDate: true,
-        studentId: true,
-        isFinished: true,
-        exam: {
-          examId: true,
-          name: true,
-          classRoomId: true,
-          numberOfQuestions: true,
-          private: true,
-          classroom: {
-            classroomId: true,
-            name: true,
-            classLevel: true,
-          },
-        },
-      },
-      where: {
-        studentId: userId,
-        ...ExamHelper.getFilterSearchExamAttempt(query),
-      },
-      relations: { exam: { classroom: true } },
-      order: QueryUtil.getSort(query.orderBy, query.sortBy),
-      skip: query.skip,
-      take: query.take,
+    // 2. Lấy toàn bộ exam attempt của user
+    const examAttempts = await examAttemptRepo
+      .createQueryBuilder("user_exam_mapping")
+      .select([
+        "user_exam_mapping.score",
+        "user_exam_mapping.studentId",
+        "user_exam_mapping.isFinished",
+        "user_exam_mapping.examId",
+      ])
+      .where("user_exam_mapping.studentId = :studentId", { studentId: query.userId })
+      .getMany();
+
+    // 3. Gộp attempt theo examId
+    const attemptMap: Record<number, any> = {};
+  
+    examAttempts.forEach(item => {
+      if (!attemptMap[item.examId]) {
+        attemptMap[item.examId] = {
+          ...item,
+          attemptCount: item.isFinished ? 1 : 0,
+        };
+      } else {
+        const existing = attemptMap[item.examId];
+  
+        // Update score cao nhất
+        if (item.score > existing.score) {
+          existing.score = item.score;
+        }
+  
+        // Nếu có lần nào finish thì isFinished = true
+        if (item.isFinished) {
+          existing.isFinished = true;
+        }
+  
+        // Cộng thêm attemptCount nếu lần này finish
+        existing.attemptCount += item.isFinished ? 1 : 0;
+      }
     });
+  
+    // 4. Merge kết quả: bài đã làm + bài chưa làm
+    const finalData = exams.map(exam => {
+      const attempt = attemptMap[exam.examId];
+  
+      if (attempt) {
+        return {
+          studentId: attempt.studentId,
+          examId: exam.examId,
+          examName: exam.name,
+          score: attempt.score,
+          isFinished: attempt.isFinished,
+          attemptCount: attempt.attemptCount,
+        };
+      } else {
+        // Bài chưa làm
+        return {
+          studentId: query.userId,
+          examId: exam.examId,
+          examName: exam.name,
+          score: 0,
+          isFinished: false,
+          attemptCount: 0,
+        };
+      }
+    });
+  
+    // 5. Sắp xếp và paginate
+    const validOrderFields = ["examId", "score", "studentId", "isFinished"];
+    const orderField = query.orderBy && validOrderFields.includes(query.orderBy)
+      ? query.orderBy
+      : "examId";
+  
+    const orderDirection = query.sortBy?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+  
+    finalData.sort((a, b) => {
+      if (orderDirection === "ASC") {
+        return a[orderField] > b[orderField] ? 1 : -1;
+      } else {
+        return a[orderField] < b[orderField] ? 1 : -1;
+      }
+    });
+  
+    const paginatedData = finalData.slice(query.skip, query.skip + query.take);
 
-    return GenerateUtil.paginate({ data, itemCount, query });
+    return GenerateUtil.paginate({ data: paginatedData, itemCount: finalData.length, query });
   };
-
+  
+  
   async create(userId: number, body: CreateExamDto, permissionCode) {
     const isExistByName = await HelperUtils.existByName(EXAM, body.name, 'name');
     if (isExistByName) throw new AppExistedException('name', body);
@@ -101,12 +162,9 @@ export class ExamService {
     const exam = new EXAM();
     await this.dataSource.transaction(async (txEntityManager) => {
       exam.name = body.name;
-      exam.description = body.description;
       exam.classRoomId = body.classRoomId;
       exam.private = body.private;
       exam.creatorId = userId;
-      exam.numberOfQuestions = body.numberOfQuestions;
-      exam.thumbnailPath = body.thumbnailPath;
 
       await txEntityManager.save(exam);
 
@@ -185,7 +243,6 @@ export class ExamService {
           await examQuestion.save();
         }),
     ]);
-    exam.numberOfQuestions = body.questionIds.length;
     await exam.save();
     return await this.getById(exam.examId);
   };
@@ -318,4 +375,65 @@ export class ExamService {
       }
     });
   };
+
+  async examScoring(body: ExamScoringDto) {
+    const { examId, score, userId, isFinished } = body;
+
+    const examBRepo = this.dataSource.getRepository(ExamAttempt);
+      await examBRepo
+            .createQueryBuilder()
+            .insert()
+            .into(ExamAttempt)
+            .values({
+              studentId: userId,
+              examId,
+              score,
+              isFinished
+            })
+            .execute();
+    return { success: true };
+  }
+
+  async resetExam(examId: number, body: ResetExamDto) {
+    const { userId } = body;
+    
+    const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+    
+    // Check if the exam exists for this user
+    const existingAttempts = await examAttemptRepo
+      .createQueryBuilder("attempt")
+      .where("attempt.studentId = :userId AND attempt.examId = :examId", 
+             { userId, examId })
+      .getMany();
+
+    // Calculate current attempt count and highest score
+    const finishedAttempts = existingAttempts.filter(attempt => attempt.isFinished);
+    const attemptCount = finishedAttempts.length;
+    
+    // Find highest score
+    let highestScore = 0;
+    if (finishedAttempts.length > 0) {
+      highestScore = Math.max(...finishedAttempts.map(attempt => attempt.score));
+    }
+    
+    // Create a new attempt record with isFinished = false
+    await examAttemptRepo
+      .createQueryBuilder()
+      .insert()
+      .into(ExamAttempt)
+      .values({
+        studentId: userId,
+        examId,
+        score: 0,
+        isFinished: false,
+      })
+      .execute();
+    
+    return { 
+      success: true, 
+      message: 'Exam reset successfully', 
+      attemptCount, 
+      highestScore 
+    };
+  }
 }

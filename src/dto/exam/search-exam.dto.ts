@@ -17,7 +17,7 @@ export class SearchExamDto extends PageOptionsDto {
 
 export class SearchExamAttemptDto extends PageOptionsDto {
   @IsSwaggerNumber({}, false)
-  readonly studentId: number;
+  readonly userId: number;
 
   @IsSwaggerBoolean({}, false)
   readonly isFinished: boolean;
@@ -26,5 +26,5 @@ export class SearchExamAttemptDto extends PageOptionsDto {
   readonly examId: number;
 
   @IsSwaggerNumber({}, false)
-  readonly classRoomId: number;
+  readonly score: number;
 }

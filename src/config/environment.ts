@@ -15,6 +15,13 @@ export const ENV = {
     DB_USERNAME: process.env.DB_USERNAME,
     DB_PASSWORD: process.env.DB_PASSWORD,
     DB_NAME: process.env.DB_NAME,
+    //WESIGN
+    DB_B_TYPE: process.env.DB_B_TYPE,
+    DB_B_HOST: process.env.DB_B_HOST,
+    DB_B_PORT: Number(process.env.DB_B_PORT),
+    DB_B_USERNAME: process.env.DB_B_USERNAME,
+    DB_B_PASSWORD: process.env.DB_B_PASSWORD,
+    DB_B_NAME: process.env.DB_B_NAME,
   },
   REDIS: {
     REDIS_HOST: process.env.REDIS_HOST,

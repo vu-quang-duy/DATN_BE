@@ -28,7 +28,6 @@ export interface CacheUser {
   // code: number;
   code: string;
   actions: string[];
-  isSupperAdmin: boolean;
 }
 export interface RequestAuth extends Request {
   user: CacheUser;

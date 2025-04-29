@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SearchExamAttemptDto, SearchExamDto } from 'src/dto/exam/search-exam.dto';
 import { ExamAttempt } from 'src/entities/exam/exam-attempt.entity';
 import { EXAM } from 'src/entities/exam/exam.entity';
@@ -17,17 +18,17 @@ export class ExamHelper {
     return { ...userWhere };
   };
 
-  static getFilterSearchExamAttempt = (q: SearchExamAttemptDto): ConditionWhere<ExamAttempt> => {
-    let where: ConditionWhere<ExamAttempt> = {};
-    let examWhere: ConditionWhere<EXAM> = {};
-    where = {
-      ...(q.studentId && { studentId: q.studentId }),
-      ...(q.isFinished && { isFinished: q.isFinished }),
-      ...(q.examId && { examId: q.examId }),
-    };
+  // static getFilterSearchExamAttempt = (q: SearchExamAttemptDto): ConditionWhere<ExamAttempt> => {
+  //   let where: ConditionWhere<ExamAttempt> = {};
+  //   let examWhere: ConditionWhere<EXAM> = {};
+  //   where = {
+  //     ...(q.studentId && { studentId: q.studentId }),
+  //     ...(q.isFinished && { isFinished: q.isFinished }),
+  //     ...(q.examId && { examId: q.examId }),
+  //   };
 
-    examWhere = { ...(q.classRoomId && { classRoomId: q.classRoomId }) };
+  //   examWhere = { ...(q.classRoomId && { classRoomId: q.classRoomId }) };
 
-    return { ...where, exam: { ...examWhere } };
-  };
+  //   return { ...where, exam: { ...examWhere } };
+  // };
 }

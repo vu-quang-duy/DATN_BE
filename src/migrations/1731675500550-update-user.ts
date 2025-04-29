@@ -13,7 +13,7 @@ export class UpdateUser1731675500550 implements MigrationInterface {
 
     await queryRunner.addColumns(EntityNameConst.USER, [
       new TableColumn(MigrationConst.charColumn('address', { isNullable: true })),
-      new TableColumn(MigrationConst.charColumn('birthday', { isNullable: true })),
+      new TableColumn(MigrationConst.charColumn('birthDay', { isNullable: true })),
       new TableColumn(MigrationConst.enumColumn('gender', Gender, { default: `'${Gender.MALE}'` })),
     ]);
   }
@@ -24,6 +24,6 @@ export class UpdateUser1731675500550 implements MigrationInterface {
       'avatar_location',
       new TableColumn(MigrationConst.charColumn('avatar', { isNullable: true })),
     );
-    await queryRunner.dropColumns(EntityNameConst.USER, ['address', 'birthday', 'gender']);
+    await queryRunner.dropColumns(EntityNameConst.USER, ['address', 'birthDay', 'gender']);
   }
 }

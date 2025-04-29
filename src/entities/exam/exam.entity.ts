@@ -1,8 +1,6 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { AppStatus } from 'src/types/common';
-import { StringUtil } from 'src/utils/string';
-import { PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { PrimaryGeneratedColumn, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { ClassRoom } from '../class/classroom.entity';
 import { AbstractTimeEntity } from '../entity.interface';
 import { User } from '../user/user.entity';
@@ -19,13 +17,6 @@ export class EXAM extends AbstractTimeEntity {
     type: 'varchar',
   })
   name: string;
-
-  @DBColumn({
-    name: 'description',
-    type: 'varchar',
-    nullable: true,
-  })
-  description: string;
 
   @DBColumn({
     name: 'class_room_id',
@@ -46,19 +37,6 @@ export class EXAM extends AbstractTimeEntity {
   })
   createdBy: string;
 
-  @DBColumn({
-    name: 'number_of_questions',
-    type: 'int',
-    default: 0,
-  })
-  numberOfQuestions: number;
-
-  @DBColumn({
-    name: 'thumbnail_path',
-    type: 'varchar',
-    nullable: true,
-  })
-  thumbnailPath: string;
 
   @DBColumn({
     name: 'is_private',
@@ -73,11 +51,6 @@ export class EXAM extends AbstractTimeEntity {
 })
   private: boolean;
 
-  @DBColumn({ name: 'slug', type: 'varchar', nullable: true })
-  slug: string;
-
-  @DBColumn({ name: 'status', type: 'enum', enum: AppStatus, default: AppStatus.PENDING })
-  status: AppStatus;
 
   // RELATIONSHIP
 
@@ -99,13 +72,4 @@ export class EXAM extends AbstractTimeEntity {
   @OneToMany(() => ExamQuestion, (examQuestion) => examQuestion.exam)
   questions: ExamQuestion[];
 
-  @BeforeInsert()
-  handleBeforeInsert() {
-    this.slug = StringUtil.createSlug(this.name);
-  }
-
-  @BeforeUpdate()
-  handleBeforeUpdate() {
-    this.slug = StringUtil.createSlug(this.name);
-  }
 }

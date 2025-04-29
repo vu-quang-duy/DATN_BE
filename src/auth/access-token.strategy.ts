@@ -82,7 +82,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         name: user.name,
         // code: user.code,
         code: user.code,
-        isSupperAdmin: user.isSupperAdmin,
         actions,
       };
       await this.cacheManager.set(cacheKeyAuth, cacheUser, { ttl: 86400 });

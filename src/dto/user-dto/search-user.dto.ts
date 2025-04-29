@@ -32,6 +32,9 @@ export class SearchStudentDto extends PageOptionsDto {
 
   @IsSwaggerNumber({}, false)
   readonly classRoomId: number;
+
+  @IsSwaggerNumber({}, false)
+  readonly schoolId: number;
 }
 
 export class SearchTeacherDto extends PageOptionsDto {
@@ -41,9 +44,18 @@ export class SearchTeacherDto extends PageOptionsDto {
 
   @IsSwaggerNumber({}, false)
   readonly classRoomId: number;
+
+  @IsSwaggerNumber({}, false)
+  readonly schoolId: number;
 }
 
 export class SearchSchoolDto extends PageOptionsDto {
+  @IsSwaggerString({}, false)
+  @Transform(({ value }) => value.trim())
+  readonly name: string;
+}
+
+export class SearchClassDto extends PageOptionsDto {
   @IsSwaggerString({}, false)
   @Transform(({ value }) => value.trim())
   readonly name: string;

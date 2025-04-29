@@ -12,7 +12,7 @@ export class UpdateUserProfileDto {
   readonly phoneNumber: string;
 
   @IsSwaggerString({}, false)
-  readonly birthday: string;
+  readonly birthDay: string;
 
   @IsSwaggerString({}, false)
   readonly address: string;
