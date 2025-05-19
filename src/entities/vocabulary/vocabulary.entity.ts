@@ -9,6 +9,7 @@ import { AbstractTimeEntity } from '../entity.interface';
 import { User } from '../user/user.entity';
 import { Topic } from './topic.entity';
 import { VocabularyView } from './vocabulary-view.entity';
+import { ExamVocabulary } from '../exam/exam-vocabulary.entity';
 
 @Entity(EntityNameConst.VOCABULARY)
 export class Vocabulary extends AbstractTimeEntity {
@@ -149,4 +150,7 @@ export class Vocabulary extends AbstractTimeEntity {
   handleBeforeUpdate() {
     this.slug = StringUtil.createSlug(this.content);
   }
+
+  @OneToMany(() => ExamVocabulary, (examQuestion) => examQuestion.vocabulary)
+  exams: ExamVocabulary[];
 }

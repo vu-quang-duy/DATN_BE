@@ -1,62 +1,3 @@
-# version: '3.5'
-
-# networks:
-#   sign-school-network:
-#     driver: bridge
-
-# volumes: # add this section
-#   sign-school-pg-volume:
-#   sign-school-redis-volume:
-
-# services:
-#   db:
-#     container_name: sign-school-database-pg-${NODE_ENV}
-#     image: postgres:15.2
-#     restart: always
-#     env_file:
-#       - .env
-#     networks:
-#       - sign-school-network
-#     environment:
-#       POSTGRES_USER: ${DB_USERNAME}
-#       POSTGRES_PASSWORD: ${DB_PASSWORD}
-#       POSTGRES_DB: ${DB_NAME}
-#     volumes:
-#       - sign-school-pg-volume:/var/lib/pg/data
-#     ports:
-#       - ${DB_PORT}:5432
-#   redis:
-#     container_name: sign-school-redis-${NODE_ENV}
-#     image: redis:7.2.4
-#     restart: always
-#     env_file:
-#       - .env
-#     networks:
-#       - sign-school-network
-#     volumes:
-#       - sign-school-redis-volume:/data
-#     ports:
-#       - ${REDIS_PORT}:6379
-#   app:
-#     container_name: sign-school-app-container-${NODE_ENV}
-#     build:
-#       context: .
-#       target: production
-#     env_file:
-#       - .env
-#     restart: unless-stopped
-#     environment:
-#       DB_HOST: db
-#       DB_PORT: 5432
-#       REDIS_HOST: redis
-#       REDIS_PORT: 6379
-#     ports:
-#       - ${PORT}:${PORT}
-#     networks:
-#       - sign-school-network
-#     depends_on:
-#       - db
-#       - redis
 version: '3.6'
 
 networks:
@@ -78,8 +19,6 @@ services:
       - datn-network
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      # MYSQL_USER: ${DB_USERNAME}
-      # MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - datn-mysql-volume:/var/lib/mysql

@@ -6,7 +6,6 @@ import { AbstractTimeEntity } from '../entity.interface';
 import { User } from '../user/user.entity';
 import { ExamAttempt } from './exam-attempt.entity';
 import { ExamQuestion } from './exam-question.entity';
-
 @Entity(EntityNameConst.EXAM)
 export class EXAM extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'exam_id' }) // Định nghĩa ID mới

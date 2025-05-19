@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { Audit } from 'entity-diff';
 import { ERROR_MSG } from 'src/constant/error';
 import { CacheUser } from 'src/dto/common-request.dto';
-import { CreateExamDto, UpdateExamDto } from 'src/dto/exam/create-exam.dto';
+import { CreatePracticeExamDto, UpdateExamDto } from 'src/dto/exam/create-exam.dto';
 import { SaveExamDto } from 'src/dto/exam/save-exam.dto';
 import { SearchExamAttemptDto, SearchExamDto } from 'src/dto/exam/search-exam.dto';
 import { PageDto } from 'src/dto/paginate.dto';
@@ -20,9 +20,11 @@ import { HelperUtils } from 'src/utils/helpers';
 import { QueryUtil } from 'src/utils/query';
 import { DataSource, In } from 'typeorm';
 import { ExamAttempt } from './../../entities/exam/exam-attempt.entity';
+import { ExamVocabulary } from 'src/entities/exam/exam-vocabulary.entity';
 // import { ExamAttemptB } from './../../entitiesB/exam-attempt.entity';
 import { ExamB } from './../../entitiesB/exam.entity';
 import { ExamScoringDto, ResetExamDto } from 'src/dto/exam/exam-score.dto';
+import { Vocabulary } from 'src/entities/vocabulary/vocabulary.entity';
 @Injectable()
 export class ExamService {
   constructor(
@@ -56,133 +58,186 @@ export class ExamService {
   };
 
   getListExam = async (query: SearchExamAttemptDto) => {
+  const examRepo = this.dataSourceB.getRepository(ExamB);
+  const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+  const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+
+  // 1. Lấy toàn bộ bài kiểm tra
+  const exams = await examRepo
+    .createQueryBuilder("exam")
+    .select(["exam.examId", "exam.name"])
+    .getMany();
+
+  // ✅ 2. Lấy danh sách examId của các bài practice
+  const practiceExamIdsRaw = await examVocabularyRepo
+    .createQueryBuilder("ev")
+    .select("DISTINCT ev.examId", "examId")
+    .getRawMany();
+
+  const practiceExamIdSet = new Set(practiceExamIdsRaw.map(e => e.examId));
+
+  // 3. Lấy toàn bộ exam attempt của user
+  const examAttempts = await examAttemptRepo
+    .createQueryBuilder("user_exam_mapping")
+    .select([
+      "user_exam_mapping.score",
+      "user_exam_mapping.studentId",
+      "user_exam_mapping.isFinished",
+      "user_exam_mapping.examId",
+    ])
+    .where("user_exam_mapping.studentId = :studentId", { studentId: query.userId })
+    .getMany();
+
+  // 4. Gộp attempt theo examId
+  const attemptMap: Record<number, any> = {};
+
+  examAttempts.forEach(item => {
+    if (!attemptMap[item.examId]) {
+      attemptMap[item.examId] = {
+        ...item,
+        attemptCount: item.isFinished ? 1 : 0,
+      };
+    } else {
+      const existing = attemptMap[item.examId];
+
+      if (item.score > existing.score) {
+        existing.score = item.score;
+      }
+
+      if (item.isFinished) {
+        existing.isFinished = true;
+      }
+
+      existing.attemptCount += item.isFinished ? 1 : 0;
+    }
+  });
+
+  // 5. Merge kết quả
+  const finalData = exams.map(exam => {
+    const attempt = attemptMap[exam.examId];
+    const examType = practiceExamIdSet.has(exam.examId) ? "practice" : "quiz";
+
+    if (attempt) {
+      return {
+        studentId: attempt.studentId,
+        examId: exam.examId,
+        examName: exam.name,
+        score: attempt.score,
+        isFinished: attempt.isFinished,
+        attemptCount: attempt.attemptCount,
+        examType,
+      };
+    } else {
+      return {
+        studentId: query.userId,
+        examId: exam.examId,
+        examName: exam.name,
+        score: 0,
+        isFinished: false,
+        attemptCount: 0,
+        examType,
+      };
+    }
+  });
+
+  // 6. Sắp xếp và phân trang
+  const validOrderFields = ["examId", "score", "studentId", "isFinished"];
+  const orderField = query.orderBy && validOrderFields.includes(query.orderBy)
+    ? query.orderBy
+    : "examId";
+
+  const orderDirection = query.sortBy?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+  finalData.sort((a, b) => {
+    if (orderDirection === "ASC") {
+      return a[orderField] > b[orderField] ? 1 : -1;
+    } else {
+      return a[orderField] < b[orderField] ? 1 : -1;
+    }
+  });
+
+  const paginatedData = finalData.slice(query.skip, query.skip + query.take);
+
+  return GenerateUtil.paginate({ data: paginatedData, itemCount: finalData.length, query });
+};
+
+  
+  addPracticeExam = async(body: CreatePracticeExamDto) => {
+    const {name, classRoomId, isPrivate,  practiceWords} = body;
     const examRepo = this.dataSourceB.getRepository(ExamB);
-    const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
-  
-    // 1. Lấy toàn bộ bài kiểm tra (exam)
-    const exams = await examRepo
-      .createQueryBuilder("exam")
-      .select(["exam.examId", "exam.name"])
-      .getMany();
+    const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
 
-    // 2. Lấy toàn bộ exam attempt của user
-    const examAttempts = await examAttemptRepo
-      .createQueryBuilder("user_exam_mapping")
-      .select([
-        "user_exam_mapping.score",
-        "user_exam_mapping.studentId",
-        "user_exam_mapping.isFinished",
-        "user_exam_mapping.examId",
-      ])
-      .where("user_exam_mapping.studentId = :studentId", { studentId: query.userId })
-      .getMany();
+     const exam = await examRepo
+    .createQueryBuilder()
+    .insert()
+    .into(ExamB)
+    .values({
+      name, 
+      classRoomId,
+      isPrivate
+    })
+    .execute();
 
-    // 3. Gộp attempt theo examId
-    const attemptMap: Record<number, any> = {};
-  
-    examAttempts.forEach(item => {
-      if (!attemptMap[item.examId]) {
-        attemptMap[item.examId] = {
-          ...item,
-          attemptCount: item.isFinished ? 1 : 0,
-        };
-      } else {
-        const existing = attemptMap[item.examId];
-  
-        // Update score cao nhất
-        if (item.score > existing.score) {
-          existing.score = item.score;
-        }
-  
-        // Nếu có lần nào finish thì isFinished = true
-        if (item.isFinished) {
-          existing.isFinished = true;
-        }
-  
-        // Cộng thêm attemptCount nếu lần này finish
-        existing.attemptCount += item.isFinished ? 1 : 0;
-      }
-    });
-  
-    // 4. Merge kết quả: bài đã làm + bài chưa làm
-    const finalData = exams.map(exam => {
-      const attempt = attemptMap[exam.examId];
-  
-      if (attempt) {
-        return {
-          studentId: attempt.studentId,
-          examId: exam.examId,
-          examName: exam.name,
-          score: attempt.score,
-          isFinished: attempt.isFinished,
-          attemptCount: attempt.attemptCount,
-        };
-      } else {
-        // Bài chưa làm
-        return {
-          studentId: query.userId,
-          examId: exam.examId,
-          examName: exam.name,
-          score: 0,
-          isFinished: false,
-          attemptCount: 0,
-        };
-      }
-    });
-  
-    // 5. Sắp xếp và paginate
-    const validOrderFields = ["examId", "score", "studentId", "isFinished"];
-    const orderField = query.orderBy && validOrderFields.includes(query.orderBy)
-      ? query.orderBy
-      : "examId";
-  
-    const orderDirection = query.sortBy?.toUpperCase() === "ASC" ? "ASC" : "DESC";
-  
-    finalData.sort((a, b) => {
-      if (orderDirection === "ASC") {
-        return a[orderField] > b[orderField] ? 1 : -1;
-      } else {
-        return a[orderField] < b[orderField] ? 1 : -1;
-      }
-    });
-  
-    const paginatedData = finalData.slice(query.skip, query.skip + query.take);
+    const examId =Number(exam.identifiers[0].examId);
 
-    return GenerateUtil.paginate({ data: paginatedData, itemCount: finalData.length, query });
-  };
-  
-  
-  async create(userId: number, body: CreateExamDto, permissionCode) {
-    const isExistByName = await HelperUtils.existByName(EXAM, body.name, 'name');
-    if (isExistByName) throw new AppExistedException('name', body);
-
-    const isPermission = await PermissionHelper.isPermissionChange(userId, permissionCode);
-    if (!isPermission) throw new App404Exception('permissionCode', { permissionCode });
-
-    const exam = new EXAM();
-    await this.dataSource.transaction(async (txEntityManager) => {
-      exam.name = body.name;
-      exam.classRoomId = body.classRoomId;
-      exam.private = body.private;
-      exam.creatorId = userId;
-
-      await txEntityManager.save(exam);
-
-      if (body.questionIds && body.questionIds.length > 0) {
-        const examQuestions = body.questionIds.map((questionId) => {
-          const examQuestion = new ExamQuestion();
-          examQuestion.questionId = questionId;
-          examQuestion.examId = exam.examId;
-          return examQuestion;
-        });
-
-        // Lưu examQuestions
-        await txEntityManager.save(ExamQuestion, examQuestions);
-      }
-    });
-
-    return await this.getById(exam.examId);
+    await examVocabularyRepo
+      .createQueryBuilder()
+      .insert()
+      .into(ExamVocabulary)
+      .values(
+        practiceWords.map((word) => ({
+          vocabularyId: word.vocabularyId,
+          examId: examId,
+          content: word.content, 
+        }))
+      )
+      .execute();
   }
+
+    getDetailPracticeExam = async (examId: number) => {
+    const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+    const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
+
+    // 1. Lấy danh sách từ ExamVocabulary theo examId
+    const [data, itemCount] = await examVocabularyRepo
+      .createQueryBuilder('vocabulary_exam_mapping')
+      .where('vocabulary_exam_mapping.examId = :examId', { examId })
+      .select([
+        'vocabulary_exam_mapping.vocabularyId',
+        'vocabulary_exam_mapping.content',
+      ])
+      .getManyAndCount();
+
+    // 2. Với mỗi vocabularyId, lấy content từ Vocabulary
+    const vocabularyIds = data.map((item) => item.vocabularyId);
+
+    const vocabularies = await vocabularyRepo
+      .createQueryBuilder('vocabulary')
+      .whereInIds(vocabularyIds)
+      .select(['vocabulary.vocabularyId', 'vocabulary.content'])
+      .getMany();
+
+    // 3. Map vocabularyId => content
+    const vocabMap = new Map(
+      vocabularies.map((vocab) => [vocab.vocabularyId, vocab.content])
+    );
+
+    // 4. Format dữ liệu trả về
+    const formattedData = data.map((exam) => {
+      return {
+        examId: examId,
+        vocabularyId: exam.vocabularyId,
+        contentFromExamVocabulary: exam.content,
+        contentFromVocabulary: vocabMap.get(exam.vocabularyId) || null,
+      };
+    });
+    console.log("data ve FE", formattedData)
+    return {
+      data: formattedData,
+      total: itemCount,
+    };
+  };
+
 
   getById = async (examId: number): Promise<EXAM> => {
     const exam = await EXAM.findOne({

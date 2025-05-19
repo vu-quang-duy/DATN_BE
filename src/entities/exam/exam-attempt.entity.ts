@@ -36,13 +36,9 @@ export class ExamAttempt extends BaseEntity {
     width: 1,
     default: 0, // mặc định là 0 (false)
     transformer: {
-      from: (value) => {
-        console.log('Raw value from DB:', value);
-        console.log('Type of value:', typeof value);
-    
+      from: (value) => {  
         if (Buffer.isBuffer(value)) {
           const result = value.readUInt8(0) === 1;
-          console.log('Converted (buffer) isFinished:', result);
           return result;
         }
     

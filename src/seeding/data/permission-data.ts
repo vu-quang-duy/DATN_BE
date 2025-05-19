@@ -1,5 +1,4 @@
 import { ClassRoomPermission } from 'src/api/classroom/classroom-permission.interface';
-import { ExamPermission } from 'src/api/exam/exam-permission.interface';
 import { QuestionPermission } from 'src/api/question/question-permission.interface';
 import { TopicPermission } from 'src/api/topic/topic-permission.interface';
 import { UploadPermission } from 'src/api/upload/upload-permission.interface';
@@ -14,5 +13,4 @@ export const PermissionData: Partial<Permission>[] = [
   ...VocabularyPermission,
   ...TopicPermission,
   ...QuestionPermission,
-  ...ExamPermission,
 ];

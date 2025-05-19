@@ -16,6 +16,7 @@ export const EntityNameConst = Object.freeze({
   PART: 'part',
   PART_VIEW: 'part_view',
   EXAM: 'exam',
+  EXAM_VOCABULARY: 'vocabulary_exam_mapping',
   QUESTION: 'question',
   EXAM_ATTEMPT: 'user_exam_mapping',
   ANSWER: 'answer',

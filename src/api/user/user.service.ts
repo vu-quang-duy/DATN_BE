@@ -391,7 +391,6 @@ export class UserService {
       .addGroupBy("exam.name")
       .addGroupBy("examAttempt.studentId")
       .getRawMany();
-  console.log('tiendo', rawData)
     // 2. Chuẩn hóa và xử lý sort/pagination
     return rawData.map((row) => ({
       examId: Number(row.examId),
@@ -586,7 +585,8 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
 
   getClassList = async (query: SearchClassDto) => {
     const [data, itemCount] = await ClassRoom.createQueryBuilder('classRoom')
-      .orderBy('classRoom.classroomId', query.sortBy ?? 'DESC')
+      .where('classRoom.classroomId > :id', { id: 47 })
+      .orderBy('classRoom.classroomId', query.sortBy ?? 'ASC')
       .skip(query.skip)
       .take(query.take)
       .select([
@@ -606,7 +606,6 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
   
   updateUser = async (userId: number, body: UpdateUserDto) => {
     const { name, birthDay, address, classRoomName, schoolName } = body;
-  
     // Kiểm tra user có tồn tại không
     const user = await User
       .createQueryBuilder('user')
@@ -708,7 +707,7 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
       .execute();
   }
 
-  return { message: 'Student updated successfully' };
+  return { message: 'Teacher updated successfully' };
 }
 
   deleteUser = async (userId: number) => {
