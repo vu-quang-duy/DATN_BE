@@ -24,8 +24,9 @@ export class ExamPermissionController {
     summary: 'Get list exam for user'
   })
   async getListExam(@Query() query: SearchExamAttemptDto) {
-    return await this.examService.getListExam(query)
-  }
+    const res = await this.examService.getListExam(query);
+    return res;
+}
 
   @Post('/exam-saved')
   @ApiHandleResponse({

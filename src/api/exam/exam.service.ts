@@ -57,7 +57,110 @@ export class ExamService {
     return GenerateUtil.paginate({ data, itemCount, query });
   };
 
-  getListExam = async (query: SearchExamAttemptDto) => {
+//   getListExam = async (query: SearchExamAttemptDto) => {
+//   const examRepo = this.dataSourceB.getRepository(ExamB);
+//   const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+//   const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+
+//   // 1. Lấy toàn bộ bài kiểm tra
+//   const exams = await examRepo
+//     .createQueryBuilder("exam")
+//     .select(["exam.examId", "exam.name"])
+//     .getMany();
+
+//   // ✅ 2. Lấy danh sách examId của các bài practice
+//   const practiceExamIdsRaw = await examVocabularyRepo
+//     .createQueryBuilder("ev")
+//     .select("DISTINCT ev.examId", "examId")
+//     .getRawMany();
+
+//   const practiceExamIdSet = new Set(practiceExamIdsRaw.map(e => Number(e.examId)));
+
+//   // 3. Lấy toàn bộ exam attempt của user
+//   const examAttempts = await examAttemptRepo
+//     .createQueryBuilder("user_exam_mapping")
+//     .select([
+//       "user_exam_mapping.score",
+//       "user_exam_mapping.studentId",
+//       "user_exam_mapping.isFinished",
+//       "user_exam_mapping.examId",
+//     ])
+//     .where("user_exam_mapping.studentId = :studentId", { studentId: query.userId })
+//     .getMany();
+
+//   // 4. Gộp attempt theo examId
+//   const attemptMap: Record<number, any> = {};
+
+//   examAttempts.forEach(item => {
+//     if (!attemptMap[item.examId]) {
+//       attemptMap[item.examId] = {
+//         ...item,
+//         attemptCount: item.isFinished ? 1 : 0,
+//       };
+//     } else {
+//       const existing = attemptMap[item.examId];
+
+//       if (item.score > existing.score) {
+//         existing.score = item.score;
+//       }
+
+//       if (item.isFinished) {
+//         existing.isFinished = true;
+//       }
+
+//       existing.attemptCount += item.isFinished ? 1 : 0;
+//     }
+//   });
+
+//   // 5. Merge kết quả
+//   const finalData = exams.map(exam => {
+//     const attempt = attemptMap[exam.examId];
+//     const examType = practiceExamIdSet.has(Number(exam.examId)) ? "practice" : "quiz";
+
+//     if (attempt) {
+//       return {
+//         examType,
+//         studentId: attempt.studentId,
+//         examId: exam.examId,
+//         examName: exam.name,
+//         score: attempt.score,
+//         isFinished: attempt.isFinished,
+//         attemptCount: attempt.attemptCount,
+//       };
+//     } else {
+//       return {
+//         examType,
+//         studentId: query.userId,
+//         examId: exam.examId,
+//         examName: exam.name,
+//         score: 0,
+//         isFinished: false,
+//         attemptCount: 0,
+//       };
+//     }
+//   });
+//   // 6. Sắp xếp và phân trang
+//   const validOrderFields = ["examId", "score", "studentId", "isFinished"];
+//   const orderField = query.orderBy && validOrderFields.includes(query.orderBy)
+//     ? query.orderBy
+//     : "examId";
+
+//   const orderDirection = query.sortBy?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+//   finalData.sort((a, b) => {
+//     if (orderDirection === "ASC") {
+//       return a[orderField] > b[orderField] ? 1 : -1;
+//     } else {
+//       return a[orderField] < b[orderField] ? 1 : -1;
+//     }
+//   });
+
+//   const paginatedData = finalData.slice(query.skip, query.skip + query.take);
+
+//   return GenerateUtil.paginate({ data: paginatedData, itemCount: finalData.length, query });
+// };
+
+getListExam = async (query: SearchExamAttemptDto) => {
   const examRepo = this.dataSourceB.getRepository(ExamB);
   const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
   const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
@@ -74,7 +177,7 @@ export class ExamService {
     .select("DISTINCT ev.examId", "examId")
     .getRawMany();
 
-  const practiceExamIdSet = new Set(practiceExamIdsRaw.map(e => e.examId));
+  const practiceExamIdSet = new Set(practiceExamIdsRaw.map(e => Number(e.examId)));
 
   // 3. Lấy toàn bộ exam attempt của user
   const examAttempts = await examAttemptRepo
@@ -115,27 +218,28 @@ export class ExamService {
   // 5. Merge kết quả
   const finalData = exams.map(exam => {
     const attempt = attemptMap[exam.examId];
-    const examType = practiceExamIdSet.has(exam.examId) ? "practice" : "quiz";
+    const examType = practiceExamIdSet.has(Number(exam.examId)) ? "practice" : "quiz";
 
+    // Make sure examType is explicitly set in the return object
     if (attempt) {
       return {
+        examType, // Explicitly placed first
         studentId: attempt.studentId,
         examId: exam.examId,
         examName: exam.name,
         score: attempt.score,
         isFinished: attempt.isFinished,
         attemptCount: attempt.attemptCount,
-        examType,
       };
     } else {
       return {
+        examType, // Explicitly placed first
         studentId: query.userId,
         examId: exam.examId,
         examName: exam.name,
         score: 0,
         isFinished: false,
         attemptCount: 0,
-        examType,
       };
     }
   });
@@ -158,10 +262,18 @@ export class ExamService {
 
   const paginatedData = finalData.slice(query.skip, query.skip + query.take);
 
+  // Log to verify examType is present
+  if (paginatedData.length > 0) {
+    console.log('First item in getListExam response:', {
+      ...paginatedData[0],
+      hasExamType: 'examType' in paginatedData[0],
+    });
+  }
+
   return GenerateUtil.paginate({ data: paginatedData, itemCount: finalData.length, query });
 };
 
-  
+
   addPracticeExam = async(body: CreatePracticeExamDto) => {
     const {name, classRoomId, isPrivate,  practiceWords} = body;
     const examRepo = this.dataSourceB.getRepository(ExamB);

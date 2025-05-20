@@ -27,4 +27,7 @@ export class SearchExamAttemptDto extends PageOptionsDto {
 
   @IsSwaggerNumber({}, false)
   readonly score: number;
+
+  @IsSwaggerString({}, false)
+  readonly examType: string;
 }
