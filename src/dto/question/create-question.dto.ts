@@ -1,38 +1,55 @@
-import { IsSwaggerArray, IsSwaggerEnum, IsSwaggerNumber, IsSwaggerString } from 'src/decorator/swagger.decorator';
+import { IsSwaggerArray, IsSwaggerEnum, IsSwaggerNumber, IsSwaggerString, IsSwaggerBoolean } from 'src/decorator/swagger.decorator';
 import { Answer } from 'src/entities/question/answer.entity';
-import { FileType, QuestionType } from 'src/types/classroom';
+import { QuestionType, FileType, QuestionFormat } from 'src/types/classroom';
+// export enum QuestionType {
+//   ONE_ANSWER = 'ONE_ANSWER',
+//   MULTIPLE_ANSWERS = 'MULTIPLE_ANSWERS',
+// }
 
-export class CreateQuestionDto {
-  @IsSwaggerString({ default: 'content' })
-  readonly content: string;
+// export enum QuestionFormat {
+//   TEXT_QUESTION_TEXT_ANSWERS = 'TEXT_QUESTION_TEXT_ANSWERS',
+//   MEDIA_QUESTION_TEXT_ANSWERS = 'MEDIA_QUESTION_TEXT_ANSWERS',
+//   TEXT_QUESTION_MEDIA_ANSWERS = 'TEXT_QUESTION_MEDIA_ANSWERS',
+//   MEDIA_QUESTION_MEDIA_ANSWERS = 'MEDIA_QUESTION_MEDIA_ANSWERS',
+// }
 
-  @IsSwaggerNumber({})
-  readonly classRoomId: number;
+// export enum FileType {
+//   TEXT = 'TEXT',
+//   NOT_EXISTED = 'NOT_EXISTED',
+//   EXISTED = 'EXISTED',
+// }
 
-  @IsSwaggerString({}, false)
-  readonly imageLocation: string;
+// export class CreateQuestionDto {
+//   @IsSwaggerString({ default: 'content' })
+//   readonly content: string;
 
-  @IsSwaggerString({}, false)
-  readonly videoLocation: string;
+//   @IsSwaggerNumber({})
+//   readonly classRoomId: number;
 
-  @IsSwaggerString({}, false)
-  readonly explanation: string;
+//   @IsSwaggerString({}, false)
+//   readonly imageLocation: string;
 
-  @IsSwaggerString({}, false)
-  readonly description: string;
+//   @IsSwaggerString({}, false)
+//   readonly videoLocation: string;
 
-  @IsSwaggerNumber({})
-  readonly creatorId: number;
+//   @IsSwaggerString({}, false)
+//   readonly explanation: string;
 
-  @IsSwaggerEnum({ enum: FileType, default: FileType.EXISTED })
-  readonly fileType: FileType;
+//   @IsSwaggerString({}, false)
+//   readonly description: string;
 
-  @IsSwaggerEnum({ enum: QuestionType, default: QuestionType.ONE_ANSWER })
-  readonly questionType: QuestionType;
+//   @IsSwaggerNumber({})
+//   readonly creatorId: number;
 
-  @IsSwaggerArray({})
-  readonly answerReqs: Answer[];
-}
+//   @IsSwaggerEnum({ enum: FileType, default: FileType.EXISTED })
+//   readonly fileType: FileType;
+
+//   @IsSwaggerEnum({ enum: QuestionType, default: QuestionType.ONE_ANSWER })
+//   readonly questionType: QuestionType;
+
+//   @IsSwaggerArray({})
+//   readonly answerReqs: Answer[];
+// }
 
 export class UpdateQuestionDto {
   @IsSwaggerString({ default: 'content' }, false)
@@ -65,3 +82,54 @@ export class UpdateQuestionDto {
   @IsSwaggerArray({}, false)
   readonly updateAnswerReqs: Answer[];
 }
+export class CreateAnswerDto {
+  @IsSwaggerString({}, false)
+  readonly content?: string;
+
+  @IsSwaggerString({}, false)
+  readonly imageLocation?: string;
+
+  @IsSwaggerString({}, false)
+  readonly videoLocation?: string;
+
+  @IsSwaggerBoolean({ default: false })
+  readonly correct: boolean;
+
+  @IsSwaggerEnum({ enum: FileType, default: FileType.TEXT }, false)
+  readonly fileType?: FileType;
+}
+
+export class CreateQuestionDto {
+  @IsSwaggerString({ default: 'content' })
+  readonly content: string;
+
+  @IsSwaggerNumber({})
+  readonly classRoomId: number;
+
+  @IsSwaggerString({}, false)
+  readonly imageLocation?: string;
+
+  @IsSwaggerString({}, false)
+  readonly videoLocation?: string;
+
+  @IsSwaggerString({}, false)
+  readonly explanation?: string;
+
+  @IsSwaggerEnum({ enum: FileType, default: FileType.EXISTED }, false)
+  readonly fileType?: FileType;
+
+  @IsSwaggerEnum({ enum: QuestionType, default: QuestionType.ONE_ANSWER })
+  readonly questionType: QuestionType;
+
+  @IsSwaggerEnum({ enum: QuestionFormat, default: QuestionFormat.TEXT_QUESTION_TEXT_ANSWERS }, false)
+  readonly questionFormat?: QuestionFormat;
+
+  @IsSwaggerArray({ type: () => CreateAnswerDto })
+  readonly answerReqs: CreateAnswerDto[];
+}
+
+export class CreateMultipleQuestionsDto {
+  @IsSwaggerArray({ type: () => CreateQuestionDto })
+  readonly questions: CreateQuestionDto[];
+}
+

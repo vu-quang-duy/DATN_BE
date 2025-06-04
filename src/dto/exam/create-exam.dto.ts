@@ -11,17 +11,8 @@ export class CreateExamDto {
   @IsSwaggerNumber({})
   readonly numberOfQuestions: number;
 
-  @IsSwaggerString({}, false)
-  readonly thumbnailPath: string;
-
-  @IsSwaggerString({}, false)
-  readonly description: string;
-
-  @IsSwaggerNumber({})
-  readonly creatorId: number;
-
   @IsSwaggerBoolean({}, false)
-  readonly private: boolean;
+  readonly isPrivate: boolean;
 
   @IsSwaggerArray({})
   readonly questionIds: number[];

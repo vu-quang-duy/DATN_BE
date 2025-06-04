@@ -1,12 +1,11 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
-import { AbstractCreatedIdEntity } from '../entity.interface';
+import { Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne, BaseEntity } from 'typeorm';
 import { Question } from '../question/question.entity';
 import { EXAM } from './exam.entity';
 
 @Entity(EntityNameConst.EXAM_QUESTION)
-export class ExamQuestion extends AbstractCreatedIdEntity {
+export class ExamQuestion extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'question_exam_id' }) // Định nghĩa ID mới
   questionExamId: number;
 

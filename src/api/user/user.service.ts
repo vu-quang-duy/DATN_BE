@@ -21,6 +21,7 @@ import { UserLog } from 'src/entities/user/user-log.entity';
 import { UserStatistic } from 'src/entities/user/user-statistic.entity';
 import { User } from 'src/entities/user/user.entity';
 import { UserB } from 'src/entitiesB/user.entity';
+import { ExamB } from 'src/entitiesB/exam.entity';
 import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { Vocabulary } from 'src/entities/vocabulary/vocabulary.entity';
 import { PartView } from 'src/entities/class/part-view.entity';
@@ -40,11 +41,12 @@ import { GenerateUtil } from 'src/utils/generate';
 import { HashUtil } from 'src/utils/hash';
 import { HelperUtils } from 'src/utils/helpers';
 import { QueryUtil } from 'src/utils/query';
-import { DataSource, FindOptionsWhere, Not } from 'typeorm';
+import { DataSource, FindOptionsWhere, Not, In } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { StudentProfile } from './../../entities/user/student-profile.entity';
 import { MailService } from './MailService';
 import { ClassTeacher } from 'src/entities/class/class-teacher.entity';
+import { PracticeExamAttempt } from 'src/entities/exam/practice-attempt.entity';
 
 @Injectable()
 export class UserService {
@@ -376,31 +378,79 @@ export class UserService {
   };
 
   getFullTestsCompleted = async (userId: number) => {
-    // 1. Lấy dữ liệu từ exam_attempt LEFT JOIN exam
-    const rawData = await ExamAttempt
-      .createQueryBuilder("examAttempt")
-      .leftJoin("examAttempt.exam", "exam") // giả sử bạn có quan hệ @ManyToOne(() => Exam) exam trong ExamAttempt
-      .select("examAttempt.examId", "examId")
-      .addSelect("exam.name", "examName")
-      .addSelect("examAttempt.studentId", "studentId")
-      .addSelect("MAX(examAttempt.score)", "maxScore")
-      .addSelect("COUNT(*)", "attemptCount")
-      .where("examAttempt.studentId = :studentId", { studentId: userId })
-      .andWhere("examAttempt.isFinished = true")
-      .groupBy("examAttempt.examId")
-      .addGroupBy("exam.name")
-      .addGroupBy("examAttempt.studentId")
-      .getRawMany();
-    // 2. Chuẩn hóa và xử lý sort/pagination
-    return rawData.map((row) => ({
-      examId: Number(row.examId),
-      examName: row.examName,
-      userId: Number(row.studentId),
-      score: Number(row.maxScore),
-      attemptCount: Number(row.attemptCount),
-    }));
+  const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+  const practiceAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
+  const examRepo = this.dataSourceB.getRepository(ExamB);
 
-  }
+  // ===== 1. Lấy bài thi chính thức =====
+  const examData = await examAttemptRepo
+    .createQueryBuilder("examAttempt")
+    .select("examAttempt.examId", "examId")
+    .addSelect("examAttempt.studentId", "studentId")
+    .addSelect("MAX(examAttempt.score)", "maxScore")
+    .addSelect("COUNT(*)", "attemptCount")
+    .where("examAttempt.studentId = :studentId", { studentId: userId })
+    .andWhere("examAttempt.isFinished = true")
+    .groupBy("examAttempt.examId")
+    .addGroupBy("examAttempt.studentId")
+    .getRawMany();
+
+  const examIds1 = examData.map((item) => Number(item.examId));
+
+  const formattedExamData = examData.map((row) => ({
+    examId: Number(row.examId),
+    examName: "", // sẽ bổ sung sau
+    userId: Number(row.studentId),
+    score: Number(row.maxScore),
+    attemptCount: Number(row.attemptCount),
+    type: "exam",
+  }));
+
+  // ===== 2. Lấy bài luyện tập =====
+  const practiceData = await practiceAttemptRepo
+    .createQueryBuilder("practiceAttempt")
+    .select("practiceAttempt.examId", "examId")
+    .addSelect("practiceAttempt.studentId", "studentId")
+    .addSelect("MAX(practiceAttempt.score)", "maxScore")
+    .addSelect("COUNT(*)", "attemptCount")
+    .where("practiceAttempt.studentId = :studentId", { studentId: userId })
+    .andWhere("practiceAttempt.isFinished = true")
+    .groupBy("practiceAttempt.examId")
+    .addGroupBy("practiceAttempt.studentId")
+    .getRawMany();
+
+  const examIds2 = practiceData.map((item) => Number(item.examId));
+
+  const formattedPracticeData = practiceData.map((row) => ({
+    examId: Number(row.examId),
+    examName: "", // sẽ bổ sung sau
+    userId: Number(row.studentId),
+    score: Number(row.maxScore),
+    attemptCount: Number(row.attemptCount),
+    type: "practice",
+  }));
+
+  // ===== 3. Gộp tất cả examId và truy vấn bảng ExamB =====
+  const allExamIds = [...new Set([...examIds1, ...examIds2])];
+
+  const examList = await examRepo.find({
+    where: { examId: In(allExamIds) },
+  });
+
+  const examMap = new Map<number, string>();
+  examList.forEach((exam) => {
+    examMap.set(Number(exam.examId), exam.name);
+  });
+
+  // ===== 4. Bổ sung examName vào kết quả =====
+  const completedList = [...formattedExamData, ...formattedPracticeData].map((item) => ({
+    ...item,
+    examName: examMap.get(item.examId) || "Không rõ tên bài",
+  }));
+
+  return completedList;
+};
+
   
   getFullVocabularyViews = async (userId: number) => {
     const recentViews = await VocabularyView.createQueryBuilder('vocabularyView')

@@ -18,6 +18,8 @@ import { Topic } from '../vocabulary/topic.entity';
 import { UserStatistic } from './user-statistic.entity';
 import { PartView } from '../class/part-view.entity';
 import { School } from '../class/school.entity';
+import { ExamVideo } from '../exam/exam-video.entity';
+import { PracticeExamAttempt } from '../exam/practice-attempt.entity';
 
 export enum UserStatus {
   ACTIVE = 'ACTIVE',
@@ -133,6 +135,12 @@ export class User extends AbstractTimeEntity {
 
   @OneToMany(() => ExamAttempt, (examAttempt) => examAttempt.student)
   examAttempts: ExamAttempt[];
+
+  @OneToMany(() => PracticeExamAttempt, (practiceExamAttempt) => practiceExamAttempt.student)
+  practiceExamAttempt: PracticeExamAttempt[];
+
+  @OneToMany(() => ExamVideo, (examVideo) => examVideo.student)
+  examVideos: ExamVideo[];
 
   @OneToMany(() => Question, (question) => question.creator)
   questions: Question[];

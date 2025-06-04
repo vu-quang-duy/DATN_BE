@@ -7,6 +7,7 @@ import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { ConditionWhere } from 'src/types/query.type';
 import { FindOptionsSelect, ILike } from 'typeorm';
 import { PartView } from 'src/entities/class/part-view.entity';
+import { PracticeExamAttempt } from 'src/entities/exam/practice-attempt.entity';
 // import { ExamB } from 'src/entitiesB/exam.entity';
 
 export class UserHelper {
@@ -98,37 +99,67 @@ export class UserHelper {
   };
 
   static retryTestCompleted = async (userId: number) => {
-    const userStatistic = await this.findOrCreateUserStatistic(userId);
-    const result = await ExamAttempt.createQueryBuilder('examAttempt')
-    .select('COUNT(DISTINCT examAttempt.examId)', 'testCompletedCount')
+  const userStatistic = await this.findOrCreateUserStatistic(userId);
+  // Đếm số bài thi đã hoàn thành
+  const examResult = await ExamAttempt.createQueryBuilder('examAttempt')
+    .select('DISTINCT examAttempt.examId', 'examId')
     .where('examAttempt.studentId = :userId', { userId })
     .andWhere('examAttempt.isFinished = true')
-    .getRawOne();
+    .getRawMany();
 
-  userStatistic.testsCompleted = Number(result?.testCompletedCount || 0);
+  // Đếm số bài luyện tập đã hoàn thành
+  const practiceResult = await PracticeExamAttempt.createQueryBuilder('practiceAttempt')
+    .select('DISTINCT practiceAttempt.examId', 'examId')
+    .where('practiceAttempt.studentId = :userId', { userId })
+    .andWhere('practiceAttempt.isFinished = true')
+    .getRawMany();
+
+  // Gộp và loại trùng
+  const examIds = new Set<number>();
+  [...examResult, ...practiceResult].forEach(row => {
+    examIds.add(Number(row.examId));
+  });
+
+  userStatistic.testsCompleted = examIds.size;
   return await userStatistic.save();
-  };
+};
 
   static retryAverageScore = async (userId: number) => {
-    const userStatistic = await this.findOrCreateUserStatistic(userId);
+  const userStatistic = await this.findOrCreateUserStatistic(userId);
 
-    const result = await ExamAttempt.createQueryBuilder('examAttempt')
-      .select('AVG(sub.maxScore)', 'averageScore')
-      .from(subQuery => {
-        return subQuery
-          .select('examAttempt.examId', 'examId')
-          .addSelect('MAX(examAttempt.score)', 'maxScore')
-          .from(ExamAttempt, 'examAttempt')
-          .where('examAttempt.studentId = :userId', { userId })
-          .andWhere('examAttempt.isFinished = true')
-          .groupBy('examAttempt.examId');
-      }, 'sub')
-      .getRawOne();
-  
-    userStatistic.averageScore = Number(result?.averageScore || 0);
-    return await userStatistic.save();
-  };
-  
+  // Subquery điểm cao nhất mỗi bài thi
+  const examMaxScores = await ExamAttempt.createQueryBuilder('examAttempt')
+    .select('examAttempt.examId', 'examId')
+    .addSelect('MAX(examAttempt.score)', 'maxScore')
+    .where('examAttempt.studentId = :userId', { userId })
+    .andWhere('examAttempt.isFinished = true')
+    .groupBy('examAttempt.examId')
+    .setParameter('userId', userId)
+    .getRawMany();
+
+  // Subquery điểm cao nhất mỗi bài luyện tập
+  const practiceMaxScores = await PracticeExamAttempt.createQueryBuilder('practiceAttempt')
+    .select('practiceAttempt.examId', 'examId')
+    .addSelect('MAX(practiceAttempt.score)', 'maxScore')
+    .where('practiceAttempt.studentId = :userId', { userId })
+    .andWhere('practiceAttempt.isFinished = true')
+    .groupBy('practiceAttempt.examId')
+    .setParameter('userId', userId)
+    .getRawMany();
+
+  // Gộp điểm các bài thi & luyện tập
+  const allMaxScores = [...examMaxScores, ...practiceMaxScores];
+
+  if (allMaxScores.length === 0) {
+    userStatistic.averageScore = 0;
+  } else {
+    const totalScore = allMaxScores.reduce((sum, row) => sum + Number(row.maxScore || 0), 0);
+    userStatistic.averageScore = totalScore / allMaxScores.length;
+  }
+
+  return await userStatistic.save();
+};
+
 
   static findOrCreateUserStatistic = async (userId) => {
     const userStatistic = await UserStatistic.findOneBy({ userId });

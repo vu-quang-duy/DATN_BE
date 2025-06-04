@@ -3,6 +3,7 @@ import { DBColumn } from 'src/decorator/swagger.decorator';
 import { PrimaryGeneratedColumn, Entity, OneToMany} from 'typeorm';
 import { AbstractTimeEntity } from '../entities/entity.interface';
 import { ExamAttemptB } from './exam-attempt.entity';
+
 // import { ExamVocabulary } from 'src/entities/exam/exam-vocabulary.entity';
 @Entity(EntityNameConst.EXAM)
 export class ExamB extends AbstractTimeEntity {
@@ -41,7 +42,6 @@ export class ExamB extends AbstractTimeEntity {
   @OneToMany(() => ExamAttemptB, (attempt) => attempt.exam)  // Quan hệ One-to-Many với bảng user_exam_mapping
   examAttempts: ExamAttemptB[]; 
 
-  
   // @OneToMany(() => ExamVocabulary, (examVocabulary) => examVocabulary.exam)
   // vocabularies: ExamVocabulary[];
 

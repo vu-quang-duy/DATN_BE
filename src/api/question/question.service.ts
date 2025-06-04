@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { Audit } from 'entity-diff';
 import { ERROR_MSG } from 'src/constant/error';
 import { CacheUser } from 'src/dto/common-request.dto';
 import { PageDto } from 'src/dto/paginate.dto';
-import { CreateQuestionDto, UpdateQuestionDto } from 'src/dto/question/create-question.dto';
+import { CreateQuestionDto, CreateMultipleQuestionsDto, UpdateQuestionDto } from 'src/dto/question/create-question.dto';
 import { SearchQuestionDto } from 'src/dto/question/search-question.dto';
 import { Answer } from 'src/entities/question/answer.entity';
 import { PermissionHelper } from 'src/helper/permisson-helper.service';
@@ -16,90 +17,107 @@ import { GenerateUtil } from 'src/utils/generate';
 import { QueryUtil } from 'src/utils/query';
 import { DataSource, In } from 'typeorm';
 import { Question } from './../../entities/question/question.entity';
+import { QuestionB } from 'src/entitiesB/question.entity';
+import { AnswerB } from 'src/entitiesB/answer.entity';
+import { ClassRoom } from 'src/entities/class/classroom.entity';
+import { query } from 'express';
 
 @Injectable()
 export class QuestionService {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectDataSource() private dataSource: DataSource,
+@InjectDataSource('dbB') private readonly dataSourceB: DataSource) {}
 
-  search = async (query: SearchQuestionDto): Promise<PageDto<Question>> => {
-    const [data, itemCount] = await Question.findAndCount({
-      select: {
-        questionId: true,
-        content: true,
-        classRoomId: true,
-        imageLocation: true,
-        videoLocation: true,
-        description: true,
-        createdDate: true,
-        creatorId: true,
-        classroom: {
-          classroomId: true,
-          name: true,
-          classLevel: true,
-        },
-        answerResList: {
-          questionId: true,
-          content: true,
-          correct: true,
-          imageLocation: true,
-          videoLocation: true,
-          // questionId: true,
-        },
-      },
-      where: QuestionHelper.getFilterSearchQuestion(query),
-      relations: { answerResList: true, classroom: true },
-      order: QueryUtil.getSort(query.orderBy, query.sortBy),
-      skip: query.skip,
-      take: query.take,
-    });
+search = async (query: SearchQuestionDto) => {
+  const questionAlias = 'question';
+  const answerAlias = 'answer';
 
-    return GenerateUtil.paginate({ data, itemCount, query });
-  };
+  const qb = this.dataSource
+    .getRepository(Question)
+    .createQueryBuilder(questionAlias)
+    .leftJoinAndSelect(`${questionAlias}.answerResList`, answerAlias, `${answerAlias}.correct = 1`)
+    .where(QuestionHelper.getFilterSearchQuestion(query))
+    .orderBy(`${questionAlias}.questionId`, 'DESC')
+    .skip(query.skip)
+    .take(query.take);
 
-  async createQuestion(userId: number, body: CreateQuestionDto, permissionCode) {
-    // const isExistByName = await HelperUtils.existByName(Question, body.content, 'content');
-    // if (isExistByName) throw new AppExistedException('content', body);
+  const [data, itemCount] = await qb.getManyAndCount();
 
-    const isPermission = await PermissionHelper.isPermissionChange(userId, permissionCode);
-    if (!isPermission) throw new App404Exception('permissionCode', { permissionCode });
+  // ✅ Lấy classRoomId duy nhất từ danh sách câu hỏi
+  const classRoomIds = [...new Set(data.map((item) => item.classRoomId))];
 
-    const question = new Question();
-    question.content = body.content;
-    question.description = body.description;
-    question.imageLocation = body.imageLocation;
-    question.classRoomId = body.classRoomId;
-    question.creatorId = userId;
-    question.questionType = body.questionType;
-    question.fileType = body.fileType;
-    question.explanation = body.explanation;
-    question.videoLocation = body.videoLocation;
-    await question.save();
+  // ✅ Lấy tên lớp từ bảng classRoom
+  const classRepo = this.dataSource.getRepository(ClassRoom);
+  const classRooms = await classRepo.find({
+    where: { classroomId: In(classRoomIds) },
+  });
 
+  // ✅ Map classRoomId → name
+  const classRoomMap = new Map(
+    classRooms.map((item) => [item.classroomId, item.name])
+  );
+
+  // ✅ Gắn thêm tên lớp + convert correct từ Buffer → boolean
+  const dataWithClassName = data.map((item) => ({
+    ...item,
+    className: classRoomMap.get(item.classRoomId) || '',
+    answerResList: item.answerResList.map((ans) => ({
+      ...ans,
+      correct: ans.correct?.[0] === 1, // convert Buffer to boolean
+    })),
+  }));
+
+  // ✅ Log kiểm tra
+  dataWithClassName.forEach((item) => {
+    console.log('q', item)
+    console.log(`Question ${item.questionId}:`, item.answerResList);
+  });
+
+  return GenerateUtil.paginate({ data: dataWithClassName, itemCount, query });
+};
+
+
+  async createQuestion(body: CreateQuestionDto) {
+    const {content, imageLocation, classRoomId, questionType, fileType, explanation, videoLocation} = body;
+  
+    const questionRepo = this.dataSource.getRepository(Question)
+
+    const question = await questionRepo
+    .createQueryBuilder()
+    .insert()
+    .into(Question)
+    .values({
+      content,
+      imageLocation,
+      classRoomId,
+      questionType,
+      fileType,
+      videoLocation,
+      explanation
+    })
+    .execute()
+
+    const questionId = question.identifiers[0].questionId;
+    
     body.answerReqs.map(async (answer) => {
       const answerRep = new Answer();
       answerRep.content = answer.content;
-      answerRep.correct = answer.correct;
+      answerRep.correct = Buffer.from([answer.correct ? 1 : 0]);
       answerRep.imageLocation = answer.imageLocation;
       answerRep.videoLocation = answer.videoLocation;
-      answerRep.questionId = question.questionId;
-
+      answerRep.questionId = questionId;
       await answerRep.save();
     });
 
     return question;
   }
 
-  createListQuestion = async (userId: number, body: CreateQuestionDto[], permissionCode) => {
-    const isPermission = await PermissionHelper.isPermissionChange(userId, permissionCode);
-    if (!isPermission) throw new App404Exception('permissionCode', { permissionCode });
-
+  createListQuestion = async (body: CreateQuestionDto[]) => {
     const questionList = [];
 
     for (let index = 0; index < body.length; index++) {
-      const question = await this.createQuestion(userId, body[index], permissionCode);
+      const question = await this.createQuestion(body[index]);
       questionList.push(question);
     }
-
     return questionList;
   };
 
@@ -196,7 +214,7 @@ export class QuestionService {
     if (userRole.roleCode === 'ADMIN') {
       question = await Question.findOne({ where: { questionId } });
     } else {
-      question = await Question.findOne({ where: { questionId, creatorId: user.userId } });
+      question = await Question.findOne({ where: { questionId } });
     }
 
     if (!question) throw new App404Exception('id', { questionId });
@@ -208,23 +226,37 @@ export class QuestionService {
     return true;
   };
 
-  deleteList = async (questionIds: number[], user: CacheUser, permissionCode): Promise<any> => {
-    const isPermission = await PermissionHelper.isPermissionChange(user.userId, permissionCode);
-    if (!isPermission) throw new App404Exception('permissionCode', { permissionCode });
-
-    if (!questionIds.length) throw new App404Exception('id', { questionId: questionIds });
-
-    const questionList = await Question.find({ where: { questionId: In(questionIds) } });
-
-    await this.dataSource.transaction(async (txManager) => {
-      for (let index = 0; index < questionList.length; index++) {
-        const question = questionList[index];
-        await txManager.remove(question);
-      }
-    });
-
-    return true;
-  };
+deleteList = async (body: { questionIds: string[] }) => {
+  console.log('🧾 Full body:', body);
+  const questionRepository = this.dataSource.getRepository(Question);
+  
+  const numericIds = body.questionIds
+    ?.map(id => parseInt(id, 10))
+    .filter(id => !isNaN(id) && id > 0);
+     
+  console.log('🔢 Numeric IDs:', numericIds);
+     
+  if (!numericIds || numericIds.length === 0) {
+    throw new Error('No valid question IDs provided');
+  }
+     
+  try {
+    // Using query builder - more explicit
+    const result = await questionRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Question)
+      .where('question_id IN (:...ids)', { ids: numericIds })
+      .execute();
+         
+    console.log('🗑️ Delete result:', result);
+    return result;
+       
+  } catch (error) {
+    console.error('❌ Delete error:', error);
+    throw error;
+  }
+}
 
   deleteAnswers = async (answerId: number, user: CacheUser, permissionCode): Promise<any> => {
     const isPermission = await PermissionHelper.isPermissionChange(user.userId, permissionCode);
@@ -239,16 +271,72 @@ export class QuestionService {
     return true;
   };
 
-  getQuestionOfExam = async (id: number): Promise<PageDto<Question>> => {
-    const [data, itemCount] = await Question.findAndCount({
-      where: {
-        exams: {
-          examId: id,
-        },
+getQuestionOfExam = async (id: number): Promise<PageDto<Question>> => {
+  const [data, itemCount] = await Question.findAndCount({
+    where: {
+      exams: {
+        examId: id,
       },
-      relations: { answerResList: true, exams: true },
-    });
+    },
+    relations: { answerResList: true, exams: true },
+  });
 
-    return GenerateUtil.paginate({ data, itemCount, query: {} });
+  // Convert Buffer to boolean
+  const formattedData = data.map((question) => {
+  const updatedAnswers = question.answerResList?.map((answer) => {
+    const correctValue =
+      Buffer.isBuffer(answer.correct)
+        ? answer.correct[0] === 1
+        : (answer.correct as { data: number[] })?.data?.[0] === 1;
+
+    return {
+      ...answer,
+      correct: correctValue,
+    };
+  }) || [];
+
+    return {
+      ...question,
+      answerResList: updatedAnswers,
+    };
+  });
+
+  return GenerateUtil.paginate({ data: formattedData, itemCount, query: {} });
+};
+
+  getListQuestionClass = async (classRoomId?: any) => {
+  const questionAlias = 'question';
+  const answerAlias = 'answer';
+
+  const qb = this.dataSource
+    .getRepository(Question)
+    .createQueryBuilder(questionAlias)
+    .leftJoinAndSelect(`${questionAlias}.answerResList`, answerAlias)
+    .where(`${questionAlias}.classRoomId = :classRoomId`, { classRoomId })
+    .orderBy(`${questionAlias}.questionId`, 'DESC');
+
+  const [data, itemCount] = await qb.getManyAndCount();
+
+  // ✅ Lấy classRoomId duy nhất từ danh sách câu hỏi
+  const classRepo = this.dataSource.getRepository(ClassRoom);
+  const classRoom = await classRepo.findOne({
+    where: { classroomId: classRoomId },
+  });
+
+  const className = classRoom?.name || '';
+
+  const dataWithClassName = data.map((item) => ({
+    ...item,
+    className,
+    answerResList: item.answerResList.map((ans) => ({
+      ...ans,
+      correct: typeof ans.correct === 'boolean' ? ans.correct : ans.correct?.[0] === 1,
+    })),
+  }));
+  console.log('da',dataWithClassName)
+  return {
+    data: dataWithClassName,
+    total: itemCount,
   };
+};
 }

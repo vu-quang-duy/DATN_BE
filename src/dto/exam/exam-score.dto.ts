@@ -24,3 +24,21 @@ export class ResetExamDto {
   @IsSwaggerNumber({}, false)
   readonly userId: number;
 }
+
+export class PracticeExamScoringDto {
+  @IsSwaggerNumber({}, false)
+  readonly userId: number;
+
+  @IsSwaggerNumber({}, false)
+  readonly examId: number;
+
+  @IsSwaggerNumber({}, false)
+  readonly score: number;
+
+  @IsSwaggerBoolean({}, false)
+  readonly isFinished: boolean;
+
+  @IsSwaggerNumber({}, false)
+  attemptCount?: number;
+
+}

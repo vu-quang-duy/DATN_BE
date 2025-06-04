@@ -1,22 +1,9 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { PrimaryGeneratedColumn, Entity} from 'typeorm';
+import { PrimaryGeneratedColumn, Entity, OneToMany} from 'typeorm';
 import { AbstractTimeEntity } from '../entities/entity.interface';
-// import { EXAM } from '../entities/exam/exam.entity';
-// import { Role } from '../entities/role/role.entity';
-// import { Upload } from '../entities/upload/upload.entity';
-// // import { VocabularyView } from '../vocabulary/vocabulary-view.entity';
-// // import { Vocabulary } from '../vocabulary/vocabulary.entity';
-// // import { ExamAttempt } from './../exam/exam-attempt.entity';
-// // import { UserLog } from './user-log.entity';
-// import { Question } from '../entities/question/question.entity';
-// // import { ClassStudent } from '../class/class-student.entity';
 import { Gender } from 'src/constant/enum-common';
-// // import { StudentProfile } from './student-profile.entity';
-// import { Topic } from '../entities/vocabulary/topic.entity';
-// import { UserStatistic } from './user-statistic.entity';
-// import { PartView } from '../class/part-view.entity';
-// import { School } from '../class/school.entity';
+import { QuestionB } from './question.entity';
 
 export enum UserStatus {
   ACTIVE = 'ACTIVE',
@@ -97,4 +84,7 @@ export class UserB extends AbstractTimeEntity {
   isApproved: boolean;
 
   // RELATIONSHIP
+    @OneToMany(() => QuestionB, (question) => question.creator)
+    questions: QuestionB[];
+  
 }

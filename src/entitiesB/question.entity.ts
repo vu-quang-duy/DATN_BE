@@ -2,15 +2,12 @@ import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
 import { FileType, QuestionType } from 'src/types/classroom';
 import { PrimaryGeneratedColumn, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
-import { ClassRoom } from '../class/classroom.entity';
-import { AbstractTimeEntity } from '../entity.interface';
-import { ExamQuestion } from '../exam/exam-question.entity';
-import { User } from '../user/user.entity';
-import { Answer } from './answer.entity';
-import { StudentAnswer } from './student-answer.entity';
+import { AbstractTimeEntity } from '../entities/entity.interface';
+import { UserB } from './user.entity';
+import { AnswerB } from './answer.entity';
 
 @Entity(EntityNameConst.QUESTION)
-export class Question extends AbstractTimeEntity {
+export class QuestionB extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'question_id' }) // Định nghĩa ID mới
   questionId: number;
 
@@ -75,20 +72,20 @@ export class Question extends AbstractTimeEntity {
 
   // RELATIONSHIP
 
-  @ManyToOne(() => User, (User) => User.questions, { onDelete: 'SET NULL' })
+  @ManyToOne(() => UserB, (User) => User.questions, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'created_by' })
-  creator: User;
+  creator: UserB;
 
-  @ManyToOne(() => ClassRoom, (classRoom) => classRoom.questions, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'class_room_id' })
-  classroom: ClassRoom;
+//   @ManyToOne(() => ClassRoom, (classRoom) => classRoom.questions, { onDelete: 'SET NULL' })
+//   @JoinColumn({ name: 'class_room_id' })
+//   classroom: ClassRoom;
 
-  @OneToMany(() => StudentAnswer, (studentAnswer) => studentAnswer.question)
-  studentAnswers: StudentAnswer[];
+//   @OneToMany(() => StudentAnswer, (studentAnswer) => studentAnswer.question)
+//   studentAnswers: StudentAnswer[];
 
-  @OneToMany(() => Answer, (answer) => answer.question)
-  answerResList: Answer[];
+  @OneToMany(() => AnswerB, (answer) => answer.question)
+  answerResList: AnswerB[];
 
-  @OneToMany(() => ExamQuestion, (exam) => exam.question)
-  exams: ExamQuestion[];
+//   @OneToMany(() => ExamQuestion, (exam) => exam.question)
+//   exams: ExamQuestion[];
 }

@@ -64,6 +64,7 @@
     "mysql2": "^3.13.0",
     "nest-winston": "^1.9.7",
     "next": "^15.2.1",
+    "node-ssh": "^13.2.1",
     "nodemailer": "^6.9.16",
     "passport-jwt": "^4.0.1",
     "pg": "^8.11.3",

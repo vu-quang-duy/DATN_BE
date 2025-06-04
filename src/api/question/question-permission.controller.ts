@@ -1,24 +1,25 @@
-import { Body, Delete, Param, Post, Put, Req } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Body, Delete, Param, Get ,Post, Put, Req, ParseIntPipe } from '@nestjs/common';
 import { EntityNameConst } from 'src/constant/entity-name';
 import { ApiHandleResponse } from 'src/decorator/api.decorator';
 import { IsAuthController } from 'src/decorator/auth.decorator';
 import { RequestAuth } from 'src/dto/common-request.dto';
-import { CreateQuestionDto, UpdateQuestionDto } from 'src/dto/question/create-question.dto';
+import { CreateQuestionDto, CreateMultipleQuestionsDto, UpdateQuestionDto } from 'src/dto/question/create-question.dto';
 import { Question } from 'src/entities/question/question.entity';
 import { QuestionAction, QuestionSummary } from './question-permission.interface';
 import { QuestionService } from './question.service';
 
-@IsAuthController(EntityNameConst.QUESTION, true)
-export class QuestionPermissionController implements Record<QuestionAction, any> {
+@IsAuthController(EntityNameConst.QUESTION, false)
+export class QuestionPermissionController {
   constructor(private readonly questionService: QuestionService) {}
 
-  @Post('/')
+  @Get('/class/:id')
   @ApiHandleResponse({
     type: Question,
-    summary: QuestionSummary.CREATE_QUESTION,
+    summary: "Get list question of class",
   })
-  async [QuestionAction.CREATE_QUESTION](@Req() req: RequestAuth, @Body() body: CreateQuestionDto) {
-    return await this.questionService.createQuestion(req.user.userId, body, QuestionAction.CREATE_QUESTION);
+  async getListQuestionClass(@Param('id') classRoomId?: any) {
+    return this.questionService.getListQuestionClass(classRoomId)
   }
 
   @Post('/add-list')
@@ -26,8 +27,8 @@ export class QuestionPermissionController implements Record<QuestionAction, any>
     type: Question,
     summary: QuestionSummary.ADD_LIST_QUESTION,
   })
-  async [QuestionAction.ADD_LIST_QUESTION](@Req() req: RequestAuth, @Body() body: CreateQuestionDto[]) {
-    return await this.questionService.createListQuestion(req.user.userId, body, QuestionAction.ADD_LIST_QUESTION);
+  async [QuestionAction.ADD_LIST_QUESTION](@Body() body: CreateQuestionDto[]) {
+    return await this.questionService.createListQuestion( body);
   }
 
   @Put('/:id')
@@ -45,11 +46,17 @@ export class QuestionPermissionController implements Record<QuestionAction, any>
 
   @Delete('/delete-list')
   @ApiHandleResponse({
-    summary: QuestionSummary.DELETE_LIST_QUESTION,
-    type: Boolean,
+    summary: "Delete question",
+    type: Question,
   })
-  async [QuestionAction.DELETE_LIST_QUESTION](@Req() req: RequestAuth, @Body() body: { questionIds: number[] }) {
-    return await this.questionService.deleteList(body.questionIds, req.user, QuestionAction.DELETE_LIST_QUESTION);
+  async deleteList(@Body() body) {
+    console.log("📝 Received body:", body);
+    
+    if (!body.questionIds || body.questionIds.length === 0) {
+      throw new Error('❌ No question IDs provided');
+    }
+    
+    return await this.questionService.deleteList(body);
   }
 
   @Delete('/answers/:id')
