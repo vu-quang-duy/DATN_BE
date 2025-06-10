@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -22,20 +23,22 @@ import { QueryUtil } from 'src/utils/query';
 import { DataSource, In } from 'typeorm';
 import { ExamAttempt } from './../../entities/exam/exam-attempt.entity';
 import { ExamVocabulary } from 'src/entities/exam/exam-vocabulary.entity';
-// import { ExamAttemptB } from './../../entitiesB/exam-attempt.entity';
 import { ExamB } from './../../entitiesB/exam.entity';
 import { ExamScoringDto, ResetExamDto, PracticeExamScoringDto } from 'src/dto/exam/exam-score.dto';
 import { Vocabulary } from 'src/entities/vocabulary/vocabulary.entity';
 import { ExamVideo } from 'src/entities/exam/exam-video.entity';
-import { ExamAttemptB } from 'src/entitiesB/exam-attempt.entity';
 import { User } from 'src/entities/user/user.entity';
 import { ClassStudent } from 'src/entities/class/class-student.entity';
 import { ClassRoom } from 'src/entities/class/classroom.entity';
-import * as path from 'path';
-import { NodeSSH } from 'node-ssh';
-import * as fs from 'fs';
 import { PracticeExamAttempt } from 'src/entities/exam/practice-attempt.entity';
 import { Question } from 'src/entities/question/question.entity';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as FormData from 'form-data';
+import axios from 'axios';
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegInstaller.path); // ⬅️ Gắn đúng path ffmpeg
 @Injectable()
 export class ExamService {
   constructor(
@@ -471,40 +474,72 @@ export class ExamService {
   };
 
   getDetailPracticeExamToScore = async (examId: number, userId: number) => { 
-  const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
-  const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
-  const examRepo = this.dataSourceB.getRepository(ExamB);
-  const userRepo = this.dataSource.getRepository(User);
-  const examVideoRepo = this.dataSource.getRepository(ExamVideo);
+    const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+    const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
+    const examRepo = this.dataSourceB.getRepository(ExamB);
+    const userRepo = this.dataSource.getRepository(User);
+    const examVideoRepo = this.dataSource.getRepository(ExamVideo);
 
-  // 1. Lấy danh sách câu hỏi theo examId
-  const examVocabList = await examVocabularyRepo.find({
-    where: { examId },
-    order: { vocabularyId: 'ASC' },
-    select: ['vocabularyId', 'content'],
-  });
+    // 1. Lấy danh sách câu hỏi theo examId
+    const examVocabList = await examVocabularyRepo.find({
+      where: { examId },
+      order: { vocabularyId: 'ASC' },
+      select: ['vocabularyId', 'content'],
+    });
 
-  const vocabularyIds = examVocabList.map(item => item.vocabularyId);
+    const vocabularyIds = examVocabList.map(item => item.vocabularyId);
 
-  // 2. Lấy nội dung Vocabulary tương ứng
-  const vocabularies = await vocabularyRepo.find({
-    where: { vocabularyId: In(vocabularyIds) },
-  });
-  const vocabMap = new Map(vocabularies.map(v => [v.vocabularyId, v.content]));
+    // 2. Lấy nội dung Vocabulary tương ứng
+    const vocabularies = await vocabularyRepo.find({
+      where: { vocabularyId: In(vocabularyIds) },
+    });
+    const vocabMap = new Map(vocabularies.map(v => [v.vocabularyId, v.content]));
 
-  // 3. Lấy exam và user info
-  const exam = await examRepo.findOne({ where: { examId } });
-  const user = await userRepo.findOne({ where: { userId } });
+    // 3. Lấy exam và user info
+    const exam = await examRepo.findOne({ where: { examId } });
+    const user = await userRepo.findOne({ where: { userId } });
 
-  // 4. Lấy tất cả video theo examId + userId, order giảm dần theo createdDate
-  const examVideos = await examVideoRepo.find({
-    where: { examId, userId },
-    order: { createdDate: 'DESC' },
-  });
+    // 4. Lấy tất cả video theo examId + userId, order giảm dần theo createdDate
+    const examVideos = await examVideoRepo.find({
+      where: { examId, userId },
+      order: { createdDate: 'DESC' },
+      select: ['videoUrl', 'aiAnswer', 'createdDate'], // Include aiAnswer in select
+    });
 
-  if (examVideos.length === 0) {
-    // Nếu không có video nào
-    const formattedNoVideo = examVocabList.map((item) => ({
+    if (examVideos.length === 0) {
+      // Nếu không có video nào
+      const formattedNoVideo = examVocabList.map((item) => ({
+        examId,
+        examName: exam?.name || '',
+        userId,
+        userName: user?.name || '',
+        vocabularyId: item.vocabularyId,
+        contentFromExamVocabulary: item.content,
+        contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
+        videos: [],  // Empty array with video details
+      }));
+      return {
+        data: formattedNoVideo,
+        total: formattedNoVideo.length,
+      };
+    }
+
+    // 5. Lấy createdDate mới nhất
+    const latestCreatedDate = examVideos[0].createdDate;
+
+    // 6. Lọc lấy tất cả video có cùng createdDate mới nhất
+    const latestVideos = examVideos.filter(
+      v => v.createdDate.getTime() === latestCreatedDate.getTime()
+    );
+
+    // 7. Create video details array with both URL and AI answer
+    const videoDetails = latestVideos.map(v => ({
+      videoUrl: v.videoUrl,
+      aiAnswer: v.aiAnswer || null,
+    }));
+
+    // 8. Trả về dữ liệu, mỗi câu hỏi có mảng video details
+    const formatted = examVocabList.map(item => ({
       examId,
       examName: exam?.name || '',
       userId,
@@ -512,44 +547,14 @@ export class ExamService {
       vocabularyId: item.vocabularyId,
       contentFromExamVocabulary: item.content,
       contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-      videoUrls: [],  // Không có video
+      videos: videoDetails, // Array of video objects with URL and AI answer
     }));
+
     return {
-      data: formattedNoVideo,
-      total: formattedNoVideo.length,
+      data: formatted,
+      total: formatted.length,
     };
-  }
-
-  // 5. Lấy createdDate mới nhất
-  const latestCreatedDate = examVideos[0].createdDate;
-
-  // 6. Lọc lấy tất cả video có cùng createdDate mới nhất
-  const latestVideos = examVideos.filter(
-    v => v.createdDate.getTime() === latestCreatedDate.getTime()
-  );
-
-  const videoUrls = latestVideos.map(v => v.videoUrl);
-
-  // 7. Trả về dữ liệu, mỗi câu hỏi có mảng videoUrls
-  const formatted = examVocabList.map(item => ({
-    examId,
-    examName: exam?.name || '',
-    userId,
-    userName: user?.name || '',
-    vocabularyId: item.vocabularyId,
-    contentFromExamVocabulary: item.content,
-    contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-    videoUrls, // Mảng video URL cho tất cả câu hỏi
-  }));
-
-  return {
-    data: formatted,
-    total: formatted.length,
   };
-};
-
-
-
 
   getById = async (examId: number): Promise<EXAM> => {
     const exam = await EXAM.findOne({
@@ -745,39 +750,100 @@ export class ExamService {
 
 submitPracticeTest = async (
   files: Express.Multer.File[],
-  body: PracticeExamScoringDto
+  body: any
 ) => {
   const { examId, userId } = body;
 
   const examVideoRepo = this.dataSource.getRepository(ExamVideo);
   const userExamRepo = this.dataSource.getRepository(PracticeExamAttempt);
 
-  const insertValues = files.map(file => ({
-    userId,
-    examId,
-    videoUrl: file.originalname, // hoặc file.originalname tùy bạn dùng gì khi lưu
-  }));
+  const VIDEO_PUBLIC_BASE_URL = 'http://localhost:8088/videos';
+  const SUPPORTED_FORMATS = ['.webm', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.m4v'];
+  
+  const processedFiles = [];
 
-  await examVideoRepo
-    .createQueryBuilder()
-    .insert()
-    .into(ExamVideo)
-    .values(insertValues)
-    .execute();
+  for (const file of files) {
+    const inputPath = file.path;
+    const ext = path.extname(file.originalname).toLowerCase();
 
-  await userExamRepo
-    .createQueryBuilder()
-    .insert()
-    .into(PracticeExamAttempt)
-    .values({
+    // Bỏ qua định dạng không hỗ trợ
+    if (!SUPPORTED_FORMATS.includes(ext) && ext !== '.mp4') continue;
+
+    const baseName = path.basename(file.originalname, ext);
+    const timestamp = Date.now();
+    const outputFilename = `${baseName}_${timestamp}.mp4`;
+    const finalVideoPath = path.join('/home/tuyentrinh/Desktop/sign_school/uploads/videos', outputFilename);
+    const publicVideoUrl = `${VIDEO_PUBLIC_BASE_URL}/${outputFilename}`;
+
+    try {
+      if (ext === '.mp4') {
+        // Nếu là mp4 thì chỉ copy
+        fs.copyFileSync(inputPath, finalVideoPath);
+      } else {
+        // Nếu không phải mp4 thì convert sang mp4
+        await new Promise<void>((resolve, reject) => {
+          ffmpeg(inputPath)
+            .toFormat('mp4')
+            .videoCodec('libx264')
+            .audioCodec('aac')
+            .videoBitrate('1000k')
+            .audioBitrate('128k')
+            .size('640x480')
+            .fps(30)
+            .on('end', resolve)
+            .on('error', reject)
+            .save(finalVideoPath);
+        });
+      }
+
+      // Gọi AI model
+      const response = await axios.post(
+        'https://wesign.ibme.edu.vn/ai/t3/ai/detection',
+        { videoUrl: publicVideoUrl },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      const detectedWord = response.data?.action_name || null;
+
+      processedFiles.push({
+        videoFileName: outputFilename, // tên file sau khi xử lý
+        publicUrl: publicVideoUrl,
+        detectedWord,
+      });
+
+    } catch (err) {
+      console.error(`Failed to process file ${file.originalname}:`, err);
+      continue; // bỏ qua file lỗi
+    }
+  }
+
+  // Insert vào DB
+  if (processedFiles.length > 0) {
+    const insertValues = processedFiles.map(file => ({
+      userId,
       examId,
-      studentId: userId,
-      // score: 0,
-      // isFinished: false,
-    })
-    .execute();
-};
+      videoUrl: file.videoFileName,
+      aiAnswer: file.detectedWord,
+    }));
 
+    await examVideoRepo
+      .createQueryBuilder()
+      .insert()
+      .into(ExamVideo)
+      .values(insertValues)
+      .execute();
+
+    await userExamRepo
+      .createQueryBuilder()
+      .insert()
+      .into(PracticeExamAttempt)
+      .values({
+        examId,
+        studentId: userId,
+      })
+      .execute();
+  }
+};
 
   async examScoring(body: ExamScoringDto) {
     const { examId, score, userId, isFinished } = body;

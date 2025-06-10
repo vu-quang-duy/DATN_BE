@@ -15,7 +15,7 @@ async function bootstrap() {
   const logger = new Logger('main');
 
   const app = await NestFactory.create(AppModule);
-  app.use('/videos', express.static('/home/tuyentrinh/Desktop/sign_school/uploads/videos'));
+  app.use('/videos', express.static('/home/tuyentrinh/Desktop/sign_school/uploads/videos'));  // app.use('/videos', express.static('E:/Files'));
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(new AppErrorHandler(app.get(HttpAdapterHost).httpAdapter));
@@ -23,6 +23,7 @@ async function bootstrap() {
   const allowedOrigins = [
   'http://202.191.100.3:3000',
   'http://localhost:3000',
+  'http://202.191.56.11:3000',
 ];
 
 app.enableCors({
@@ -46,7 +47,7 @@ app.enableCors({
 
   const port = ENV.PORT;
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 // chinh lai khi dung deploy
   logger.verbose(`====== App url: http://202.191.56.11:8088/${globalPrefix}`);
   logger.verbose(`====== Swagger url: http://202.191.56.11:8088/${swaggerEndpoint}`);

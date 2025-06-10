@@ -15,6 +15,9 @@ export class ExamVideo extends AbstractCreatedIdEntity {
   @DBColumn({ type: 'varchar', name: 'video_url', length: 255 })
   videoUrl: string;
 
+  @DBColumn({ type: 'varchar', name: 'AI_answer', length: 255 })
+  aiAnswer: string;
+
   @DBColumn({ type: 'bigint', name: 'exam_id' })
   examId: number;
 
