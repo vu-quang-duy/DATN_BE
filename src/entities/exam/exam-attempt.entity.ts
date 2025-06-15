@@ -43,7 +43,6 @@ export class ExamAttempt extends BaseEntity {
         }
     
         const result = value === 1;
-        console.log('Converted (number) isFinished:', result);
         return result;
       },
       to: (value) => (value ? 1 : 0),

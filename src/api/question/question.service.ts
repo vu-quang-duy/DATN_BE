@@ -57,7 +57,7 @@ search = async (query: SearchQuestionDto) => {
   );
 
   // ✅ Gắn thêm tên lớp + convert correct từ Buffer → boolean
-  const dataWithClassName = data.map((item) => ({
+  let dataWithClassName = data.map((item) => ({
     ...item,
     className: classRoomMap.get(item.classRoomId) || '',
     answerResList: item.answerResList.map((ans) => ({
@@ -66,15 +66,24 @@ search = async (query: SearchQuestionDto) => {
     })),
   }));
 
-  // ✅ Log kiểm tra
-  dataWithClassName.forEach((item) => {
-    console.log('q', item)
-    console.log(`Question ${item.questionId}:`, item.answerResList);
-  });
+  console.log('data',dataWithClassName)
+
+  // ✅ Filter by question name
+  if (query.content && query.content.trim() !== "") {
+    dataWithClassName = dataWithClassName.filter(question => 
+      question.content && question.content.toLowerCase().includes(query.content.toLowerCase())
+    );
+  }
+
+  // ✅ Filter by class name
+  if (query.classRoomName && query.classRoomName.trim() !== "") {
+    dataWithClassName = dataWithClassName.filter(question => 
+      question.className && question.className.toLowerCase().includes(query.classRoomName.toLowerCase())
+    );
+  }
 
   return GenerateUtil.paginate({ data: dataWithClassName, itemCount, query });
 };
-
 
   async createQuestion(body: CreateQuestionDto) {
     const {content, imageLocation, classRoomId, questionType, fileType, explanation, videoLocation} = body;
@@ -227,15 +236,12 @@ search = async (query: SearchQuestionDto) => {
   };
 
 deleteList = async (body: { questionIds: string[] }) => {
-  console.log('🧾 Full body:', body);
   const questionRepository = this.dataSource.getRepository(Question);
   
   const numericIds = body.questionIds
     ?.map(id => parseInt(id, 10))
     .filter(id => !isNaN(id) && id > 0);
-     
-  console.log('🔢 Numeric IDs:', numericIds);
-     
+          
   if (!numericIds || numericIds.length === 0) {
     throw new Error('No valid question IDs provided');
   }
@@ -249,7 +255,6 @@ deleteList = async (body: { questionIds: string[] }) => {
       .where('question_id IN (:...ids)', { ids: numericIds })
       .execute();
          
-    console.log('🗑️ Delete result:', result);
     return result;
        
   } catch (error) {
@@ -333,7 +338,6 @@ getQuestionOfExam = async (id: number): Promise<PageDto<Question>> => {
       correct: typeof ans.correct === 'boolean' ? ans.correct : ans.correct?.[0] === 1,
     })),
   }));
-  console.log('da',dataWithClassName)
   return {
     data: dataWithClassName,
     total: itemCount,

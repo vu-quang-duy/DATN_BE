@@ -12,6 +12,9 @@ export class SearchQuestionDto extends PageOptionsDto {
   @IsSwaggerNumber({}, false)
   readonly creatorId: number;
 
+  @IsSwaggerString({}, false)
+  readonly classRoomName: string;
+
   @IsSwaggerEnum({ enum: FileType, default: FileType.EXISTED }, false)
   readonly fileType: FileType;
 

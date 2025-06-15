@@ -25,10 +25,7 @@ export class LessonsController {
       if (isNaN(classRoomId)) {
         throw new HttpException('Invalid classroom ID: must be a number', HttpStatus.BAD_REQUEST);
       }
-      
-      console.log('Fetching lessons for classRoomId:', classRoomId);
-      console.log('classRoomId type:', typeof classRoomId);
-      
+    
       // Fetch lessons associated with the classroom
       const lessons = await this.lessonRepository.find({
         where: { classRoomId: classRoomId },

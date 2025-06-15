@@ -136,7 +136,6 @@ export class UserController {
     @Body('lessonId') lessonId: number,
     @Body('userId') userId: number
   ) {
-    // console.log('Received partId:', partId);
     if (!userId) {
       throw new Error('userId is required');
     }

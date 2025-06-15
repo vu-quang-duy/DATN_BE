@@ -21,10 +21,6 @@ export class ExamVocabulary extends AbstractCreatedIdEntity {
   @DBColumn({ type: 'varchar', name: 'content' })
   content: string;
 
-  // @ManyToOne(() => ExamB, (exam) => exam.vocabularies)
-  // @JoinColumn({ name: 'exam_id' })
-  // exam: ExamB;
-
   @ManyToOne(() => Vocabulary, (vocabulary) => vocabulary.exams)
   @JoinColumn({ name: 'vocabulary_id' })
   vocabulary: Vocabulary;

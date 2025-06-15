@@ -36,6 +36,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as FormData from 'form-data';
 import axios from 'axios';
+import { ClassTeacher } from 'src/entities/class/class-teacher.entity';
+import { filter } from 'rxjs';
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegInstaller.path); // ⬅️ Gắn đúng path ffmpeg
@@ -143,7 +145,7 @@ export class ExamService {
     });
 
     // 5. Merge kết quả
-    const finalData = exams.map(exam => {
+    let finalData = exams.map(exam => {
       const attempt = attemptMap[exam.examId];
       const examType = practiceExamIdSet.has(Number(exam.examId)) ? "practice" : "quiz";
 
@@ -171,6 +173,26 @@ export class ExamService {
       }
     });
 
+    if (query.examType && query.examType.trim() !== "") {
+      finalData = finalData.filter(exam => exam.examType === query.examType);
+    }
+
+    if (query.name && query.name.trim() !== "") {
+      finalData = finalData.filter(exam => 
+        exam.examName.toLowerCase().includes(query.name.toLowerCase())
+      );
+    }
+
+  if (query.isFinished !== undefined && query.isFinished !== null) {
+      const isFinishedBool = query.isFinished === "1";
+
+    finalData = finalData.filter(exam => {
+      // Convert exam.isFinished to boolean for comparison
+      const examIsFinished = exam.isFinished === true;
+      return examIsFinished === isFinishedBool;
+    });
+  }
+
     // 6. Sắp xếp và phân trang
     const validOrderFields = ["examId", "score", "studentId", "isFinished"];
     const orderField = query.orderBy && validOrderFields.includes(query.orderBy)
@@ -191,20 +213,48 @@ export class ExamService {
     return GenerateUtil.paginate({ data: paginatedData, itemCount: finalData.length, query });
   };
 
-  getListPracticeExam = async (query: SearchExamAttemptDto) => {
+getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
   const examRepo = this.dataSourceB.getRepository(ExamB);
   const examVideoRepo = this.dataSource.getRepository(ExamVideo);
   const userRepo = this.dataSource.getRepository(User);
   const classStudentRepo = this.dataSource.getRepository(ClassStudent);
   const classRepo = this.dataSource.getRepository(ClassRoom);
   const userPracticeRepo = this.dataSource.getRepository(PracticeExamAttempt);
+  const classTeacherRepo = this.dataSource.getRepository(ClassTeacher); // Add this repository
 
-  // 1. Subquery: Lấy thời điểm mới nhất cho mỗi (userId, examId)
+  // Get teacher's class IDs first
+  const teacherClasses = await classTeacherRepo.find({
+    where: { teacherId: teacherId }
+  });
+  const teacherClassIds = teacherClasses.map(tc => tc.classroomId);
+  // If teacher has no classes, return empty result
+  if (teacherClassIds.length === 0) {
+    return {
+      content: [],
+      itemCount: 0,
+    };
+  }
+
+  // Get students from teacher's classes only
+  const studentsInTeacherClasses = await classStudentRepo.find({
+    where: { classroomId: In(teacherClassIds) }
+  });
+  const allowedStudentIds = studentsInTeacherClasses.map(cs => cs.studentId);
+  // If no students in teacher's classes, return empty result
+  if (allowedStudentIds.length === 0) {
+    return {
+      content: [],
+      itemCount: 0,
+    };
+  }
+
+  // 1. Subquery: Lấy thời điểm mới nhất cho mỗi (userId, examId) - chỉ cho students của teacher
   const latestVideosSubQuery = examVideoRepo
     .createQueryBuilder("sub")
     .select("sub.userId", "userId")
     .addSelect("sub.examId", "examId")
     .addSelect("MAX(sub.createdDate)", "maxCreatedDate")
+    .where("sub.userId IN (:...allowedStudentIds)", { allowedStudentIds })
     .groupBy("sub.userId")
     .addGroupBy("sub.examId");
 
@@ -223,7 +273,6 @@ export class ExamService {
       "ev.videoUrl AS videoUrl",
     ])
     .getRawMany();
-
   // 3. Gom videoUrls lại theo cặp (userId, examId)
   const groupedMap = new Map<string, {
     userId: number;
@@ -242,11 +291,11 @@ export class ExamService {
     }
     groupedMap.get(key)!.videoUrls.push(v.videoUrl);
   }
-
   const grouped = Array.from(groupedMap.values());
-
-  // 4. Lấy tất cả các attempt để kiểm tra tình trạng
-  const allAttempts = await userPracticeRepo.find();
+  // 4. Lấy tất cả các attempt để kiểm tra tình trạng - chỉ cho students của teacher
+  const allAttempts = await userPracticeRepo.find({
+    where: { studentId: In(allowedStudentIds) }
+  });
 
   // Nhóm theo examId-studentId
   const attemptMap = new Map<string, PracticeExamAttempt[]>();
@@ -257,7 +306,6 @@ export class ExamService {
     }
     attemptMap.get(key)!.push(attempt);
   }
-
   // 5. Lọc ra những cặp thỏa mãn:
   // - Chưa từng làm (không có isFinished = 1)
   // - Hoặc đã từng làm (isFinished = 1) và lần mới nhất là isFinished = 0
@@ -273,13 +321,11 @@ export class ExamService {
       targetPairs.add(key);
     }
   }
-
   // 6. Lọc danh sách video theo targetPairs
   const filteredGrouped = grouped.filter(v => {
     const key = `${v.examId}-${v.userId}`;
     return targetPairs.has(key);
   });
-
   // 7. Lấy thông tin bổ sung
   const userIds = [...new Set(filteredGrouped.map(v => v.userId))];
   const examIds = [...new Set(filteredGrouped.map(v => v.examId))];
@@ -290,23 +336,18 @@ export class ExamService {
     classStudentRepo.find({ where: { studentId: In(userIds) } }),
     classRepo.find({
       where: {
-        classroomId: In(
-          (await classStudentRepo.find({ where: { studentId: In(userIds) } }))
-            .map(cs => cs.classroomId)
-        ),
+        classroomId: In(teacherClassIds) // Only get teacher's classes
       },
     }),
   ]);
-
   // 8. Tạo lookup maps
   const userMap = new Map(users.map(u => [Number(u.userId), u.name]));
   const examMap = new Map(exams.map(e => [Number(e.examId), e.name]));
   const classStudentMap = new Map(classStudents.map(cs => [Number(cs.studentId), Number(cs.classroomId)]));
   const classRoomMap = new Map(classRooms.map(c => [Number(c.classroomId), c.name]));
-
-  // 9. Gộp dữ liệu kết quả
-  const result = filteredGrouped.map(v => {
-    const classRoomId = classStudentMap.get(v.userId) || null;
+  // 9. Gộp dữ liệu kết quả - chỉ bao gồm students trong classes của teacher
+  let result = filteredGrouped.map(v => {
+    const classRoomId = classStudentMap.get(Number(v.userId)) || null;
     return {
       userId: v.userId,
       examId: v.examId,
@@ -316,7 +357,17 @@ export class ExamService {
       classRoomName: classRoomMap.get(classRoomId) || null,
       examName: examMap.get(v.examId) || null,
     };
+  }).filter(item => {
+    // Double check: only include students from teacher's classes
+    const teacherClassIdsNum = teacherClassIds.map(id => Number(id));
+    return item.classRoomId && teacherClassIdsNum.includes(item.classRoomId);
   });
+  // Apply name filter if provided
+  if (query.name && query.name.trim() !== "") {
+    result = result.filter(exam => 
+      exam.examName && exam.examName.toLowerCase().includes(query.name.toLowerCase())
+    );
+  }
 
   return {
     content: result,
@@ -357,7 +408,6 @@ export class ExamService {
   }
 
   addExam = async(body: CreateExamDto) => {
-    console.log('BE', body)
     const {name, classRoomId, isPrivate, questionIds} = body;
     const examRepo = this.dataSourceB.getRepository(ExamB);
     const examQuestionRepo = this.dataSource.getRepository(ExamQuestion);
@@ -422,7 +472,6 @@ export class ExamService {
         content: questionMap.get(exam.questionId) || null,
       };
     });
-    console.log("data ve FE", formattedData)
     return {
       data: formattedData,
       total: itemCount,
@@ -466,7 +515,6 @@ export class ExamService {
         contentFromVocabulary: vocabMap.get(exam.vocabularyId) || null,
       };
     });
-    console.log("data ve FE", formattedData)
     return {
       data: formattedData,
       total: itemCount,
@@ -474,72 +522,41 @@ export class ExamService {
   };
 
   getDetailPracticeExamToScore = async (examId: number, userId: number) => { 
-    const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
-    const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
-    const examRepo = this.dataSourceB.getRepository(ExamB);
-    const userRepo = this.dataSource.getRepository(User);
-    const examVideoRepo = this.dataSource.getRepository(ExamVideo);
+  const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+  const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
+  const examRepo = this.dataSourceB.getRepository(ExamB);
+  const userRepo = this.dataSource.getRepository(User);
+  const examVideoRepo = this.dataSource.getRepository(ExamVideo);
 
-    // 1. Lấy danh sách câu hỏi theo examId
-    const examVocabList = await examVocabularyRepo.find({
-      where: { examId },
-      order: { vocabularyId: 'ASC' },
-      select: ['vocabularyId', 'content'],
-    });
+  // 1. Lấy danh sách câu hỏi theo examId
+  const examVocabList = await examVocabularyRepo.find({
+    where: { examId },
+    order: { vocabularyId: 'ASC' },
+    select: ['vocabularyId', 'content'],
+  });
 
-    const vocabularyIds = examVocabList.map(item => item.vocabularyId);
+  const vocabularyIds = examVocabList.map(item => item.vocabularyId);
 
-    // 2. Lấy nội dung Vocabulary tương ứng
-    const vocabularies = await vocabularyRepo.find({
-      where: { vocabularyId: In(vocabularyIds) },
-    });
-    const vocabMap = new Map(vocabularies.map(v => [v.vocabularyId, v.content]));
+  // 2. Lấy nội dung Vocabulary tương ứng
+  const vocabularies = await vocabularyRepo.find({
+    where: { vocabularyId: In(vocabularyIds) },
+  });
+  const vocabMap = new Map(vocabularies.map(v => [v.vocabularyId, v.content]));
 
-    // 3. Lấy exam và user info
-    const exam = await examRepo.findOne({ where: { examId } });
-    const user = await userRepo.findOne({ where: { userId } });
+  // 3. Lấy exam và user info
+  const exam = await examRepo.findOne({ where: { examId } });
+  const user = await userRepo.findOne({ where: { userId } });
 
-    // 4. Lấy tất cả video theo examId + userId, order giảm dần theo createdDate
-    const examVideos = await examVideoRepo.find({
-      where: { examId, userId },
-      order: { createdDate: 'DESC' },
-      select: ['videoUrl', 'aiAnswer', 'createdDate'], // Include aiAnswer in select
-    });
+  // 4. Lấy tất cả video theo examId + userId, order giảm dần theo createdDate
+  const examVideos = await examVideoRepo.find({
+    where: { examId, userId },
+    order: { createdDate: 'DESC' },
+    select: ['videoUrl', 'aiAnswer', 'createdDate'],
+  });
 
-    if (examVideos.length === 0) {
-      // Nếu không có video nào
-      const formattedNoVideo = examVocabList.map((item) => ({
-        examId,
-        examName: exam?.name || '',
-        userId,
-        userName: user?.name || '',
-        vocabularyId: item.vocabularyId,
-        contentFromExamVocabulary: item.content,
-        contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-        videos: [],  // Empty array with video details
-      }));
-      return {
-        data: formattedNoVideo,
-        total: formattedNoVideo.length,
-      };
-    }
-
-    // 5. Lấy createdDate mới nhất
-    const latestCreatedDate = examVideos[0].createdDate;
-
-    // 6. Lọc lấy tất cả video có cùng createdDate mới nhất
-    const latestVideos = examVideos.filter(
-      v => v.createdDate.getTime() === latestCreatedDate.getTime()
-    );
-
-    // 7. Create video details array with both URL and AI answer
-    const videoDetails = latestVideos.map(v => ({
-      videoUrl: v.videoUrl,
-      aiAnswer: v.aiAnswer || null,
-    }));
-
-    // 8. Trả về dữ liệu, mỗi câu hỏi có mảng video details
-    const formatted = examVocabList.map(item => ({
+  if (examVideos.length === 0) {
+    // Nếu không có video nào
+    const formattedNoVideo = examVocabList.map((item) => ({
       examId,
       examName: exam?.name || '',
       userId,
@@ -547,14 +564,48 @@ export class ExamService {
       vocabularyId: item.vocabularyId,
       contentFromExamVocabulary: item.content,
       contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-      videos: videoDetails, // Array of video objects with URL and AI answer
+      videos: [],
     }));
+    return {
+      data: formattedNoVideo,
+      total: formattedNoVideo.length,
+    };
+  }
+
+  // 5. Lấy createdDate mới nhất
+  const latestCreatedDate = examVideos[0].createdDate;
+
+  // 6. Lọc lấy tất cả video có cùng createdDate mới nhất
+  const latestVideos = examVideos.filter(
+    v => v.createdDate.getTime() === latestCreatedDate.getTime()
+  );
+
+    // 7. Distribute videos to vocabulary questions
+  // OPTION A: One video per vocabulary question (if videos were recorded sequentially)
+  const formatted = examVocabList.map((item, index) => {
+    const video = latestVideos[index]; // Match by index/order
+    const questionVideos = video ? [{
+      videoUrl: video.videoUrl,
+      aiAnswer: video.aiAnswer || null,
+    }] : [];
 
     return {
-      data: formatted,
-      total: formatted.length,
+      examId,
+      examName: exam?.name || '',
+      userId,
+      userName: user?.name || '',
+      vocabularyId: item.vocabularyId,
+      contentFromExamVocabulary: item.content,
+      contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
+      videos: questionVideos,
     };
+  });
+
+  return {
+    data: formatted,
+    total: formatted.length,
   };
+};
 
   getById = async (examId: number): Promise<EXAM> => {
     const exam = await EXAM.findOne({

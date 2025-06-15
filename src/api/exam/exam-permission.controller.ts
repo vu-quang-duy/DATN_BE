@@ -15,8 +15,7 @@ import { ExamB } from 'src/entitiesB/exam.entity';
 import { ExamVocabulary } from 'src/entities/exam/exam-vocabulary.entity';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ExamVideo } from 'src/entities/exam/exam-video.entity';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { PracticeExamAttempt } from 'src/entities/exam/practice-attempt.entity';
 import { ExamQuestion } from 'src/entities/exam/exam-question.entity';
 @IsAuthController(EntityNameConst.EXAM, false)
@@ -32,13 +31,16 @@ export class ExamPermissionController {
     const res = await this.examService.getListExam(query);
     return res;
 }
-  @Get('/all-practice-exams')
+  @Get('/all-practice-exams/:teacherId')
   @ApiHandleResponse({
     type: ExamAttempt,
     summary: 'Get list practice exam for teacher to score'
   })
-  async getListPracticeExam(@Query() query: SearchExamAttemptDto) {
-    const res = await this.examService.getListPracticeExam(query);
+  async getListPracticeExam(
+    @Param('teacherId') teacherId: number,
+    @Query() query: SearchExamAttemptDto
+  ) {
+    const res = await this.examService.getListPracticeExam(query, teacherId);
     return res;
 }
 
@@ -60,12 +62,7 @@ export class ExamPermissionController {
 
 @Post('/submit-practice')
 @UseInterceptors(FilesInterceptor('videos', 10, {
-  storage: diskStorage({
-    destination: '/home/tuyentrinh/Desktop/sign_school/uploads/videos',  // Đường dẫn đầy đủ trên server
-    filename: (req, file, callback) => {
-      callback(null, file.originalname); // Đặt tên tránh trùng
-    },
-  }),
+  storage: memoryStorage(), // This keeps files in memory only
 }))
 async submitPracticeTest(
   @UploadedFiles() files: Express.Multer.File[],
@@ -73,7 +70,6 @@ async submitPracticeTest(
 ) {
   return await this.examService.submitPracticeTest(files, body);
 }
-
 
   @Post('/exam-scoring')
   @ApiHandleResponse({

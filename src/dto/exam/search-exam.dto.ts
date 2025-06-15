@@ -19,8 +19,8 @@ export class SearchExamAttemptDto extends PageOptionsDto {
   @IsSwaggerNumber({}, false)
   readonly userId: number;
 
-  @IsSwaggerBoolean({}, false)
-  readonly isFinished: boolean;
+  @IsSwaggerString({}, false)
+  readonly isFinished: string;
 
   @IsSwaggerNumber({}, false)
   readonly examId: number;
@@ -30,4 +30,10 @@ export class SearchExamAttemptDto extends PageOptionsDto {
 
   @IsSwaggerString({}, false)
   readonly examType: string;
+
+  @IsSwaggerString({}, false)
+  readonly name?: string;
+
+  @IsSwaggerString({}, false)
+  readonly classRoomName?: string;
 }

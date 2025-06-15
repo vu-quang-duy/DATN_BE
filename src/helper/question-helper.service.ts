@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SearchQuestionDto } from 'src/dto/question/search-question.dto';
 import { Topic } from 'src/entities/vocabulary/topic.entity';
 import { ConditionWhere } from 'src/types/query.type';
@@ -6,7 +7,7 @@ import { Question } from './../entities/question/question.entity';
 
 export class QuestionHelper {
   static getFilterSearchQuestion = (q: SearchQuestionDto): ConditionWhere<Question> => {
-    let userWhere: ConditionWhere<Topic> = {};
+    let userWhere: ConditionWhere<Question> = {};
     userWhere = {
       ...(q.content && { content: ILike(`%${q.content}%`) }),
       ...(q.classRoomId && { classRoomId: q.classRoomId }),

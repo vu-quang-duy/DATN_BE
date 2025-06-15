@@ -50,8 +50,6 @@ export class QuestionPermissionController {
     type: Question,
   })
   async deleteList(@Body() body) {
-    console.log("📝 Received body:", body);
-    
     if (!body.questionIds || body.questionIds.length === 0) {
       throw new Error('❌ No question IDs provided');
     }
