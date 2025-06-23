@@ -531,7 +531,7 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
   // 1. Lấy danh sách câu hỏi theo examId
   const examVocabList = await examVocabularyRepo.find({
     where: { examId },
-    order: { vocabularyId: 'ASC' },
+    order: { vocabularyExamId: 'ASC' },
     select: ['vocabularyId', 'content'],
   });
 
@@ -548,64 +548,68 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
   const user = await userRepo.findOne({ where: { userId } });
 
   // 4. Lấy tất cả video theo examId + userId, order giảm dần theo createdDate
-  const examVideos = await examVideoRepo.find({
-    where: { examId, userId },
-    order: { createdDate: 'DESC' },
-    select: ['videoUrl', 'aiAnswer', 'createdDate'],
-  });
+  const allVideos = await examVideoRepo.find({
+  where: { examId, userId },
+  order: { createdDate: 'DESC' }, // mới nhất trước
+  select: ['videoUrl', 'aiAnswer', 'createdDate', 'videoExamId'], // id để sắp lại
+});
 
-  if (examVideos.length === 0) {
-    // Nếu không có video nào
-    const formattedNoVideo = examVocabList.map((item) => ({
-      examId,
-      examName: exam?.name || '',
-      userId,
-      userName: user?.name || '',
-      vocabularyId: item.vocabularyId,
-      contentFromExamVocabulary: item.content,
-      contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-      videos: [],
-    }));
-    return {
-      data: formattedNoVideo,
-      total: formattedNoVideo.length,
-    };
-  }
-
-  // 5. Lấy createdDate mới nhất
-  const latestCreatedDate = examVideos[0].createdDate;
-
-  // 6. Lọc lấy tất cả video có cùng createdDate mới nhất
-  const latestVideos = examVideos.filter(
-    v => v.createdDate.getTime() === latestCreatedDate.getTime()
-  );
-
-    // 7. Distribute videos to vocabulary questions
-  // OPTION A: One video per vocabulary question (if videos were recorded sequentially)
-  const formatted = examVocabList.map((item, index) => {
-    const video = latestVideos[index]; // Match by index/order
-    const questionVideos = video ? [{
-      videoUrl: video.videoUrl,
-      aiAnswer: video.aiAnswer || null,
-    }] : [];
-
-    return {
-      examId,
-      examName: exam?.name || '',
-      userId,
-      userName: user?.name || '',
-      vocabularyId: item.vocabularyId,
-      contentFromExamVocabulary: item.content,
-      contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-      videos: questionVideos,
-    };
-  });
+// 2. Nếu không có video nào thì return sớm
+if (allVideos.length === 0) {
+  const formattedNoVideo = examVocabList.map((item) => ({
+    examId,
+    examName: exam?.name || '',
+    userId,
+    userName: user?.name || '',
+    vocabularyId: item.vocabularyId,
+    contentFromExamVocabulary: item.content,
+    contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
+    videos: [],
+  }));
 
   return {
-    data: formatted,
-    total: formatted.length,
+    data: formattedNoVideo,
+    total: formattedNoVideo.length,
   };
+}
+
+// 3. Tìm createdDate mới nhất
+const latestCreatedDate = allVideos[0].createdDate;
+
+// 4. Lọc ra các video trong lần làm bài đó
+const latestVideos = allVideos.filter(
+  v => v.createdDate.getTime() === latestCreatedDate.getTime()
+);
+
+// 5. Sắp xếp lại theo thứ tự mapping-id tăng dần (tức là id ASC)
+latestVideos.sort((a, b) => a.videoExamId - b.videoExamId);
+
+// 6. Ghép từng video vào từng câu hỏi theo thứ tự
+const formatted = examVocabList.map((item, index) => {
+  const video = latestVideos[index];
+  const questionVideos = video ? [{
+    videoUrl: video.videoUrl,
+    aiAnswer: video.aiAnswer || null,
+  }] : [];
+
+  return {
+    examId,
+    examName: exam?.name || '',
+    userId,
+    userName: user?.name || '',
+    vocabularyId: item.vocabularyId,
+    contentFromExamVocabulary: item.content,
+    contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
+    videos: questionVideos,
+  };
+});
+
+return {
+  data: formatted,
+  total: formatted.length,
 };
+}
+
 
   getById = async (examId: number): Promise<EXAM> => {
     const exam = await EXAM.findOne({

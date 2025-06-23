@@ -15,7 +15,7 @@ import { ExamB } from 'src/entitiesB/exam.entity';
 import { ExamVocabulary } from 'src/entities/exam/exam-vocabulary.entity';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ExamVideo } from 'src/entities/exam/exam-video.entity';
-import { memoryStorage } from 'multer';
+import { diskStorage } from 'multer';
 import { PracticeExamAttempt } from 'src/entities/exam/practice-attempt.entity';
 import { ExamQuestion } from 'src/entities/exam/exam-question.entity';
 @IsAuthController(EntityNameConst.EXAM, false)
@@ -62,8 +62,14 @@ export class ExamPermissionController {
 
 @Post('/submit-practice')
 @UseInterceptors(FilesInterceptor('videos', 10, {
-  storage: memoryStorage(), // This keeps files in memory only
-}))
+  storage: diskStorage({     
+    destination: '/home/tuyentrinh/Desktop/sign_school/uploads/videos',  
+    // Đường dẫn đầy đủ trên server     
+    filename: (req, file, callback) => {       
+      callback(null, file.originalname); // Đặt tên tránh trùng    
+    },   
+  }), 
+})) 
 async submitPracticeTest(
   @UploadedFiles() files: Express.Multer.File[],
   @Body() body: PracticeExamScoringDto
