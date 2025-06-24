@@ -35,6 +35,7 @@ async function bootstrap() {
     'http://202.191.56.11:3000',
     'http://127.0.0.1:3000',
     'http://172.24.0.1:3000',
+    'https://wesign.ibme.edu.vn'
   ];
 
 app.enableCors({

@@ -123,26 +123,52 @@ export class ExamService {
     // 4. Gộp attempt theo examId
     const attemptMap: Record<number, any> = {};
 
+    // allAttempts.forEach(item => {
+    //   if (!attemptMap[item.examId]) {
+    //     attemptMap[item.examId] = {
+    //       ...item,
+    //       attemptCount: item.isFinished ? 1 : 0,
+    //     };
+    //   } else {
+    //     const existing = attemptMap[item.examId];
+
+    //     if (item.score > existing.score) {
+    //       existing.score = item.score;
+    //     }
+
+    //     if (item.isFinished) {
+    //       existing.isFinished = true;
+    //     }
+
+    //     existing.attemptCount += item.isFinished ? 1 : 0;
+    //   }
+    // });
     allAttempts.forEach(item => {
-      if (!attemptMap[item.examId]) {
-        attemptMap[item.examId] = {
-          ...item,
-          attemptCount: item.isFinished ? 1 : 0,
-        };
-      } else {
-        const existing = attemptMap[item.examId];
+  // Convert scores to numbers for proper comparison
+  const itemScore = item.score !== null && item.score !== undefined ? Number(item.score) : null;
+  
+  if (!attemptMap[item.examId]) {
+    attemptMap[item.examId] = {
+      ...item,
+      score: itemScore, // Store as number
+      attemptCount: item.isFinished ? 1 : 0,
+    };
+  } else {
+    const existing = attemptMap[item.examId];
+    const existingScore = existing.score !== null && existing.score !== undefined ? Number(existing.score) : null;
 
-        if (item.score > existing.score) {
-          existing.score = item.score;
-        }
+    // Now compare numbers properly
+    if (itemScore !== null && (existingScore === null || itemScore > existingScore)) {
+      existing.score = itemScore;
+    }
 
-        if (item.isFinished) {
-          existing.isFinished = true;
-        }
+    if (item.isFinished) {
+      existing.isFinished = true;
+    }
 
-        existing.attemptCount += item.isFinished ? 1 : 0;
-      }
-    });
+    existing.attemptCount += item.isFinished ? 1 : 0;
+  }
+});
 
     // 5. Merge kết quả
     let finalData = exams.map(exam => {
