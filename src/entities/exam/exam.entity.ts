@@ -25,12 +25,6 @@ export class EXAM extends AbstractTimeEntity {
   classRoomId: number;
 
   @DBColumn({
-    name: 'creator_id',
-    type: 'int',
-  })
-  creatorId: number;
-
-  @DBColumn({
     name: 'created_by',
     type: 'varchar',
   })

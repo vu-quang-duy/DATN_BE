@@ -44,18 +44,15 @@ export class QuestionPermissionController {
     return await this.questionService.updateById(id, req.user, body, QuestionAction.UPDATE_QUESTION);
   }
 
-  @Delete('/delete-list')
-  @ApiHandleResponse({
-    summary: "Delete question",
-    type: Question,
-  })
-  async deleteList(@Body() body) {
-    if (!body.questionIds || body.questionIds.length === 0) {
-      throw new Error('❌ No question IDs provided');
-    }
-    
-    return await this.questionService.deleteList(body);
-  }
+@Delete('/delete-list') // Changed from @Put to @Delete
+@ApiHandleResponse({
+  summary: "Delete questions",
+  type: Question,
+})
+async deleteList(@Body() body: { questionIds: number[] }) {
+  console.log('🔍 Controller received body:', body);
+  return await this.questionService.deleteList(body);
+}
 
   @Delete('/answers/:id')
   @ApiHandleResponse({

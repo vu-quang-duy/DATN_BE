@@ -39,6 +39,12 @@ export class UserController {
     return await this.userService.login(body);
   }
 
+  @Get('/all-student-list')
+  @ApiHandleResponse({ type: User, summary: 'Get all student list' })
+  async getAllStudentList(@Query() query: SearchStudentDto) {
+    return await this.userService.getAllStudentList(query);
+  }
+
   @Get('/student-list')
   @ApiHandleResponse({ type: User, summary: 'Get student list' })
   async getStudentList(@Query() query: SearchStudentDto) {

@@ -18,23 +18,6 @@ export class CreateExamDto {
   readonly questionIds: number[];
 }
 
-export class UpdateExamDto {
-  @IsSwaggerString({ default: 'name' }, false)
-  readonly name: string;
-
-  @IsSwaggerString({}, false)
-  readonly thumbnailPath: string;
-
-  @IsSwaggerNumber({}, false)
-  readonly numberOfQuestions: number;
-
-  @IsSwaggerString({}, false)
-  readonly description: string;
-
-  @IsSwaggerArray({}, false)
-  readonly questionIds: number[];
-}
-
 class PracticeWordDto {
   @IsSwaggerNumber({})
   readonly vocabularyId: number;
@@ -45,6 +28,34 @@ class PracticeWordDto {
   @IsSwaggerNumber({})
   readonly topicId: number;
 }
+export class UpdateExamDto {
+  @IsSwaggerString({ default: 'name' }, false)
+  readonly name: string;
+
+  @IsSwaggerString({}, false)
+  readonly examType: string;
+
+  @IsSwaggerNumber({})
+  readonly examId: number;
+
+  @IsSwaggerNumber({})
+  readonly classRoomId: number;
+
+  @IsSwaggerNumber({}, false)
+  readonly numberOfQuestions: number;
+
+  @IsSwaggerBoolean({}, false)
+  readonly isPrivate: boolean;
+
+  @IsSwaggerArray({}, false)
+  readonly questionIds: number[];
+
+  @IsSwaggerArray({ type: PracticeWordDto }, false)
+  @ValidateNested({ each: true })
+  @Type(() => PracticeWordDto)
+  readonly practiceWords: PracticeWordDto[];
+}
+
 export class CreatePracticeExamDto {
   @IsSwaggerString({ default: 'name' })
   readonly name: string;

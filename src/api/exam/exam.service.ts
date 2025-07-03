@@ -55,7 +55,6 @@ export class ExamService {
         name: true,
         classRoomId: true,
         createdDate: true,
-        creatorId: true,
         private: true,
         classroom: {
           classroomId: true,
@@ -122,27 +121,6 @@ export class ExamService {
 
     // 4. Gộp attempt theo examId
     const attemptMap: Record<number, any> = {};
-
-    // allAttempts.forEach(item => {
-    //   if (!attemptMap[item.examId]) {
-    //     attemptMap[item.examId] = {
-    //       ...item,
-    //       attemptCount: item.isFinished ? 1 : 0,
-    //     };
-    //   } else {
-    //     const existing = attemptMap[item.examId];
-
-    //     if (item.score > existing.score) {
-    //       existing.score = item.score;
-    //     }
-
-    //     if (item.isFinished) {
-    //       existing.isFinished = true;
-    //     }
-
-    //     existing.attemptCount += item.isFinished ? 1 : 0;
-    //   }
-    // });
     allAttempts.forEach(item => {
   // Convert scores to numbers for proper comparison
   const itemScore = item.score !== null && item.score !== undefined ? Number(item.score) : null;
@@ -463,6 +441,80 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
       .execute();
   }
 
+  editExam = async(body: UpdateExamDto) => {
+  console.log('body', body);
+  
+  const { examId, examType, name, classRoomId, isPrivate } = body;
+  const examRepo = this.dataSourceB.getRepository(ExamB);
+  
+  // Update the main exam record
+  await examRepo
+    .createQueryBuilder()
+    .update(ExamB)
+    .set({
+      name,
+      classRoomId,
+      isPrivate
+    })
+    .where("examId = :examId", { examId })
+    .execute();
+
+  if (examType === 'quiz') {
+    const { questionIds } = body;
+    const examQuestionRepo = this.dataSource.getRepository(ExamQuestion);
+    
+    // Delete existing exam questions
+    await examQuestionRepo
+      .createQueryBuilder()
+      .delete()
+      .from(ExamQuestion)
+      .where("examId = :examId", { examId })
+      .execute();
+    
+    // Insert new exam questions
+    if (questionIds && questionIds.length > 0) {
+      await examQuestionRepo
+        .createQueryBuilder()
+        .insert()
+        .into(ExamQuestion)
+        .values(
+          questionIds.map((questionId) => ({
+            examId,
+            questionId: Number(questionId),
+          }))
+        )
+        .execute();
+    }
+  } else if (examType === 'practice') {
+    const { practiceWords } = body;
+    const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+    
+    // Delete existing exam vocabulary
+    await examVocabularyRepo
+      .createQueryBuilder()
+      .delete()
+      .from(ExamVocabulary)
+      .where("examId = :examId", { examId })
+      .execute();
+    
+    // Insert new exam vocabulary
+    if (practiceWords && practiceWords.length > 0) {
+      await examVocabularyRepo
+        .createQueryBuilder()
+        .insert()
+        .into(ExamVocabulary)
+        .values(
+          practiceWords.map((word) => ({
+            vocabularyId: word.vocabularyId,
+            examId: examId,
+            content: word.content,
+          }))
+        )
+        .execute();
+    }
+  }
+}
+
       getDetailExam = async (examId: number) => {
     const examQuestionRepo = this.dataSource.getRepository(ExamQuestion);
     const questionRepo = this.dataSource.getRepository(Question);
@@ -706,7 +758,7 @@ return {
     if (userRole.roleCode === 'ADMIN') {
       exam = await EXAM.findOne({ where: { examId } });
     } else {
-      exam = await EXAM.findOne({ where: { examId, creatorId: user.userId } });
+      exam = await EXAM.findOne({ where: { examId } });
     }
 
     if (!exam) throw new App404Exception('id', { examId });

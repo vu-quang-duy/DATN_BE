@@ -21,6 +21,11 @@ import { QuestionB } from 'src/entitiesB/question.entity';
 import { AnswerB } from 'src/entitiesB/answer.entity';
 import { ClassRoom } from 'src/entities/class/classroom.entity';
 import { query } from 'express';
+import { EXAM } from 'src/entities/exam/exam.entity';
+import { ExamQuestion } from 'src/entities/exam/exam-question.entity';
+import { ExamB } from 'src/entitiesB/exam.entity';
+import { ExamVocabulary } from 'src/entities/exam/exam-vocabulary.entity';
+import { Vocabulary } from 'src/entities/vocabulary/vocabulary.entity';
 
 @Injectable()
 export class QuestionService {
@@ -66,7 +71,6 @@ search = async (query: SearchQuestionDto) => {
     })),
   }));
 
-  console.log('data',dataWithClassName)
 
   // ✅ Filter by question name
   if (query.content && query.content.trim() !== "") {
@@ -175,12 +179,6 @@ search = async (query: SearchQuestionDto) => {
       relations: { answerResList: true },
     });
     if (!question) throw new App404Exception('id', { questionId });
-
-    // if (body.content != question.content) {
-    //   const isExistByName = await HelperUtils.existByName(Question, body.content, 'content');
-    //   if (isExistByName) throw new AppExistedException('content', body);
-    // }
-
     const oldQuestion = JSON.stringify(question);
 
     const isPermission = await PermissionHelper.isPermissionChange(user.userId, permissionCode);
@@ -235,18 +233,19 @@ search = async (query: SearchQuestionDto) => {
     return true;
   };
 
-deleteList = async (body: { questionIds: string[] }) => {
+deleteList = async (body: { questionIds: number[] }) => {
   const questionRepository = this.dataSource.getRepository(Question);
-  
+  const answerRepository = this.dataSource.getRepository(Answer)
   const numericIds = body.questionIds
-    ?.map(id => parseInt(id, 10))
-    .filter(id => !isNaN(id) && id > 0);
-          
-  if (!numericIds || numericIds.length === 0) {
-    throw new Error('No valid question IDs provided');
-  }
-     
+  console.log('🔍 Received questionIds:', numericIds);
+  console.log('🔍 Types:', body.questionIds.map(id => typeof id));
+
   try {
+    await answerRepository
+      .createQueryBuilder()
+      .delete()
+      .where('question_id IN (:...ids)', { ids: numericIds })
+      .execute();
     // Using query builder - more explicit
     const result = await questionRepository
       .createQueryBuilder()
@@ -277,36 +276,121 @@ deleteList = async (body: { questionIds: string[] }) => {
   };
 
 getQuestionOfExam = async (id: number): Promise<PageDto<Question>> => {
-  const [data, itemCount] = await Question.findAndCount({
-    where: {
-      exams: {
-        examId: id,
+  console.log('id', id);
+  
+  // Get repositories
+  const examRepository = this.dataSourceB.getRepository(ExamB);
+  const examQuestionRepository = this.dataSource.getRepository(ExamQuestion);
+  const classRepository = this.dataSource.getRepository(ClassRoom);
+  const practiceQuestionRepository = this.dataSource.getRepository(ExamVocabulary);
+  const vocabularyRepository = this.dataSource.getRepository(Vocabulary);
+
+  // Get exam details
+  const exam = await examRepository.findOne({
+    where: { examId: id }
+  });
+
+  // Check if exam exists in ExamQuestion table to determine examType
+  const examQuestion = await examQuestionRepository.findOne({
+    where: { examId: id }
+  });
+  const examType = examQuestion ? 'quiz' : 'practice';
+
+  let formattedData: any[];
+  let itemCount: number;
+
+  if (examType === 'quiz') {
+    // Current logic for quiz type
+    const [data, count] = await Question.findAndCount({
+      where: {
+        exams: {
+          examId: id,
+        },
       },
-    },
-    relations: { answerResList: true, exams: true },
+      relations: { answerResList: true, exams: true },
+    });
+
+    itemCount = count;
+
+    // Get unique classRoomIds from the questions
+    const classRoomIds = [...new Set(data.map(question => question.classRoomId))];
+    
+    // Get classroom details for all unique classRoomIds
+    const classRooms = await classRepository.find({
+      where: { classroomId: In(classRoomIds) }
+    });
+    
+    // Create a map for quick lookup
+    const classRoomMap = new Map(
+      classRooms.map(classroom => [classroom.classroomId, classroom.name])
+    );
+
+    // Convert Buffer to boolean and add additional data
+    formattedData = data.map((question) => {
+      const updatedAnswers = question.answerResList?.map((answer) => {
+        const correctValue =
+          Buffer.isBuffer(answer.correct)
+            ? answer.correct[0] === 1
+            : (answer.correct as { data: number[] })?.data?.[0] === 1;
+
+        return {
+          ...answer,
+          correct: correctValue,
+        };
+      }) || [];
+
+      return {
+        ...question,
+        answerResList: updatedAnswers,
+        examName: exam?.name || '',
+        examType,
+        classRoomName: classRoomMap.get(question.classRoomId) || '',
+      };
+    });
+
+  } else {
+    // Practice type logic - get vocabulary data from practiceQuestionRepository
+    const [practiceData, practiceCount] = await practiceQuestionRepository.findAndCount({
+      where: { examId: id }
+    });
+
+    itemCount = practiceCount;
+
+    // Get unique vocabularyIds from practice data
+    const vocabularyIds = [...new Set(practiceData.map(item => item.vocabularyId))];
+    
+    // Get vocabulary details including topicId
+    const vocabularies = await vocabularyRepository.find({
+      where: { vocabularyId: In(vocabularyIds) }
+    });
+
+    // Create a map for quick vocabulary lookup
+    const vocabularyMap = new Map(
+      vocabularies.map(vocab => [vocab.vocabularyId, vocab])
+    );
+
+    // For practice, the "questions" are the vocabulary items
+    formattedData = practiceData.map((practiceItem) => {
+      const vocabulary = vocabularyMap.get(practiceItem.vocabularyId);
+      const cleanContent = practiceItem.content?.split('-')[0]?.trim() || '';
+
+      return {
+        vocabularyId: practiceItem.vocabularyId,
+        content: cleanContent,
+        isPrivate: vocabulary?.isPrivate || false,
+        topicId: vocabulary?.topicId || null,
+        examName: exam?.name || '',
+        examType,
+        classRoomId: exam?.classRoomId || null,
+      };
+    });
+  }
+
+  return GenerateUtil.paginate({ 
+    data: formattedData, 
+    itemCount, 
+    query: {}
   });
-
-  // Convert Buffer to boolean
-  const formattedData = data.map((question) => {
-  const updatedAnswers = question.answerResList?.map((answer) => {
-    const correctValue =
-      Buffer.isBuffer(answer.correct)
-        ? answer.correct[0] === 1
-        : (answer.correct as { data: number[] })?.data?.[0] === 1;
-
-    return {
-      ...answer,
-      correct: correctValue,
-    };
-  }) || [];
-
-    return {
-      ...question,
-      answerResList: updatedAnswers,
-    };
-  });
-
-  return GenerateUtil.paginate({ data: formattedData, itemCount, query: {} });
 };
 
   getListQuestionClass = async (classRoomId?: any) => {

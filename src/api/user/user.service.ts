@@ -511,13 +511,17 @@ export class UserService {
     return classJoinedCount;
   };
 
-  getStudentList = async (query: SearchStudentDto) => {// mặc định DESC nếu không có
+getAllStudentList = async (query: SearchStudentDto) => {// mặc định DESC nếu không có
   const [data, itemCount] = await User.createQueryBuilder('user')
   .leftJoinAndSelect('user.school', 'school')
   .leftJoinAndSelect('user.classStudents', 'classStudent')
   .leftJoinAndSelect('classStudent.classroom', 'classroom')
   .where('user.code = :code', { code: 'user' })
   .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 }) 
+  .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', { 
+    specificUserId: 27, 
+    minUserId: 140 
+  })
   .andWhere(query.name ? 'user.name LIKE :name' : 'TRUE', {
     name: `%${query.name}%`,
   })
@@ -533,9 +537,6 @@ export class UserService {
   .select([
     'user.userId',
     'user.name',
-    'user.birthDay',
-    'user.address',
-    'user.email',
     'user.createdDate',
     'school.schoolId',
     'school.name',
@@ -550,16 +551,102 @@ export class UserService {
     return {
       userId: student.userId,
       name: student.name,
-      birthDay: student.birthDay?.toISOString().split('T')[0] || 'Không có',
       schoolId: student.school?.schoolId || 'Không có',
       schoolName: student.school?.name || 'Không có',
-      city: student.address || 'Không có',
-      email: student.email || 'Không có',
       classRoomName: firstClassName,
     };
   });
   
 return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+};
+
+// Option 1: Two-step approach with Admin and userId >= 140 filtering
+getStudentList = async (query: SearchStudentDto) => {
+  const teacherId = Number(query.userId);
+  const isAdmin = teacherId === 1;
+
+  let queryBuilder = User.createQueryBuilder('user')
+    .leftJoinAndSelect('user.school', 'school')
+    .leftJoinAndSelect('user.classStudents', 'classStudent')
+    .leftJoinAndSelect('classStudent.classroom', 'classroom')
+    .where('user.code = :code', { code: 'user' })
+    .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 })
+    .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', { 
+    specificUserId: 27, 
+    minUserId: 140 
+  });
+
+  if (!isAdmin) {
+    // For regular teachers, get their classroom and school restrictions
+    const teacher = await User.createQueryBuilder('teacher')
+      .leftJoinAndSelect('teacher.classTeachers', 'classTeacher')
+      .leftJoinAndSelect('classTeacher.classroom', 'teacherClassroom')
+      .where('teacher.userId = :teacherId', { teacherId })
+      .andWhere('teacher.isDeleted = :isDeleted', { isDeleted: 0 })
+      .getOne();
+
+    if (!teacher || !teacher.classTeachers || teacher.classTeachers.length === 0) {
+      return GenerateUtil.paginate({ data: [], itemCount: 0, query });
+    }
+
+    // Get teacher's school ID and classroom IDs
+    const teacherSchoolId = teacher.schoolId;
+    const teacherClassroomIds = teacher.classTeachers.map(ct => ct.classroom.classroomId);
+
+    // Apply teacher restrictions with unique parameter names
+    queryBuilder = queryBuilder
+      .andWhere('user.schoolId = :teacherSchoolId', { teacherSchoolId })
+      .andWhere('classroom.classroomId IN (:...teacherClassroomIds)', { teacherClassroomIds });
+  }
+
+  // Apply common filters with unique parameter names to avoid conflicts
+  const filterParams: any = {};
+  
+  if (query.name) {
+    queryBuilder = queryBuilder.andWhere('user.name LIKE :searchName', { searchName: `%${query.name}%` });
+  }
+  
+  if (query.classRoomId) {
+    queryBuilder = queryBuilder.andWhere('classroom.classroomId = :filterClassRoomId', { filterClassRoomId: query.classRoomId });
+  }
+  
+  // Only apply school filter for admin users or if it doesn't conflict with teacher restrictions
+  if (query.schoolId) {
+    queryBuilder = queryBuilder.andWhere('school.schoolId = :filterSchoolId', { filterSchoolId: query.schoolId });
+  }
+
+  queryBuilder = queryBuilder
+    .orderBy(`user.${query.orderBy ?? 'userId'}`, query.sortBy ?? 'DESC')
+    .skip(query.skip)
+    .take(query.take)
+    .select([
+      'user.userId',
+      'user.name',
+      'user.email',
+      'user.createdDate',
+      'school.schoolId',
+      'school.name',
+      'classStudent.classStudentId',
+      'classroom.name',
+      'classroom.classroomId' 
+    ]);
+
+  const [data, itemCount] = await queryBuilder.getManyAndCount();
+
+  const formattedData = data.map((student) => {
+    const firstClassName =
+      student.classStudents?.[0]?.classroom?.name || 'Không có';
+    return {
+      userId: student.userId,
+      name: student.name,
+      schoolId: student.school?.schoolId || 'Không có',
+      schoolName: student.school?.name || 'Không có',
+      email: student.email || 'Không có',
+      classRoomName: firstClassName,
+    };
+  });
+
+  return GenerateUtil.paginate({ data: formattedData, itemCount, query });
 };
 
   getTeacherList = async (query: SearchTeacherDto) => {
@@ -569,6 +656,10 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
   .leftJoinAndSelect('classTeacher.classroom', 'classroom')
   .where('user.code = :code', { code: 'teacher' })
   .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 }) 
+  .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', { 
+    specificUserId: 28, 
+    minUserId: 140 
+  })  
   .andWhere(query.name ? 'user.name LIKE :name' : 'TRUE', {
     name: `%${query.name}%`,
   })

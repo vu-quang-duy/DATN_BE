@@ -20,17 +20,13 @@ async function bootstrap() {
 
   app.use((req, res, next) => {
     if (req.method === 'OPTIONS') {
-      console.log('🔥 OPTIONS REQUEST RECEIVED');
-      console.log('Origin:', req.headers.origin);
-      console.log('Method:', req.headers['access-control-request-method']);
-      console.log('Headers:', req.headers['access-control-request-headers']);
-      console.log('Full headers:', req.headers);
     }
     next();
   });
 
   const allowedOrigins = [
     'http://localhost:3000',
+    'http://localhost:8088',
     'http://202.191.100.3:3000',
     'http://202.191.56.11:3000',
     'http://127.0.0.1:3000',
@@ -40,14 +36,9 @@ async function bootstrap() {
 
 app.enableCors({
     origin: (origin, callback) => {
-      console.log('🔍 CORS Origin Check:', origin);
-      console.log('🔍 Allowed Origins:', allowedOrigins);
-      
       if (!origin || allowedOrigins.includes(origin)) {
-        console.log('✅ Origin ALLOWED', origin);
         callback(null, true);
       } else {
-        console.log('❌ Origin REJECTED', origin);
         callback(new Error(`CORS not allowed for origin: ${origin}`), false);
       }
     },
@@ -67,19 +58,6 @@ app.enableCors({
   });
 
   // Add response logging middleware AFTER CORS
-  app.use((req, res, next) => {
-    if (req.method === 'OPTIONS') {
-      console.log('🔥 OPTIONS RESPONSE HEADERS:');
-      console.log('Access-Control-Allow-Origin:', res.getHeader('Access-Control-Allow-Origin'));
-      console.log('Access-Control-Allow-Methods:', res.getHeader('Access-Control-Allow-Methods'));
-      console.log('Access-Control-Allow-Headers:', res.getHeader('Access-Control-Allow-Headers'));
-      console.log('Access-Control-Allow-Credentials:', res.getHeader('Access-Control-Allow-Credentials'));
-      res.sendStatus(200);
-    } else {
-    next();
-    }
-  });
-
 
   // REMOVED the manual OPTIONS handler - let NestJS handle it
 

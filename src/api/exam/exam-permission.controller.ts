@@ -86,7 +86,7 @@ async submitPracticeTest(
     return await this.examService.examScoring(body);
   }
 
-    @Post('/practice-exam-scoring')
+  @Post('/practice-exam-scoring')
   @ApiHandleResponse({
     type: PracticeExamAttempt,
     summary: 'Scoring practice exam',
@@ -110,7 +110,7 @@ async submitPracticeTest(
     );
   }
 
-    @Post('/practice-exam/reset/:examId')
+  @Post('/practice-exam/reset/:examId')
   @ApiHandleResponse({
     type: PracticeExamAttempt,
     summary: 'Reset practice exam for redo',
@@ -136,7 +136,7 @@ async submitPracticeTest(
     return await this.examService.getDetailPracticeExam(examId);
   }
 
-    @Get('/detail-exam/:id')
+  @Get('/detail-exam/:id')
   @ApiHandleResponse({
     type: ExamQuestion,
     summary: 'Get detail exam',
@@ -147,7 +147,7 @@ async submitPracticeTest(
     return await this.examService.getDetailExam(examId);
   }
 
-    @Get('/practice-exams-to-score/:examId/:userId')
+  @Get('/practice-exams-to-score/:examId/:userId')
   @ApiHandleResponse({
     type: ExamVideo,
     summary: 'Get detail practice exam to score',
@@ -170,7 +170,7 @@ async submitPracticeTest(
     return await this.examService.addPracticeExam(body);
   }
 
-    @Post('/add-exam')
+  @Post('/add-exam')
     @ApiHandleResponse({
     type: ExamB,
     summary: 'Create exam ',
@@ -179,6 +179,17 @@ async submitPracticeTest(
     @Body() body: CreateExamDto
   ) {
     return await this.examService.addExam(body);
+  }
+
+  @Put('/edit-exam')
+    @ApiHandleResponse({
+    type: ExamB,
+    summary: 'Edit exam ',
+  })
+  async editExam(
+    @Body() body: UpdateExamDto
+  ) {
+    return await this.examService.editExam(body);
   }
 }
 

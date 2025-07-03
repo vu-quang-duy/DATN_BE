@@ -35,6 +35,9 @@ export class SearchStudentDto extends PageOptionsDto {
 
   @IsSwaggerNumber({}, false)
   readonly schoolId: number;
+
+  @IsSwaggerNumber({}, false)
+  readonly userId: number;
 }
 
 export class SearchTeacherDto extends PageOptionsDto {
