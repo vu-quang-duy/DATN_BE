@@ -47,6 +47,8 @@ import { StudentProfile } from './../../entities/user/student-profile.entity';
 import { MailService } from './MailService';
 import { ClassTeacher } from 'src/entities/class/class-teacher.entity';
 import { PracticeExamAttempt } from 'src/entities/exam/practice-attempt.entity';
+import { ExamScoringDto } from 'src/dto/exam/exam-score.dto';
+import { ExamVideo } from 'src/entities/exam/exam-video.entity';
 
 @Injectable()
 export class UserService {
@@ -451,7 +453,132 @@ export class UserService {
   return completedList;
 };
 
-  
+getFullTestResults = async (query: ExamScoringDto) => {
+  const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+  const practiceAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
+  const practiceVideoRepo = this.dataSource.getRepository(ExamVideo)
+
+  const examType = query.type;
+  let examData;
+  if (examType === 'exam') {
+  // ===== 1. Lấy bài thi chính thức =====
+  examData = await examAttemptRepo
+    .createQueryBuilder("examAttempt")
+    .select("examAttempt.examId", "examId")
+    .addSelect("examAttempt.studentId", "studentId")
+    .addSelect("examAttempt.score", "score")
+    .where("examAttempt.examId = :examId", { examId: query.examId })
+    .andWhere("examAttempt.studentId = :studentId", { studentId: query.userId })
+    .andWhere("examAttempt.isFinished = true")
+    .orderBy("examAttempt.userExamId", "ASC")
+    .getRawMany();
+
+  const formattedExamData = examData.map((row) => ({
+    examId: Number(row.examId),
+    userId: Number(row.studentId),
+    score: Number(row.score),
+    type:examType,
+  }));
+
+  return formattedExamData;
+  } else {
+  // ===== 2. Lấy bài luyện tập =====
+  examData = await practiceAttemptRepo
+    .createQueryBuilder("practiceAttempt")
+    .select("practiceAttempt.examId", "examId")
+    .addSelect("practiceAttempt.studentId", "studentId")
+    .addSelect("practiceAttempt.score", "score")
+    .where("practiceAttempt.examId = :examId", { examId: query.examId })
+    .andWhere("practiceAttempt.studentId = :studentId", { studentId: query.userId })
+    .andWhere("practiceAttempt.isFinished = true")
+    .orderBy("practiceAttempt.userPracticeId", "ASC")
+    .getRawMany();
+
+const finishedAttempts = await practiceAttemptRepo
+  .createQueryBuilder("attempt")
+  .select([
+    "attempt.userPracticeId AS userPracticeId",
+    "attempt.createdDate AS createdDate",
+    "attempt.examId AS examId",
+    "attempt.studentId AS studentId",
+    "attempt.score AS score"
+  ])
+  .where("attempt.examId = :examId", { examId: query.examId })
+  .andWhere("attempt.studentId = :studentId", { studentId: query.userId })
+  .andWhere("attempt.isFinished = true")
+  .orderBy("attempt.createdDate", "ASC")
+  .getRawMany();
+
+const unfinishedAttempts = await practiceAttemptRepo
+  .createQueryBuilder("attempt")
+  .select([
+    "attempt.userPracticeId AS userPracticeId",
+    "attempt.createdDate AS createdDate"
+  ])
+  .where("attempt.examId = :examId", { examId: query.examId })
+  .andWhere("attempt.studentId = :studentId", { studentId: query.userId })
+  .andWhere("attempt.isFinished = false")
+  .orderBy("attempt.createdDate", "ASC")
+  .getRawMany();
+  const formattedExamData = [];
+const usedUnfinished = new Set();
+
+for (const finished of finishedAttempts) {
+  // Tìm lần unfinish gần nhất (trước) mà chưa được dùng
+  const matchedUnfinished = [...unfinishedAttempts]
+    .reverse()
+    .find(u => 
+      new Date(u.createdDate) < new Date(finished.createdDate) &&
+      !usedUnfinished.has(u.userPracticeId)
+    );
+
+  if (!matchedUnfinished) continue;
+
+  usedUnfinished.add(matchedUnfinished.userPracticeId);
+
+  const videos = await practiceVideoRepo
+    .createQueryBuilder("video")
+    .select("video.videoUrl", "videoUrl")
+    .where("video.examId = :examId", { examId: finished.examId })
+    .andWhere("video.userId = :userId", { userId: finished.studentId })
+    .andWhere("video.createdDate = :createdDate", {
+      createdDate: matchedUnfinished.createdDate
+    })
+    .orderBy("video.videoExamId", "ASC")
+    .getRawMany();
+
+  formattedExamData.push({
+    examId: Number(finished.examId),
+    userId: Number(finished.studentId),
+    score: Number(finished.score),
+    videoUrls: videos.map(v => v.videoUrl),
+    type: "practice",
+  });
+//   if (!startAttempt?.createdDate) continue;
+
+//   const createdDate = new Date(startAttempt.createdDate);
+
+//   const practiceVideos = await practiceVideoRepo
+//     .createQueryBuilder("practiceVideo")
+//     .select("practiceVideo.videoUrl", "videoUrl")
+//     .where("practiceVideo.examId = :examId", { examId: attempt.examId })
+//     .andWhere("practiceVideo.userId = :userId", { userId: attempt.studentId })
+//     .andWhere("practiceVideo.createdDate = :createdDate", {createdDate: createdDate })
+//     .orderBy("practiceVideo.videoExamId", "ASC")
+//     .getRawMany();
+//   console.log('videos', practiceVideos)
+//   formattedExamData.push({
+//     examId: Number(attempt.examId),
+//     userId: Number(attempt.studentId),
+//     score: Number(attempt.score),
+//     videoUrls: practiceVideos.map(v => v.videoUrl),
+//     type: "practice",
+//   });
+}
+  console.log('heheasda',formattedExamData)
+  return formattedExamData;
+}};
+
   getFullVocabularyViews = async (userId: number) => {
     const recentViews = await VocabularyView.createQueryBuilder('vocabularyView')
       .leftJoinAndSelect('vocabularyView.vocabulary', 'vocabulary') // JOIN bảng vocabulary

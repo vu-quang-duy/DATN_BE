@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Body, Get, Param, Post, Put, Query, ParseIntPipe } from '@nestjs/common';
 import { EntityNameConst } from 'src/constant/entity-name';
 import { ApiHandleResponse } from 'src/decorator/api.decorator';
@@ -13,6 +14,8 @@ import { UserStatistic } from 'src/entities/user/user-statistic.entity';
 import { ExamAttempt } from 'src/entities/exam/exam-attempt.entity';
 import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { PartView } from 'src/entities/class/part-view.entity';
+import { ExamScoringDto } from 'src/dto/exam/exam-score.dto';
+import { query } from 'express';
 
 @IsAuthController(EntityNameConst.USER, false)
 export class UserController {
@@ -179,6 +182,14 @@ export class UserController {
     @Param('id', ParseIntPipe)  userId: number
   ) {
     return this.userService.getFullTestsCompleted(userId);
+  }
+
+  @Get('/test/full-result')
+  @ApiHandleResponse({type: ExamAttempt, summary: 'Get full test results by user ID', isArray: true})
+  async getFullTestResults(
+    @Query() query: ExamScoringDto
+  ) {
+    return this.userService.getFullTestResults(query);
   }
 
   @Put('/:id')
