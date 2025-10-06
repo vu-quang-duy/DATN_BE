@@ -12,7 +12,7 @@
 - Step 5:
 
   > Run the app
-  > `npm run start:dev`
+  > `npm run dev`
 
 ## Development
 
@@ -39,7 +39,7 @@ npm run migration:revert
 - Make module
 
 ```bash
-$ npm i -g @nestjs/cli
+# $ npm i -g @nestjs/cli
 
 $ nest g module api/user && nest g service api/user && nest g controller api/user
 ```
