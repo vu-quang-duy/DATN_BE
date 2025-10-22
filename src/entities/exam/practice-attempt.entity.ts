@@ -1,13 +1,13 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import {  Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractCreatedIdEntity } from '../entity.interface';
 import { User } from '../user/user.entity';
 
 @Entity(EntityNameConst.PRACTICE_EXAM_ATTEMPT)
 export class PracticeExamAttempt extends AbstractCreatedIdEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'user_practice_id' }) // Định nghĩa ID mới
-    userPracticeId: number;
+  userPracticeId: number;
   @DBColumn({
     name: 'user_id',
     type: 'bigint',
@@ -35,12 +35,12 @@ export class PracticeExamAttempt extends AbstractCreatedIdEntity {
     width: 1,
     default: 0, // mặc định là 0 (false)
     transformer: {
-      from: (value) => {  
+      from: (value) => {
         if (Buffer.isBuffer(value)) {
           const result = value.readUInt8(0) === 1;
           return result;
         }
-    
+
         const result = value === 1;
         return result;
       },

@@ -1,4 +1,10 @@
-import { IsSwaggerArray, IsSwaggerEnum, IsSwaggerNumber, IsSwaggerString, IsSwaggerBoolean } from 'src/decorator/swagger.decorator';
+import {
+  IsSwaggerArray,
+  IsSwaggerEnum,
+  IsSwaggerNumber,
+  IsSwaggerString,
+  IsSwaggerBoolean,
+} from 'src/decorator/swagger.decorator';
 import { Answer } from 'src/entities/question/answer.entity';
 import { QuestionType, FileType, QuestionFormat } from 'src/types/classroom';
 // export enum QuestionType {
@@ -132,4 +138,3 @@ export class CreateMultipleQuestionsDto {
   @IsSwaggerArray({ type: () => CreateQuestionDto })
   readonly questions: CreateQuestionDto[];
 }
-

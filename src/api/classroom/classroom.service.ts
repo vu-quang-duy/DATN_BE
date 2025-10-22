@@ -199,7 +199,9 @@ export class ClassroomService {
     if (!isPermission) throw new App404Exception('permissionCode', { permissionCode });
 
     const student = await User.findOne({ where: { studentProfile: { studentCode: body.studentCode } } });
-    const classStudent = await ClassStudent.findOne({ where: { classroomId: classroom.classroomId, studentId: student.userId } });
+    const classStudent = await ClassStudent.findOne({
+      where: { classroomId: classroom.classroomId, studentId: student.userId },
+    });
     if (!classStudent) throw new App404Exception('studentId', { studentId: body.studentId });
 
     await classStudent.remove();

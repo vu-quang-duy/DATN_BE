@@ -31,7 +31,6 @@ export class User extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'user_id' }) // Định nghĩa ID mới
   userId: number;
 
-
   @DBColumn({
     name: 'password',
     type: 'varchar',
@@ -75,7 +74,7 @@ export class User extends AbstractTimeEntity {
   address: string;
 
   @DBColumn({ type: 'datetime', name: 'birth_day', precision: 6, nullable: true })
-  birthDay:Date;
+  birthDay: Date;
 
   @DBColumn({ type: 'enum', name: 'gender', enum: Gender, default: Gender.MALE })
   gender: Gender;
@@ -116,7 +115,6 @@ export class User extends AbstractTimeEntity {
   @ManyToOne(() => School, (school) => school.users)
   @JoinColumn({ name: 'school_id' })
   school: School;
-
 
   @OneToMany(() => VocabularyView, (vocabularyView) => vocabularyView.user)
   vocabularyViews: VocabularyView[];

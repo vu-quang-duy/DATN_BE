@@ -6,7 +6,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { UploadModule } from './api/upload/upload.module';
 import { UserModule } from './api/user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmConfigService, TypeOrmConfigServiceB, dataSourceFactory} from './config/database.config';
+import { TypeOrmConfigService, TypeOrmConfigServiceB, dataSourceFactory } from './config/database.config';
 import { ENV } from './config/environment';
 import { JobModule } from './job/job.module';
 import { winstonLogger } from './logger';
@@ -31,10 +31,13 @@ import { LessonsModule } from './api/classroom/lesson.module';
     }),
 
     CacheModule.register({
+      // isGlobal: true,
+      // store: redisStore,
+      // host: ENV.REDIS.REDIS_HOST,
+      // port: ENV.REDIS.REDIS_PORT,
       isGlobal: true,
-      store: redisStore,
-      host: ENV.REDIS.REDIS_HOST,
-      port: ENV.REDIS.REDIS_PORT,
+      store: 'memory', // ✅ Không dùng Redis nữa
+      ttl: 60 * 60, // 1 tiếng
       // ttl: 600,
     }),
 

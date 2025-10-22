@@ -6,7 +6,14 @@ import { IsAuthController } from 'src/decorator/auth.decorator';
 import { LoginResponse } from 'src/dto/common-response.dto';
 import { LoginDto } from 'src/dto/user-dto/login.dto';
 import { UpdateUserDto } from 'src/dto/user-dto/update-user.dto';
-import { SearchStudentDto, SearchTeacherDto, SearchUserDto, SearchClassDto, SearchSchoolDto, SearchUserStatisticDto } from 'src/dto/user-dto/search-user.dto';
+import {
+  SearchStudentDto,
+  SearchTeacherDto,
+  SearchUserDto,
+  SearchClassDto,
+  SearchSchoolDto,
+  SearchUserStatisticDto,
+} from 'src/dto/user-dto/search-user.dto';
 import { User } from 'src/entities/user/user.entity';
 import { UserService } from './user.service';
 import { RegisterDto, VerifyEmailDto } from 'src/dto/user-dto/register.dto';
@@ -119,76 +126,65 @@ export class UserController {
   @Post('/vocabulary/view')
   @ApiHandleResponse({ type: VocabularyView, summary: 'add vocabulary view' })
   async viewVocabulary(
-    // @Param('id', ParseIntPipe) vocabularyId: number, 
+    // @Param('id', ParseIntPipe) vocabularyId: number,
     @Body('vocabularyId') vocabularyId: number,
     // @Body() body: any
-    @Body('userId') userId: number
+    @Body('userId') userId: number,
   ) {
     if (!userId) {
       throw new Error('userId is required');
     }
-    return await this.userService.viewVocabulary(userId, vocabularyId); 
+    return await this.userService.viewVocabulary(userId, vocabularyId);
   }
 
   @Get('/vocabulary/recent-view/:id')
-  @ApiHandleResponse({type: VocabularyView, summary: 'Get recent vocabulary views by user ID', isArray: true})
+  @ApiHandleResponse({ type: VocabularyView, summary: 'Get recent vocabulary views by user ID', isArray: true })
   async getRecentVocabViews(
-    // @Body('userId') userId: number, 
-    @Param('id', ParseIntPipe)  userId: number
+    // @Body('userId') userId: number,
+    @Param('id', ParseIntPipe) userId: number,
   ) {
     return this.userService.getRecentVocabularyViews(userId);
   }
 
   @Post('/lesson/view')
   @ApiHandleResponse({ type: PartView, summary: 'add lesson view' })
-  async viewLesson(
-    @Body('lessonId') lessonId: number,
-    @Body('userId') userId: number
-  ) {
+  async viewLesson(@Body('lessonId') lessonId: number, @Body('userId') userId: number) {
     if (!userId) {
       throw new Error('userId is required');
     }
-    return await this.userService.viewLesson(userId, lessonId); 
+    return await this.userService.viewLesson(userId, lessonId);
   }
 
   @Get('/lesson/recent-view/:id')
-  @ApiHandleResponse({type: PartView, summary: 'Get recent lesson views by user ID', isArray: true})
+  @ApiHandleResponse({ type: PartView, summary: 'Get recent lesson views by user ID', isArray: true })
   async getRecentLessonViews(
-    // @Body('userId') userId: number, 
-    @Param('id', ParseIntPipe)  userId: number
+    // @Body('userId') userId: number,
+    @Param('id', ParseIntPipe) userId: number,
   ) {
     return this.userService.getRecentLessonViews(userId);
   }
 
   @Get('/lesson/full-view/:id')
-  @ApiHandleResponse({type: PartView, summary: 'Get full lesson views by user ID', isArray: true})
-  async getFullLessonViews(
-    @Param('id', ParseIntPipe)  userId: number
-  ) {
+  @ApiHandleResponse({ type: PartView, summary: 'Get full lesson views by user ID', isArray: true })
+  async getFullLessonViews(@Param('id', ParseIntPipe) userId: number) {
     return this.userService.getFullLessonViews(userId);
   }
 
   @Get('/vocabulary/full-view/:id')
-  @ApiHandleResponse({type: VocabularyView, summary: 'Get full vocabulary views by user ID', isArray: true})
-  async getFullVocabularyViews(
-    @Param('id', ParseIntPipe)  userId: number
-  ) {
+  @ApiHandleResponse({ type: VocabularyView, summary: 'Get full vocabulary views by user ID', isArray: true })
+  async getFullVocabularyViews(@Param('id', ParseIntPipe) userId: number) {
     return this.userService.getFullVocabularyViews(userId);
   }
 
   @Get('/test/full-view/:id')
-  @ApiHandleResponse({type: ExamAttempt, summary: 'Get full test completed by user ID', isArray: true})
-  async getFullTestsCompleted(
-    @Param('id', ParseIntPipe)  userId: number
-  ) {
+  @ApiHandleResponse({ type: ExamAttempt, summary: 'Get full test completed by user ID', isArray: true })
+  async getFullTestsCompleted(@Param('id', ParseIntPipe) userId: number) {
     return this.userService.getFullTestsCompleted(userId);
   }
 
   @Get('/test/full-result')
-  @ApiHandleResponse({type: ExamAttempt, summary: 'Get full test results by user ID', isArray: true})
-  async getFullTestResults(
-    @Query() query: ExamScoringDto
-  ) {
+  @ApiHandleResponse({ type: ExamAttempt, summary: 'Get full test results by user ID', isArray: true })
+  async getFullTestResults(@Query() query: ExamScoringDto) {
     return this.userService.getFullTestResults(query);
   }
 
@@ -207,13 +203,12 @@ export class UserController {
   @Post('/create-student')
   @ApiHandleResponse({ type: User, summary: 'create new student' })
   async createStudent(@Body() body: UpdateUserDto) {
-    return await this.userService.createStudent(body); 
+    return await this.userService.createStudent(body);
   }
 
   @Post('/create-teacher')
   @ApiHandleResponse({ type: User, summary: 'create new teacher' })
   async createTeacher(@Body() body: UpdateUserDto) {
-    return await this.userService.createTeacher(body); 
+    return await this.userService.createTeacher(body);
   }
-
 }

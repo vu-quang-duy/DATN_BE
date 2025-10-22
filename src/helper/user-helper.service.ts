@@ -59,7 +59,7 @@ export class UserHelper {
     return { ...where };
   }
 
-  static handleUserStatistic = async (userId:number) => {
+  static handleUserStatistic = async (userId: number) => {
     await this.retryViewVocabulary(userId);
     await this.retryClassJoined(userId);
     await this.retryViewLesson(userId);
@@ -77,8 +77,8 @@ export class UserHelper {
     userStatistic.vocabularyViews = Number(viewCount.viewCount || 0);
     return await userStatistic.save();
   };
-// Baoh duy chỉnh lại thành part thì sửa lại controller, service, entity(part, user)
-// model Learning, lessonlist
+  // Baoh duy chỉnh lại thành part thì sửa lại controller, service, entity(part, user)
+  // model Learning, lessonlist
   static retryViewLesson = async (userId: number) => {
     const userStatistic = await this.findOrCreateUserStatistic(userId);
     const viewCount = await PartView.createQueryBuilder('partView')
@@ -99,67 +99,66 @@ export class UserHelper {
   };
 
   static retryTestCompleted = async (userId: number) => {
-  const userStatistic = await this.findOrCreateUserStatistic(userId);
-  // Đếm số bài thi đã hoàn thành
-  const examResult = await ExamAttempt.createQueryBuilder('examAttempt')
-    .select('DISTINCT examAttempt.examId', 'examId')
-    .where('examAttempt.studentId = :userId', { userId })
-    .andWhere('examAttempt.isFinished = true')
-    .getRawMany();
+    const userStatistic = await this.findOrCreateUserStatistic(userId);
+    // Đếm số bài thi đã hoàn thành
+    const examResult = await ExamAttempt.createQueryBuilder('examAttempt')
+      .select('DISTINCT examAttempt.examId', 'examId')
+      .where('examAttempt.studentId = :userId', { userId })
+      .andWhere('examAttempt.isFinished = true')
+      .getRawMany();
 
-  // Đếm số bài luyện tập đã hoàn thành
-  const practiceResult = await PracticeExamAttempt.createQueryBuilder('practiceAttempt')
-    .select('DISTINCT practiceAttempt.examId', 'examId')
-    .where('practiceAttempt.studentId = :userId', { userId })
-    .andWhere('practiceAttempt.isFinished = true')
-    .getRawMany();
+    // Đếm số bài luyện tập đã hoàn thành
+    const practiceResult = await PracticeExamAttempt.createQueryBuilder('practiceAttempt')
+      .select('DISTINCT practiceAttempt.examId', 'examId')
+      .where('practiceAttempt.studentId = :userId', { userId })
+      .andWhere('practiceAttempt.isFinished = true')
+      .getRawMany();
 
-  // Gộp và loại trùng
-  const examIds = new Set<number>();
-  [...examResult, ...practiceResult].forEach(row => {
-    examIds.add(Number(row.examId));
-  });
+    // Gộp và loại trùng
+    const examIds = new Set<number>();
+    [...examResult, ...practiceResult].forEach((row) => {
+      examIds.add(Number(row.examId));
+    });
 
-  userStatistic.testsCompleted = examIds.size;
-  return await userStatistic.save();
-};
+    userStatistic.testsCompleted = examIds.size;
+    return await userStatistic.save();
+  };
 
   static retryAverageScore = async (userId: number) => {
-  const userStatistic = await this.findOrCreateUserStatistic(userId);
+    const userStatistic = await this.findOrCreateUserStatistic(userId);
 
-  // Subquery điểm cao nhất mỗi bài thi
-  const examMaxScores = await ExamAttempt.createQueryBuilder('examAttempt')
-    .select('examAttempt.examId', 'examId')
-    .addSelect('MAX(examAttempt.score)', 'maxScore')
-    .where('examAttempt.studentId = :userId', { userId })
-    .andWhere('examAttempt.isFinished = true')
-    .groupBy('examAttempt.examId')
-    .setParameter('userId', userId)
-    .getRawMany();
+    // Subquery điểm cao nhất mỗi bài thi
+    const examMaxScores = await ExamAttempt.createQueryBuilder('examAttempt')
+      .select('examAttempt.examId', 'examId')
+      .addSelect('MAX(examAttempt.score)', 'maxScore')
+      .where('examAttempt.studentId = :userId', { userId })
+      .andWhere('examAttempt.isFinished = true')
+      .groupBy('examAttempt.examId')
+      .setParameter('userId', userId)
+      .getRawMany();
 
-  // Subquery điểm cao nhất mỗi bài luyện tập
-  const practiceMaxScores = await PracticeExamAttempt.createQueryBuilder('practiceAttempt')
-    .select('practiceAttempt.examId', 'examId')
-    .addSelect('MAX(practiceAttempt.score)', 'maxScore')
-    .where('practiceAttempt.studentId = :userId', { userId })
-    .andWhere('practiceAttempt.isFinished = true')
-    .groupBy('practiceAttempt.examId')
-    .setParameter('userId', userId)
-    .getRawMany();
+    // Subquery điểm cao nhất mỗi bài luyện tập
+    const practiceMaxScores = await PracticeExamAttempt.createQueryBuilder('practiceAttempt')
+      .select('practiceAttempt.examId', 'examId')
+      .addSelect('MAX(practiceAttempt.score)', 'maxScore')
+      .where('practiceAttempt.studentId = :userId', { userId })
+      .andWhere('practiceAttempt.isFinished = true')
+      .groupBy('practiceAttempt.examId')
+      .setParameter('userId', userId)
+      .getRawMany();
 
-  // Gộp điểm các bài thi & luyện tập
-  const allMaxScores = [...examMaxScores, ...practiceMaxScores];
+    // Gộp điểm các bài thi & luyện tập
+    const allMaxScores = [...examMaxScores, ...practiceMaxScores];
 
-  if (allMaxScores.length === 0) {
-    userStatistic.averageScore = 0;
-  } else {
-    const totalScore = allMaxScores.reduce((sum, row) => sum + Number(row.maxScore || 0), 0);
-    userStatistic.averageScore = totalScore / allMaxScores.length;
-  }
+    if (allMaxScores.length === 0) {
+      userStatistic.averageScore = 0;
+    } else {
+      const totalScore = allMaxScores.reduce((sum, row) => sum + Number(row.maxScore || 0), 0);
+      userStatistic.averageScore = totalScore / allMaxScores.length;
+    }
 
-  return await userStatistic.save();
-};
-
+    return await userStatistic.save();
+  };
 
   static findOrCreateUserStatistic = async (userId) => {
     const userStatistic = await UserStatistic.findOneBy({ userId });

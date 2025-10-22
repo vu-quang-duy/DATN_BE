@@ -1,6 +1,6 @@
 import { IsSwaggerArray, IsSwaggerBoolean, IsSwaggerNumber, IsSwaggerString } from 'src/decorator/swagger.decorator';
 import { Type } from 'class-transformer';
-import { ValidateNested} from 'class-validator';
+import { ValidateNested } from 'class-validator';
 export class CreateExamDto {
   @IsSwaggerString({ default: 'name' })
   readonly name: string;

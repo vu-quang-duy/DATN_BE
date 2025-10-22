@@ -69,14 +69,22 @@ const seedingRolePermission = async (permissionCodes, code) => {
       continue;
     }
 
-    const rolePermission = await RolePermission.findOneBy({ code: role.roleCode, permissionId: permission.permissionId });
+    const rolePermission = await RolePermission.findOneBy({
+      code: role.roleCode,
+      permissionId: permission.permissionId,
+    });
 
     if (rolePermission) {
-      console.log(`======== ${RolePermission.name} code-${role.roleCode} permissionId-${permission.permissionId} is exist =========`);
+      console.log(
+        `======== ${RolePermission.name} code-${role.roleCode} permissionId-${permission.permissionId} is exist =========`,
+      );
       continue;
     }
 
-    await RolePermission.save({ roleCoded: role.roleCode, permissionId: permission.permissionId } as Partial<RolePermission>);
+    await RolePermission.save({
+      roleCoded: role.roleCode,
+      permissionId: permission.permissionId,
+    } as Partial<RolePermission>);
   }
 };
 

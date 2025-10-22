@@ -1,4 +1,4 @@
-import { IsSwaggerString} from 'src/decorator/swagger.decorator';
+import { IsSwaggerString } from 'src/decorator/swagger.decorator';
 
 export class UpdateUserDto {
   @IsSwaggerString({ default: 'John Doe', maxLength: 50 }, true) // name có thể không có

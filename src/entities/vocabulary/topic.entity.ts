@@ -58,7 +58,7 @@ export class Topic extends AbstractTimeEntity {
     type: 'bit',
     // default: 0,
     transformer: {
-      to: (value: boolean) => value ? Buffer.from([1]) : Buffer.from([0]), // Lưu vào DB
+      to: (value: boolean) => (value ? Buffer.from([1]) : Buffer.from([0])), // Lưu vào DB
       from: (value: Buffer) => value[0] === 1, // Lấy từ DB
     },
   })

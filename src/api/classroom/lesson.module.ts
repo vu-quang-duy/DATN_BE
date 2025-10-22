@@ -4,9 +4,7 @@ import { LessonsController } from './lesson.controller';
 import { Lesson } from '../../entities/class/lesson.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Lesson]),
-  ],
+  imports: [TypeOrmModule.forFeature([Lesson])],
   controllers: [LessonsController],
 })
 export class LessonsModule {}

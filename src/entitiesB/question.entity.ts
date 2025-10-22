@@ -38,7 +38,6 @@ export class QuestionB extends AbstractTimeEntity {
   })
   creatorEmail: string;
 
-
   @DBColumn({
     name: 'image_location',
     type: 'varchar',
@@ -69,23 +68,22 @@ export class QuestionB extends AbstractTimeEntity {
   })
   questionType: QuestionType;
 
-
   // RELATIONSHIP
 
   @ManyToOne(() => UserB, (User) => User.questions, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'created_by' })
   creator: UserB;
 
-//   @ManyToOne(() => ClassRoom, (classRoom) => classRoom.questions, { onDelete: 'SET NULL' })
-//   @JoinColumn({ name: 'class_room_id' })
-//   classroom: ClassRoom;
+  //   @ManyToOne(() => ClassRoom, (classRoom) => classRoom.questions, { onDelete: 'SET NULL' })
+  //   @JoinColumn({ name: 'class_room_id' })
+  //   classroom: ClassRoom;
 
-//   @OneToMany(() => StudentAnswer, (studentAnswer) => studentAnswer.question)
-//   studentAnswers: StudentAnswer[];
+  //   @OneToMany(() => StudentAnswer, (studentAnswer) => studentAnswer.question)
+  //   studentAnswers: StudentAnswer[];
 
   @OneToMany(() => AnswerB, (answer) => answer.question)
   answerResList: AnswerB[];
 
-//   @OneToMany(() => ExamQuestion, (exam) => exam.question)
-//   exams: ExamQuestion[];
+  //   @OneToMany(() => ExamQuestion, (exam) => exam.question)
+  //   exams: ExamQuestion[];
 }

@@ -1,4 +1,4 @@
-import { IsSwaggerBoolean, IsSwaggerNumber, IsSwaggerString} from 'src/decorator/swagger.decorator';
+import { IsSwaggerBoolean, IsSwaggerNumber, IsSwaggerString } from 'src/decorator/swagger.decorator';
 
 export class ExamScoringDto {
   @IsSwaggerNumber({}, false)
@@ -43,5 +43,4 @@ export class PracticeExamScoringDto {
 
   @IsSwaggerNumber({}, false)
   attemptCount?: number;
-
 }

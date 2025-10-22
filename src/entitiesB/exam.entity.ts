@@ -1,6 +1,6 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { PrimaryGeneratedColumn, Entity, OneToMany} from 'typeorm';
+import { PrimaryGeneratedColumn, Entity, OneToMany } from 'typeorm';
 import { AbstractTimeEntity } from '../entities/entity.interface';
 import { ExamAttemptB } from './exam-attempt.entity';
 
@@ -32,17 +32,16 @@ export class ExamB extends AbstractTimeEntity {
   @DBColumn({
     name: 'is_private',
     type: 'bit',
-  transformer: {
-    to: (value: boolean) => value ? Buffer.from([1]) : Buffer.from([0]), // Lưu vào DB
-    from: (value: Buffer) => value[0] === 1, // Lấy từ DB
-  },
-})
+    transformer: {
+      to: (value: boolean) => (value ? Buffer.from([1]) : Buffer.from([0])), // Lưu vào DB
+      from: (value: Buffer) => value[0] === 1, // Lấy từ DB
+    },
+  })
   isPrivate: boolean;
 
-  @OneToMany(() => ExamAttemptB, (attempt) => attempt.exam)  // Quan hệ One-to-Many với bảng user_exam_mapping
-  examAttempts: ExamAttemptB[]; 
+  @OneToMany(() => ExamAttemptB, (attempt) => attempt.exam) // Quan hệ One-to-Many với bảng user_exam_mapping
+  examAttempts: ExamAttemptB[];
 
   // @OneToMany(() => ExamVocabulary, (examVocabulary) => examVocabulary.exam)
   // vocabularies: ExamVocabulary[];
-
 }

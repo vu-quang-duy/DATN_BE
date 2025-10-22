@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Body, Delete, Param, Get ,Post, Put, Req, ParseIntPipe } from '@nestjs/common';
+import { Body, Delete, Param, Get, Post, Put, Req, ParseIntPipe } from '@nestjs/common';
 import { EntityNameConst } from 'src/constant/entity-name';
 import { ApiHandleResponse } from 'src/decorator/api.decorator';
 import { IsAuthController } from 'src/decorator/auth.decorator';
@@ -16,10 +16,10 @@ export class QuestionPermissionController {
   @Get('/class/:id')
   @ApiHandleResponse({
     type: Question,
-    summary: "Get list question of class",
+    summary: 'Get list question of class',
   })
   async getListQuestionClass(@Param('id') classRoomId?: any) {
-    return this.questionService.getListQuestionClass(classRoomId)
+    return this.questionService.getListQuestionClass(classRoomId);
   }
 
   @Post('/add-list')
@@ -28,7 +28,7 @@ export class QuestionPermissionController {
     summary: QuestionSummary.ADD_LIST_QUESTION,
   })
   async [QuestionAction.ADD_LIST_QUESTION](@Body() body: CreateQuestionDto[]) {
-    return await this.questionService.createListQuestion( body);
+    return await this.questionService.createListQuestion(body);
   }
 
   @Put('/:id')
@@ -44,15 +44,15 @@ export class QuestionPermissionController {
     return await this.questionService.updateById(id, req.user, body, QuestionAction.UPDATE_QUESTION);
   }
 
-@Delete('/delete-list') // Changed from @Put to @Delete
-@ApiHandleResponse({
-  summary: "Delete questions",
-  type: Question,
-})
-async deleteList(@Body() body: { questionIds: number[] }) {
-  console.log('🔍 Controller received body:', body);
-  return await this.questionService.deleteList(body);
-}
+  @Delete('/delete-list') // Changed from @Put to @Delete
+  @ApiHandleResponse({
+    summary: 'Delete questions',
+    type: Question,
+  })
+  async deleteList(@Body() body: { questionIds: number[] }) {
+    console.log('🔍 Controller received body:', body);
+    return await this.questionService.deleteList(body);
+  }
 
   @Delete('/answers/:id')
   @ApiHandleResponse({

@@ -25,24 +25,21 @@ export class ExamPermissionController {
   @Get('/all-exams')
   @ApiHandleResponse({
     type: ExamAttempt,
-    summary: 'Get list exam for user'
+    summary: 'Get list exam for user',
   })
   async getListExam(@Query() query: SearchExamAttemptDto) {
     const res = await this.examService.getListExam(query);
     return res;
-}
+  }
   @Get('/all-practice-exams/:teacherId')
   @ApiHandleResponse({
     type: ExamAttempt,
-    summary: 'Get list practice exam for teacher to score'
+    summary: 'Get list practice exam for teacher to score',
   })
-  async getListPracticeExam(
-    @Param('teacherId') teacherId: number,
-    @Query() query: SearchExamAttemptDto
-  ) {
+  async getListPracticeExam(@Param('teacherId') teacherId: number, @Query() query: SearchExamAttemptDto) {
     const res = await this.examService.getListPracticeExam(query, teacherId);
     return res;
-}
+  }
 
   @Post('/exam-saved')
   @ApiHandleResponse({
@@ -60,22 +57,21 @@ export class ExamPermissionController {
     return await this.examService.saveExamsSaved(req.user.userId, body.saveExams, body.score);
   }
 
-@Post('/submit-practice')
-@UseInterceptors(FilesInterceptor('videos', 10, {
-  storage: diskStorage({     
-    destination: '/home/tuyentrinh/Desktop/sign_school/uploads/videos',  
-    // Đường dẫn đầy đủ trên server     
-    filename: (req, file, callback) => {       
-      callback(null, file.originalname); // Đặt tên tránh trùng    
-    },   
-  }), 
-})) 
-async submitPracticeTest(
-  @UploadedFiles() files: Express.Multer.File[],
-  @Body() body: PracticeExamScoringDto
-) {
-  return await this.examService.submitPracticeTest(files, body);
-}
+  @Post('/submit-practice')
+  @UseInterceptors(
+    FilesInterceptor('videos', 10, {
+      storage: diskStorage({
+        destination: '/home/tuyentrinh/Desktop/sign_school/uploads/videos',
+        // Đường dẫn đầy đủ trên server
+        filename: (req, file, callback) => {
+          callback(null, file.originalname); // Đặt tên tránh trùng
+        },
+      }),
+    }),
+  )
+  async submitPracticeTest(@UploadedFiles() files: Express.Multer.File[], @Body() body: PracticeExamScoringDto) {
+    return await this.examService.submitPracticeTest(files, body);
+  }
 
   @Post('/exam-scoring')
   @ApiHandleResponse({
@@ -100,14 +96,8 @@ async submitPracticeTest(
     type: ExamAttempt,
     summary: 'Reset exam for redo',
   })
-  async resetExam(
-    @Param('examId') examId: number,
-    @Body() body: ResetExamDto
-  ) {
-    return await this.examService.resetExam(
-      examId,
-      body
-    );
+  async resetExam(@Param('examId') examId: number, @Body() body: ResetExamDto) {
+    return await this.examService.resetExam(examId, body);
   }
 
   @Post('/practice-exam/reset/:examId')
@@ -115,14 +105,8 @@ async submitPracticeTest(
     type: PracticeExamAttempt,
     summary: 'Reset practice exam for redo',
   })
-  async resetPracticeExam(
-    @Param('examId') examId: number,
-    @Body() body: ResetExamDto
-  ) {
-    return await this.examService.resetPracticeExam(
-      examId,
-      body
-    );
+  async resetPracticeExam(@Param('examId') examId: number, @Body() body: ResetExamDto) {
+    return await this.examService.resetPracticeExam(examId, body);
   }
 
   @Get('/practice-exams/:examId')
@@ -130,9 +114,7 @@ async submitPracticeTest(
     type: ExamVocabulary,
     summary: 'Get detail practice exam',
   })
-  async getDetailPracticeExam(
-    @Param('examId') examId: number,
-  ) {
+  async getDetailPracticeExam(@Param('examId') examId: number) {
     return await this.examService.getDetailPracticeExam(examId);
   }
 
@@ -141,9 +123,7 @@ async submitPracticeTest(
     type: ExamQuestion,
     summary: 'Get detail exam',
   })
-  async getDetailExam(
-    @Param('id') examId: number,
-  ) {
+  async getDetailExam(@Param('id') examId: number) {
     return await this.examService.getDetailExam(examId);
   }
 
@@ -152,44 +132,34 @@ async submitPracticeTest(
     type: ExamVideo,
     summary: 'Get detail practice exam to score',
   })
-  async getDetailPracticeExamToScore(
-    @Param('examId') examId: number,
-    @Param('userId') userId: number,
-  ) {
+  async getDetailPracticeExamToScore(@Param('examId') examId: number, @Param('userId') userId: number) {
     return await this.examService.getDetailPracticeExamToScore(examId, userId);
   }
 
   @Post('/practice-exams')
-    @ApiHandleResponse({
+  @ApiHandleResponse({
     type: ExamB,
     summary: 'Create practice exam ',
   })
-  async addPracticeExam(
-    @Body() body: CreatePracticeExamDto
-  ) {
+  async addPracticeExam(@Body() body: CreatePracticeExamDto) {
     return await this.examService.addPracticeExam(body);
   }
 
   @Post('/add-exam')
-    @ApiHandleResponse({
+  @ApiHandleResponse({
     type: ExamB,
     summary: 'Create exam ',
   })
-  async addExam(
-    @Body() body: CreateExamDto
-  ) {
+  async addExam(@Body() body: CreateExamDto) {
     return await this.examService.addExam(body);
   }
 
   @Put('/edit-exam')
-    @ApiHandleResponse({
+  @ApiHandleResponse({
     type: ExamB,
     summary: 'Edit exam ',
   })
-  async editExam(
-    @Body() body: UpdateExamDto
-  ) {
+  async editExam(@Body() body: UpdateExamDto) {
     return await this.examService.editExam(body);
   }
 }
-

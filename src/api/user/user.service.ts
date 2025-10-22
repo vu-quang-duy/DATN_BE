@@ -3,7 +3,7 @@ import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Audit } from 'entity-diff';
-import { ILike } from "typeorm";
+import { ILike } from 'typeorm';
 import { ERROR_MSG } from 'src/constant/error';
 import { RoleCode } from 'src/constant/role-code';
 import { CacheUser } from 'src/dto/common-request.dto';
@@ -11,7 +11,14 @@ import { PageDto } from 'src/dto/paginate.dto';
 import { LoginDto } from 'src/dto/user-dto/login.dto';
 import { RegisterDto } from 'src/dto/user-dto/register.dto';
 import { UpdateUserDto } from 'src/dto/user-dto/update-user.dto';
-import { SearchSchoolDto, SearchClassDto, SearchStudentDto, SearchTeacherDto, SearchUserDto, SearchUserStatisticDto } from 'src/dto/user-dto/search-user.dto';
+import {
+  SearchSchoolDto,
+  SearchClassDto,
+  SearchStudentDto,
+  SearchTeacherDto,
+  SearchUserDto,
+  SearchUserStatisticDto,
+} from 'src/dto/user-dto/search-user.dto';
 import { ChangeUserPasswordDto, UpdateUserProfileDto } from 'src/dto/user-dto/update-user-profile.dto';
 import { ClassStudent } from 'src/entities/class/class-student.entity';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -317,7 +324,7 @@ export class UserService {
       .orderBy('vocabularyView.lastViewedAt', 'DESC')
       .limit(5)
       .getMany();
-  
+
     // Trả về dữ liệu đã gọn gàng cho FE
     return recentViews.map((view) => ({
       vocabularyId: view.vocabularyId,
@@ -325,10 +332,10 @@ export class UserService {
       viewCount: view.viewCount,
     }));
   };
-  
+
   viewLesson = async (userId: number, lessonId: number) => {
     if (!userId) throw new Error('userId is required'); // Check nếu thiếu userId
-    if (!lessonId ) throw new Error('partId is required');
+    if (!lessonId) throw new Error('partId is required');
 
     const lesson = await Lesson.findOne({ where: { lessonId: lessonId } });
     // const lesson = await Part.findOne({ where: { lessonId: lessonId } });
@@ -356,7 +363,7 @@ export class UserService {
       .orderBy('partView.lastViewedAt', 'DESC')
       .limit(5)
       .getMany();
-  
+
     return recentViews.map((view) => ({
       lessonId: view.lessonId,
       name: view.lesson.lessonName,
@@ -370,214 +377,211 @@ export class UserService {
       .where('partView.userId = :userId', { userId })
       .orderBy('lesson.lessonId', 'ASC')
       .getMany();
-  
+
     return recentViews.map((view) => ({
       lessonId: view.lessonId,
       name: view.lesson.lessonName,
       viewCount: view.viewCount,
-      lastViewed: view.lastViewedAt
+      lastViewed: view.lastViewedAt,
     }));
   };
 
   getFullTestsCompleted = async (userId: number) => {
-  const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
-  const practiceAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
-  const examRepo = this.dataSourceB.getRepository(ExamB);
+    const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+    const practiceAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
+    const examRepo = this.dataSourceB.getRepository(ExamB);
 
-  // ===== 1. Lấy bài thi chính thức =====
-  const examData = await examAttemptRepo
-    .createQueryBuilder("examAttempt")
-    .select("examAttempt.examId", "examId")
-    .addSelect("examAttempt.studentId", "studentId")
-    .addSelect("MAX(examAttempt.score)", "maxScore")
-    .addSelect("COUNT(*)", "attemptCount")
-    .where("examAttempt.studentId = :studentId", { studentId: userId })
-    .andWhere("examAttempt.isFinished = true")
-    .groupBy("examAttempt.examId")
-    .addGroupBy("examAttempt.studentId")
-    .getRawMany();
+    // ===== 1. Lấy bài thi chính thức =====
+    const examData = await examAttemptRepo
+      .createQueryBuilder('examAttempt')
+      .select('examAttempt.examId', 'examId')
+      .addSelect('examAttempt.studentId', 'studentId')
+      .addSelect('MAX(examAttempt.score)', 'maxScore')
+      .addSelect('COUNT(*)', 'attemptCount')
+      .where('examAttempt.studentId = :studentId', { studentId: userId })
+      .andWhere('examAttempt.isFinished = true')
+      .groupBy('examAttempt.examId')
+      .addGroupBy('examAttempt.studentId')
+      .getRawMany();
 
-  const examIds1 = examData.map((item) => Number(item.examId));
+    const examIds1 = examData.map((item) => Number(item.examId));
 
-  const formattedExamData = examData.map((row) => ({
-    examId: Number(row.examId),
-    examName: "", // sẽ bổ sung sau
-    userId: Number(row.studentId),
-    score: Number(row.maxScore),
-    attemptCount: Number(row.attemptCount),
-    type: "exam",
-  }));
+    const formattedExamData = examData.map((row) => ({
+      examId: Number(row.examId),
+      examName: '', // sẽ bổ sung sau
+      userId: Number(row.studentId),
+      score: Number(row.maxScore),
+      attemptCount: Number(row.attemptCount),
+      type: 'exam',
+    }));
 
-  // ===== 2. Lấy bài luyện tập =====
-  const practiceData = await practiceAttemptRepo
-    .createQueryBuilder("practiceAttempt")
-    .select("practiceAttempt.examId", "examId")
-    .addSelect("practiceAttempt.studentId", "studentId")
-    .addSelect("MAX(practiceAttempt.score)", "maxScore")
-    .addSelect("COUNT(*)", "attemptCount")
-    .where("practiceAttempt.studentId = :studentId", { studentId: userId })
-    .andWhere("practiceAttempt.isFinished = true")
-    .groupBy("practiceAttempt.examId")
-    .addGroupBy("practiceAttempt.studentId")
-    .getRawMany();
+    // ===== 2. Lấy bài luyện tập =====
+    const practiceData = await practiceAttemptRepo
+      .createQueryBuilder('practiceAttempt')
+      .select('practiceAttempt.examId', 'examId')
+      .addSelect('practiceAttempt.studentId', 'studentId')
+      .addSelect('MAX(practiceAttempt.score)', 'maxScore')
+      .addSelect('COUNT(*)', 'attemptCount')
+      .where('practiceAttempt.studentId = :studentId', { studentId: userId })
+      .andWhere('practiceAttempt.isFinished = true')
+      .groupBy('practiceAttempt.examId')
+      .addGroupBy('practiceAttempt.studentId')
+      .getRawMany();
 
-  const examIds2 = practiceData.map((item) => Number(item.examId));
+    const examIds2 = practiceData.map((item) => Number(item.examId));
 
-  const formattedPracticeData = practiceData.map((row) => ({
-    examId: Number(row.examId),
-    examName: "", // sẽ bổ sung sau
-    userId: Number(row.studentId),
-    score: Number(row.maxScore),
-    attemptCount: Number(row.attemptCount),
-    type: "practice",
-  }));
+    const formattedPracticeData = practiceData.map((row) => ({
+      examId: Number(row.examId),
+      examName: '', // sẽ bổ sung sau
+      userId: Number(row.studentId),
+      score: Number(row.maxScore),
+      attemptCount: Number(row.attemptCount),
+      type: 'practice',
+    }));
 
-  // ===== 3. Gộp tất cả examId và truy vấn bảng ExamB =====
-  const allExamIds = [...new Set([...examIds1, ...examIds2])];
+    // ===== 3. Gộp tất cả examId và truy vấn bảng ExamB =====
+    const allExamIds = [...new Set([...examIds1, ...examIds2])];
 
-  const examList = await examRepo.find({
-    where: { examId: In(allExamIds) },
-  });
+    const examList = await examRepo.find({
+      where: { examId: In(allExamIds) },
+    });
 
-  const examMap = new Map<number, string>();
-  examList.forEach((exam) => {
-    examMap.set(Number(exam.examId), exam.name);
-  });
+    const examMap = new Map<number, string>();
+    examList.forEach((exam) => {
+      examMap.set(Number(exam.examId), exam.name);
+    });
 
-  // ===== 4. Bổ sung examName vào kết quả =====
-  const completedList = [...formattedExamData, ...formattedPracticeData].map((item) => ({
-    ...item,
-    examName: examMap.get(item.examId) || "Không rõ tên bài",
-  }));
+    // ===== 4. Bổ sung examName vào kết quả =====
+    const completedList = [...formattedExamData, ...formattedPracticeData].map((item) => ({
+      ...item,
+      examName: examMap.get(item.examId) || 'Không rõ tên bài',
+    }));
 
-  return completedList;
-};
+    return completedList;
+  };
 
-getFullTestResults = async (query: ExamScoringDto) => {
-  const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
-  const practiceAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
-  const practiceVideoRepo = this.dataSource.getRepository(ExamVideo)
+  getFullTestResults = async (query: ExamScoringDto) => {
+    const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
+    const practiceAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
+    const practiceVideoRepo = this.dataSource.getRepository(ExamVideo);
 
-  const examType = query.type;
-  let examData;
-  if (examType === 'exam') {
-  // ===== 1. Lấy bài thi chính thức =====
-  examData = await examAttemptRepo
-    .createQueryBuilder("examAttempt")
-    .select("examAttempt.examId", "examId")
-    .addSelect("examAttempt.studentId", "studentId")
-    .addSelect("examAttempt.score", "score")
-    .where("examAttempt.examId = :examId", { examId: query.examId })
-    .andWhere("examAttempt.studentId = :studentId", { studentId: query.userId })
-    .andWhere("examAttempt.isFinished = true")
-    .orderBy("examAttempt.userExamId", "ASC")
-    .getRawMany();
+    const examType = query.type;
+    let examData;
+    if (examType === 'exam') {
+      // ===== 1. Lấy bài thi chính thức =====
+      examData = await examAttemptRepo
+        .createQueryBuilder('examAttempt')
+        .select('examAttempt.examId', 'examId')
+        .addSelect('examAttempt.studentId', 'studentId')
+        .addSelect('examAttempt.score', 'score')
+        .where('examAttempt.examId = :examId', { examId: query.examId })
+        .andWhere('examAttempt.studentId = :studentId', { studentId: query.userId })
+        .andWhere('examAttempt.isFinished = true')
+        .orderBy('examAttempt.userExamId', 'ASC')
+        .getRawMany();
 
-  const formattedExamData = examData.map((row) => ({
-    examId: Number(row.examId),
-    userId: Number(row.studentId),
-    score: Number(row.score),
-    type:examType,
-  }));
+      const formattedExamData = examData.map((row) => ({
+        examId: Number(row.examId),
+        userId: Number(row.studentId),
+        score: Number(row.score),
+        type: examType,
+      }));
 
-  return formattedExamData;
-  } else {
-  // ===== 2. Lấy bài luyện tập =====
-  examData = await practiceAttemptRepo
-    .createQueryBuilder("practiceAttempt")
-    .select("practiceAttempt.examId", "examId")
-    .addSelect("practiceAttempt.studentId", "studentId")
-    .addSelect("practiceAttempt.score", "score")
-    .where("practiceAttempt.examId = :examId", { examId: query.examId })
-    .andWhere("practiceAttempt.studentId = :studentId", { studentId: query.userId })
-    .andWhere("practiceAttempt.isFinished = true")
-    .orderBy("practiceAttempt.userPracticeId", "ASC")
-    .getRawMany();
+      return formattedExamData;
+    } else {
+      // ===== 2. Lấy bài luyện tập =====
+      examData = await practiceAttemptRepo
+        .createQueryBuilder('practiceAttempt')
+        .select('practiceAttempt.examId', 'examId')
+        .addSelect('practiceAttempt.studentId', 'studentId')
+        .addSelect('practiceAttempt.score', 'score')
+        .where('practiceAttempt.examId = :examId', { examId: query.examId })
+        .andWhere('practiceAttempt.studentId = :studentId', { studentId: query.userId })
+        .andWhere('practiceAttempt.isFinished = true')
+        .orderBy('practiceAttempt.userPracticeId', 'ASC')
+        .getRawMany();
 
-const finishedAttempts = await practiceAttemptRepo
-  .createQueryBuilder("attempt")
-  .select([
-    "attempt.userPracticeId AS userPracticeId",
-    "attempt.createdDate AS createdDate",
-    "attempt.examId AS examId",
-    "attempt.studentId AS studentId",
-    "attempt.score AS score"
-  ])
-  .where("attempt.examId = :examId", { examId: query.examId })
-  .andWhere("attempt.studentId = :studentId", { studentId: query.userId })
-  .andWhere("attempt.isFinished = true")
-  .orderBy("attempt.createdDate", "ASC")
-  .getRawMany();
+      const finishedAttempts = await practiceAttemptRepo
+        .createQueryBuilder('attempt')
+        .select([
+          'attempt.userPracticeId AS userPracticeId',
+          'attempt.createdDate AS createdDate',
+          'attempt.examId AS examId',
+          'attempt.studentId AS studentId',
+          'attempt.score AS score',
+        ])
+        .where('attempt.examId = :examId', { examId: query.examId })
+        .andWhere('attempt.studentId = :studentId', { studentId: query.userId })
+        .andWhere('attempt.isFinished = true')
+        .orderBy('attempt.createdDate', 'ASC')
+        .getRawMany();
 
-const unfinishedAttempts = await practiceAttemptRepo
-  .createQueryBuilder("attempt")
-  .select([
-    "attempt.userPracticeId AS userPracticeId",
-    "attempt.createdDate AS createdDate"
-  ])
-  .where("attempt.examId = :examId", { examId: query.examId })
-  .andWhere("attempt.studentId = :studentId", { studentId: query.userId })
-  .andWhere("attempt.isFinished = false")
-  .orderBy("attempt.createdDate", "ASC")
-  .getRawMany();
-  const formattedExamData = [];
-const usedUnfinished = new Set();
+      const unfinishedAttempts = await practiceAttemptRepo
+        .createQueryBuilder('attempt')
+        .select(['attempt.userPracticeId AS userPracticeId', 'attempt.createdDate AS createdDate'])
+        .where('attempt.examId = :examId', { examId: query.examId })
+        .andWhere('attempt.studentId = :studentId', { studentId: query.userId })
+        .andWhere('attempt.isFinished = false')
+        .orderBy('attempt.createdDate', 'ASC')
+        .getRawMany();
+      const formattedExamData = [];
+      const usedUnfinished = new Set();
 
-for (const finished of finishedAttempts) {
-  // Tìm lần unfinish gần nhất (trước) mà chưa được dùng
-  const matchedUnfinished = [...unfinishedAttempts]
-    .reverse()
-    .find(u => 
-      new Date(u.createdDate) < new Date(finished.createdDate) &&
-      !usedUnfinished.has(u.userPracticeId)
-    );
+      for (const finished of finishedAttempts) {
+        // Tìm lần unfinish gần nhất (trước) mà chưa được dùng
+        const matchedUnfinished = [...unfinishedAttempts]
+          .reverse()
+          .find(
+            (u) => new Date(u.createdDate) < new Date(finished.createdDate) && !usedUnfinished.has(u.userPracticeId),
+          );
 
-  if (!matchedUnfinished) continue;
+        if (!matchedUnfinished) continue;
 
-  usedUnfinished.add(matchedUnfinished.userPracticeId);
+        usedUnfinished.add(matchedUnfinished.userPracticeId);
 
-  const videos = await practiceVideoRepo
-    .createQueryBuilder("video")
-    .select("video.videoUrl", "videoUrl")
-    .where("video.examId = :examId", { examId: finished.examId })
-    .andWhere("video.userId = :userId", { userId: finished.studentId })
-    .andWhere("video.createdDate = :createdDate", {
-      createdDate: matchedUnfinished.createdDate
-    })
-    .orderBy("video.videoExamId", "ASC")
-    .getRawMany();
+        const videos = await practiceVideoRepo
+          .createQueryBuilder('video')
+          .select('video.videoUrl', 'videoUrl')
+          .where('video.examId = :examId', { examId: finished.examId })
+          .andWhere('video.userId = :userId', { userId: finished.studentId })
+          .andWhere('video.createdDate = :createdDate', {
+            createdDate: matchedUnfinished.createdDate,
+          })
+          .orderBy('video.videoExamId', 'ASC')
+          .getRawMany();
 
-  formattedExamData.push({
-    examId: Number(finished.examId),
-    userId: Number(finished.studentId),
-    score: Number(finished.score),
-    videoUrls: videos.map(v => v.videoUrl),
-    type: "practice",
-  });
-//   if (!startAttempt?.createdDate) continue;
+        formattedExamData.push({
+          examId: Number(finished.examId),
+          userId: Number(finished.studentId),
+          score: Number(finished.score),
+          videoUrls: videos.map((v) => v.videoUrl),
+          type: 'practice',
+        });
+        //   if (!startAttempt?.createdDate) continue;
 
-//   const createdDate = new Date(startAttempt.createdDate);
+        //   const createdDate = new Date(startAttempt.createdDate);
 
-//   const practiceVideos = await practiceVideoRepo
-//     .createQueryBuilder("practiceVideo")
-//     .select("practiceVideo.videoUrl", "videoUrl")
-//     .where("practiceVideo.examId = :examId", { examId: attempt.examId })
-//     .andWhere("practiceVideo.userId = :userId", { userId: attempt.studentId })
-//     .andWhere("practiceVideo.createdDate = :createdDate", {createdDate: createdDate })
-//     .orderBy("practiceVideo.videoExamId", "ASC")
-//     .getRawMany();
-//   console.log('videos', practiceVideos)
-//   formattedExamData.push({
-//     examId: Number(attempt.examId),
-//     userId: Number(attempt.studentId),
-//     score: Number(attempt.score),
-//     videoUrls: practiceVideos.map(v => v.videoUrl),
-//     type: "practice",
-//   });
-}
-  console.log('heheasda',formattedExamData)
-  return formattedExamData;
-}};
+        //   const practiceVideos = await practiceVideoRepo
+        //     .createQueryBuilder("practiceVideo")
+        //     .select("practiceVideo.videoUrl", "videoUrl")
+        //     .where("practiceVideo.examId = :examId", { examId: attempt.examId })
+        //     .andWhere("practiceVideo.userId = :userId", { userId: attempt.studentId })
+        //     .andWhere("practiceVideo.createdDate = :createdDate", {createdDate: createdDate })
+        //     .orderBy("practiceVideo.videoExamId", "ASC")
+        //     .getRawMany();
+        //   console.log('videos', practiceVideos)
+        //   formattedExamData.push({
+        //     examId: Number(attempt.examId),
+        //     userId: Number(attempt.studentId),
+        //     score: Number(attempt.score),
+        //     videoUrls: practiceVideos.map(v => v.videoUrl),
+        //     type: "practice",
+        //   });
+      }
+      console.log('heheasda', formattedExamData);
+      return formattedExamData;
+    }
+  };
 
   getFullVocabularyViews = async (userId: number) => {
     const recentViews = await VocabularyView.createQueryBuilder('vocabularyView')
@@ -586,13 +590,13 @@ for (const finished of finishedAttempts) {
       // .orderBy('vocabularyView.lastViewedAt', 'DESC')
       .orderBy('vocabulary.content COLLATE utf8mb4_vietnamese_ci', 'ASC')
       .getMany();
-  
+
     // Trả về dữ liệu đã gọn gàng cho FE
     return recentViews.map((view) => ({
       vocabularyId: view.vocabularyId,
       name: view.vocabulary.content,
       viewCount: view.viewCount,
-      lastViewed: view.lastViewedAt
+      lastViewed: view.lastViewedAt,
     }));
   };
 
@@ -607,7 +611,7 @@ for (const finished of finishedAttempts) {
     return {
       userId: user.userId,
       name: user.name, // hoặc fullName nếu bạn dùng trường khác
-      statistics: userStatistic
+      statistics: userStatistic,
     };
   };
 
@@ -623,211 +627,211 @@ for (const finished of finishedAttempts) {
 
   getClassJoined = async (user) => {
     const classJoinedCount = await ClassStudent.createQueryBuilder('classStudent')
-    .innerJoinAndSelect('classStudent.classroom', 'classRoom') // Join để lấy thông tin lớp học
-    .select('classRoom.id', 'classRoomId')
-    .addSelect('classRoom.name', 'name')
-    .addSelect('classRoom.thumbnailPath', 'thumbnailPath')
-    .addSelect('classRoom.classCode', 'classCode')
-    .where('classStudent.studentId = :userId', { userId: user.userId }) // Chỉ lấy lớp học của học sinh
-    .groupBy('classRoom.id')
-    .addGroupBy('classRoom.name')
-    .addGroupBy('classRoom.thumbnailPath')
-    .addGroupBy('classRoom.classCode')
-    .getRawMany();
+      .innerJoinAndSelect('classStudent.classroom', 'classRoom') // Join để lấy thông tin lớp học
+      .select('classRoom.id', 'classRoomId')
+      .addSelect('classRoom.name', 'name')
+      .addSelect('classRoom.thumbnailPath', 'thumbnailPath')
+      .addSelect('classRoom.classCode', 'classCode')
+      .where('classStudent.studentId = :userId', { userId: user.userId }) // Chỉ lấy lớp học của học sinh
+      .groupBy('classRoom.id')
+      .addGroupBy('classRoom.name')
+      .addGroupBy('classRoom.thumbnailPath')
+      .addGroupBy('classRoom.classCode')
+      .getRawMany();
 
     return classJoinedCount;
   };
 
-getAllStudentList = async (query: SearchStudentDto) => {// mặc định DESC nếu không có
-  const [data, itemCount] = await User.createQueryBuilder('user')
-  .leftJoinAndSelect('user.school', 'school')
-  .leftJoinAndSelect('user.classStudents', 'classStudent')
-  .leftJoinAndSelect('classStudent.classroom', 'classroom')
-  .where('user.code = :code', { code: 'user' })
-  .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 }) 
-  .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', { 
-    specificUserId: 27, 
-    minUserId: 140 
-  })
-  .andWhere(query.name ? 'user.name LIKE :name' : 'TRUE', {
-    name: `%${query.name}%`,
-  })
-  .andWhere(query.classRoomId ? 'classroom.classroomId = :classRoomId' : 'TRUE', {
-    classRoomId: query.classRoomId,
-  })
-  .andWhere(query.schoolId ? 'school.schoolId = :schoolId' : 'TRUE', {
-    schoolId: query.schoolId,
-  })
-  .orderBy(`user.${query.orderBy ?? 'userId'}`, query.sortBy ?? 'DESC')
-  .skip(query.skip)
-  .take(query.take)
-  .select([
-    'user.userId',
-    'user.name',
-    'user.createdDate',
-    'school.schoolId',
-    'school.name',
-    'classStudent.classStudentId', // ít nhất 1 field của classStudent
-    'classroom.name',
-    'classroom.classroomId' 
-  ])
-  .getManyAndCount();
-  const formattedData = data.map((student) => {
-    const firstClassName =
-      student.classStudents?.[0]?.classroom?.name || 'Không có';
-    return {
-      userId: student.userId,
-      name: student.name,
-      schoolId: student.school?.schoolId || 'Không có',
-      schoolName: student.school?.name || 'Không có',
-      classRoomName: firstClassName,
-    };
-  });
-  
-return GenerateUtil.paginate({ data: formattedData, itemCount, query });
-};
+  getAllStudentList = async (query: SearchStudentDto) => {
+    // mặc định DESC nếu không có
+    const [data, itemCount] = await User.createQueryBuilder('user')
+      .leftJoinAndSelect('user.school', 'school')
+      .leftJoinAndSelect('user.classStudents', 'classStudent')
+      .leftJoinAndSelect('classStudent.classroom', 'classroom')
+      .where('user.code = :code', { code: 'user' })
+      .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', {
+        specificUserId: 27,
+        minUserId: 140,
+      })
+      .andWhere(query.name ? 'user.name LIKE :name' : 'TRUE', {
+        name: `%${query.name}%`,
+      })
+      .andWhere(query.classRoomId ? 'classroom.classroomId = :classRoomId' : 'TRUE', {
+        classRoomId: query.classRoomId,
+      })
+      .andWhere(query.schoolId ? 'school.schoolId = :schoolId' : 'TRUE', {
+        schoolId: query.schoolId,
+      })
+      .orderBy(`user.${query.orderBy ?? 'userId'}`, query.sortBy ?? 'DESC')
+      .skip(query.skip)
+      .take(query.take)
+      .select([
+        'user.userId',
+        'user.name',
+        'user.createdDate',
+        'school.schoolId',
+        'school.name',
+        'classStudent.classStudentId', // ít nhất 1 field của classStudent
+        'classroom.name',
+        'classroom.classroomId',
+      ])
+      .getManyAndCount();
+    const formattedData = data.map((student) => {
+      const firstClassName = student.classStudents?.[0]?.classroom?.name || 'Không có';
+      return {
+        userId: student.userId,
+        name: student.name,
+        schoolId: student.school?.schoolId || 'Không có',
+        schoolName: student.school?.name || 'Không có',
+        classRoomName: firstClassName,
+      };
+    });
 
-// Option 1: Two-step approach with Admin and userId >= 140 filtering
-getStudentList = async (query: SearchStudentDto) => {
-  const teacherId = Number(query.userId);
-  const isAdmin = teacherId === 1;
+    return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+  };
 
-  let queryBuilder = User.createQueryBuilder('user')
-    .leftJoinAndSelect('user.school', 'school')
-    .leftJoinAndSelect('user.classStudents', 'classStudent')
-    .leftJoinAndSelect('classStudent.classroom', 'classroom')
-    .where('user.code = :code', { code: 'user' })
-    .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 })
-    .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', { 
-    specificUserId: 27, 
-    minUserId: 140 
-  });
+  // Option 1: Two-step approach with Admin and userId >= 140 filtering
+  getStudentList = async (query: SearchStudentDto) => {
+    const teacherId = Number(query.userId);
+    const isAdmin = teacherId === 1;
 
-  if (!isAdmin) {
-    // For regular teachers, get their classroom and school restrictions
-    const teacher = await User.createQueryBuilder('teacher')
-      .leftJoinAndSelect('teacher.classTeachers', 'classTeacher')
-      .leftJoinAndSelect('classTeacher.classroom', 'teacherClassroom')
-      .where('teacher.userId = :teacherId', { teacherId })
-      .andWhere('teacher.isDeleted = :isDeleted', { isDeleted: 0 })
-      .getOne();
+    let queryBuilder = User.createQueryBuilder('user')
+      .leftJoinAndSelect('user.school', 'school')
+      .leftJoinAndSelect('user.classStudents', 'classStudent')
+      .leftJoinAndSelect('classStudent.classroom', 'classroom')
+      .where('user.code = :code', { code: 'user' })
+      .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', {
+        specificUserId: 27,
+        minUserId: 140,
+      });
 
-    if (!teacher || !teacher.classTeachers || teacher.classTeachers.length === 0) {
-      return GenerateUtil.paginate({ data: [], itemCount: 0, query });
+    if (!isAdmin) {
+      // For regular teachers, get their classroom and school restrictions
+      const teacher = await User.createQueryBuilder('teacher')
+        .leftJoinAndSelect('teacher.classTeachers', 'classTeacher')
+        .leftJoinAndSelect('classTeacher.classroom', 'teacherClassroom')
+        .where('teacher.userId = :teacherId', { teacherId })
+        .andWhere('teacher.isDeleted = :isDeleted', { isDeleted: 0 })
+        .getOne();
+
+      if (!teacher || !teacher.classTeachers || teacher.classTeachers.length === 0) {
+        return GenerateUtil.paginate({ data: [], itemCount: 0, query });
+      }
+
+      // Get teacher's school ID and classroom IDs
+      const teacherSchoolId = teacher.schoolId;
+      const teacherClassroomIds = teacher.classTeachers.map((ct) => ct.classroom.classroomId);
+
+      // Apply teacher restrictions with unique parameter names
+      queryBuilder = queryBuilder
+        .andWhere('user.schoolId = :teacherSchoolId', { teacherSchoolId })
+        .andWhere('classroom.classroomId IN (:...teacherClassroomIds)', { teacherClassroomIds });
     }
 
-    // Get teacher's school ID and classroom IDs
-    const teacherSchoolId = teacher.schoolId;
-    const teacherClassroomIds = teacher.classTeachers.map(ct => ct.classroom.classroomId);
+    // Apply common filters with unique parameter names to avoid conflicts
+    const filterParams: any = {};
 
-    // Apply teacher restrictions with unique parameter names
+    if (query.name) {
+      queryBuilder = queryBuilder.andWhere('user.name LIKE :searchName', { searchName: `%${query.name}%` });
+    }
+
+    if (query.classRoomId) {
+      queryBuilder = queryBuilder.andWhere('classroom.classroomId = :filterClassRoomId', {
+        filterClassRoomId: query.classRoomId,
+      });
+    }
+
+    // Only apply school filter for admin users or if it doesn't conflict with teacher restrictions
+    if (query.schoolId) {
+      queryBuilder = queryBuilder.andWhere('school.schoolId = :filterSchoolId', { filterSchoolId: query.schoolId });
+    }
+
     queryBuilder = queryBuilder
-      .andWhere('user.schoolId = :teacherSchoolId', { teacherSchoolId })
-      .andWhere('classroom.classroomId IN (:...teacherClassroomIds)', { teacherClassroomIds });
-  }
+      .orderBy(`user.${query.orderBy ?? 'userId'}`, query.sortBy ?? 'DESC')
+      .skip(query.skip)
+      .take(query.take)
+      .select([
+        'user.userId',
+        'user.name',
+        'user.email',
+        'user.createdDate',
+        'school.schoolId',
+        'school.name',
+        'classStudent.classStudentId',
+        'classroom.name',
+        'classroom.classroomId',
+      ]);
 
-  // Apply common filters with unique parameter names to avoid conflicts
-  const filterParams: any = {};
-  
-  if (query.name) {
-    queryBuilder = queryBuilder.andWhere('user.name LIKE :searchName', { searchName: `%${query.name}%` });
-  }
-  
-  if (query.classRoomId) {
-    queryBuilder = queryBuilder.andWhere('classroom.classroomId = :filterClassRoomId', { filterClassRoomId: query.classRoomId });
-  }
-  
-  // Only apply school filter for admin users or if it doesn't conflict with teacher restrictions
-  if (query.schoolId) {
-    queryBuilder = queryBuilder.andWhere('school.schoolId = :filterSchoolId', { filterSchoolId: query.schoolId });
-  }
+    const [data, itemCount] = await queryBuilder.getManyAndCount();
 
-  queryBuilder = queryBuilder
-    .orderBy(`user.${query.orderBy ?? 'userId'}`, query.sortBy ?? 'DESC')
-    .skip(query.skip)
-    .take(query.take)
-    .select([
-      'user.userId',
-      'user.name',
-      'user.email',
-      'user.createdDate',
-      'school.schoolId',
-      'school.name',
-      'classStudent.classStudentId',
-      'classroom.name',
-      'classroom.classroomId' 
-    ]);
+    const formattedData = data.map((student) => {
+      const firstClassName = student.classStudents?.[0]?.classroom?.name || 'Không có';
+      return {
+        userId: student.userId,
+        name: student.name,
+        schoolId: student.school?.schoolId || 'Không có',
+        schoolName: student.school?.name || 'Không có',
+        email: student.email || 'Không có',
+        classRoomName: firstClassName,
+      };
+    });
 
-  const [data, itemCount] = await queryBuilder.getManyAndCount();
-
-  const formattedData = data.map((student) => {
-    const firstClassName =
-      student.classStudents?.[0]?.classroom?.name || 'Không có';
-    return {
-      userId: student.userId,
-      name: student.name,
-      schoolId: student.school?.schoolId || 'Không có',
-      schoolName: student.school?.name || 'Không có',
-      email: student.email || 'Không có',
-      classRoomName: firstClassName,
-    };
-  });
-
-  return GenerateUtil.paginate({ data: formattedData, itemCount, query });
-};
+    return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+  };
 
   getTeacherList = async (query: SearchTeacherDto) => {
     const [data, itemCount] = await User.createQueryBuilder('user')
-  .leftJoinAndSelect('user.school', 'school')
-  .leftJoinAndSelect('user.classTeachers', 'classTeacher')
-  .leftJoinAndSelect('classTeacher.classroom', 'classroom')
-  .where('user.code = :code', { code: 'teacher' })
-  .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 }) 
-  .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', { 
-    specificUserId: 28, 
-    minUserId: 140 
-  })  
-  .andWhere(query.name ? 'user.name LIKE :name' : 'TRUE', {
-    name: `%${query.name}%`,
-  })
-  .andWhere(query.classRoomId ? 'classroom.classroomId = :classRoomId' : 'TRUE', {
-    classRoomId: query.classRoomId,
-  })
-  .andWhere(query.schoolId ? 'school.schoolId = :schoolId' : 'TRUE', {
-    schoolId: query.schoolId,
-  })
-  .orderBy(`user.${query.orderBy ?? 'userId'}`, query.sortBy ?? 'DESC')
-  .skip(query.skip)
-  .take(query.take)
-  .select([
-    'user.userId',
-    'user.name',
-    'user.birthDay',
-    'user.address',
-    'user.email',
-    'user.createdDate',
-    'school.schoolId',
-    'school.name',
-    'classTeacher.classTeacherId',
-    'classroom.name',
-  ])
-  .getManyAndCount();
-  const formattedData = data.map((teacher) => {
-    const firstClassName =
-    teacher.classTeachers?.[0]?.classroom?.name || 'Không có';
-    return {
-      userId: teacher.userId,
-      name: teacher.name,
-      birthDay: teacher.birthDay?.toISOString().split('T')[0] || 'Không có',
-      schoolId: teacher.school?.schoolId || 'Không có',
-      schoolName: teacher.school?.name || 'Không có',
-      city: teacher.address || 'Không có',
-      email: teacher.email || 'Không có',
-      classRoomName: firstClassName,
-    };
-  });
-  
-return GenerateUtil.paginate({ data: formattedData, itemCount, query });
+      .leftJoinAndSelect('user.school', 'school')
+      .leftJoinAndSelect('user.classTeachers', 'classTeacher')
+      .leftJoinAndSelect('classTeacher.classroom', 'classroom')
+      .where('user.code = :code', { code: 'teacher' })
+      .andWhere('user.isDeleted = :isDeleted', { isDeleted: 0 })
+      .andWhere('(user.userId = :specificUserId OR user.userId >= :minUserId)', {
+        specificUserId: 28,
+        minUserId: 140,
+      })
+      .andWhere(query.name ? 'user.name LIKE :name' : 'TRUE', {
+        name: `%${query.name}%`,
+      })
+      .andWhere(query.classRoomId ? 'classroom.classroomId = :classRoomId' : 'TRUE', {
+        classRoomId: query.classRoomId,
+      })
+      .andWhere(query.schoolId ? 'school.schoolId = :schoolId' : 'TRUE', {
+        schoolId: query.schoolId,
+      })
+      .orderBy(`user.${query.orderBy ?? 'userId'}`, query.sortBy ?? 'DESC')
+      .skip(query.skip)
+      .take(query.take)
+      .select([
+        'user.userId',
+        'user.name',
+        'user.birthDay',
+        'user.address',
+        'user.email',
+        'user.createdDate',
+        'school.schoolId',
+        'school.name',
+        'classTeacher.classTeacherId',
+        'classroom.name',
+      ])
+      .getManyAndCount();
+    const formattedData = data.map((teacher) => {
+      const firstClassName = teacher.classTeachers?.[0]?.classroom?.name || 'Không có';
+      return {
+        userId: teacher.userId,
+        name: teacher.name,
+        birthDay: teacher.birthDay?.toISOString().split('T')[0] || 'Không có',
+        schoolId: teacher.school?.schoolId || 'Không có',
+        schoolName: teacher.school?.name || 'Không có',
+        city: teacher.address || 'Không có',
+        email: teacher.email || 'Không có',
+        classRoomName: firstClassName,
+      };
+    });
+
+    return GenerateUtil.paginate({ data: formattedData, itemCount, query });
   };
 
   getSchoolList = async (query: SearchSchoolDto) => {
@@ -835,19 +839,15 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
       .orderBy('school.schoolId', query.sortBy ?? 'DESC')
       .skip(query.skip)
       .take(query.take)
-      .select([
-        'school.schoolId',
-        'school.name',
-        'school.imageLocation',
-      ])
+      .select(['school.schoolId', 'school.name', 'school.imageLocation'])
       .getManyAndCount();
-  
+
     const formattedData = data.map((school) => ({
       schoolId: school.schoolId,
       name: school.name,
       imageLocation: school.imageLocation || 'Không có',
     }));
-  
+
     return GenerateUtil.paginate({ data: formattedData, itemCount, query });
   };
 
@@ -857,155 +857,126 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
       .orderBy('classRoom.classroomId', query.sortBy ?? 'ASC')
       .skip(query.skip)
       .take(query.take)
-      .select([
-        'classRoom.classroomId',
-        'classRoom.name',
-        'classRoom.imageLocation'
-      ])
+      .select(['classRoom.classroomId', 'classRoom.name', 'classRoom.imageLocation'])
       .getManyAndCount();
     const formattedData = data.map((classroom) => ({
       classRoomId: classroom.classroomId,
       name: classroom.name,
       imageLocation: classroom.imageLocation || 'Không có',
     }));
-  
+
     return GenerateUtil.paginate({ data: formattedData, itemCount, query });
   };
-  
+
   updateUser = async (userId: number, body: UpdateUserDto) => {
     const { name, birthDay, address, classRoomName, schoolName } = body;
     // Kiểm tra user có tồn tại không
-    const user = await User
-      .createQueryBuilder('user')
-      .where('user.userId = :userId', { userId })
-      .getOne();
+    const user = await User.createQueryBuilder('user').where('user.userId = :userId', { userId }).getOne();
     // Nếu có trường mới thì tìm schoolId và update
     if (schoolName) {
-      const school = await School
-        .createQueryBuilder('school')
+      const school = await School.createQueryBuilder('school')
         .where('school.name = :schoolName', { schoolName })
         .getOne();
-    
-      await User
-        .createQueryBuilder()
+
+      await User.createQueryBuilder()
         .update()
         .set({ schoolId: school.schoolId })
         .where('userId = :userId', { userId })
         .execute();
     }
-  
+
     // Cập nhật các thông tin cá nhân
     const updateFields: any = {};
     if (name) updateFields.name = name;
     if (birthDay) updateFields.birthDay = birthDay;
     if (address) updateFields.address = address;
     if (Object.keys(updateFields).length > 0) {
-      await User
-        .createQueryBuilder()
-        .update()
-        .set(updateFields)
-        .where('userId = :userId', { userId })
-        .execute();
+      await User.createQueryBuilder().update().set(updateFields).where('userId = :userId', { userId }).execute();
     }
-  
+
     // Nếu có thay đổi lớp thì xử lý bảng class_room_student
     if (classRoomName) {
-      const classRoom = await ClassRoom
-        .createQueryBuilder('class')
+      const classRoom = await ClassRoom.createQueryBuilder('class')
         .where('class.name = :classRoomName', { classRoomName })
         .getOne();
-      if(user.code == 'USER') {
-        const existRelation = await ClassStudent
-        .createQueryBuilder('classStudent')
-        .where('classStudent.studentId = :userId', { userId })
-        .getOne();
-      if (existRelation) {
-        await ClassStudent
-          .createQueryBuilder()
-          .update()
-          .set({ classroomId: classRoom.classroomId })
-          .where('studentId = :userId', { userId })
-          .execute();
+      if (user.code == 'USER') {
+        const existRelation = await ClassStudent.createQueryBuilder('classStudent')
+          .where('classStudent.studentId = :userId', { userId })
+          .getOne();
+        if (existRelation) {
+          await ClassStudent.createQueryBuilder()
+            .update()
+            .set({ classroomId: classRoom.classroomId })
+            .where('studentId = :userId', { userId })
+            .execute();
+        } else {
+          await ClassStudent.createQueryBuilder()
+            .insert()
+            .values({
+              studentId: userId,
+              classroomId: classRoom.classroomId,
+            })
+            .execute();
+        }
       } else {
-        await ClassStudent
-          .createQueryBuilder()
-          .insert()
-          .values({
-            studentId: userId,
-            classroomId: classRoom.classroomId,
-          })
-          .execute();
-      }
-    } else {
-    const existRelation = await ClassTeacher
-        .createQueryBuilder('classTeacher')
-        .where('classTeacher.teacherId = :userId', { userId })
-        .getOne();
-      if (existRelation) {
-        await ClassTeacher
-          .createQueryBuilder()
-          .update()
-          .set({ classroomId: classRoom.classroomId })
-          .where('teacherId = :userId', { userId })
-          .execute();
-      } else {
-        await ClassTeacher
-          .createQueryBuilder()
-          .insert()
-          .values({
-            teacherId: userId,
-            classroomId: classRoom.classroomId,
-          })
-          .execute();
+        const existRelation = await ClassTeacher.createQueryBuilder('classTeacher')
+          .where('classTeacher.teacherId = :userId', { userId })
+          .getOne();
+        if (existRelation) {
+          await ClassTeacher.createQueryBuilder()
+            .update()
+            .set({ classroomId: classRoom.classroomId })
+            .where('teacherId = :userId', { userId })
+            .execute();
+        } else {
+          await ClassTeacher.createQueryBuilder()
+            .insert()
+            .values({
+              teacherId: userId,
+              classroomId: classRoom.classroomId,
+            })
+            .execute();
+        }
       }
     }
-  }
-  const userBRepo = this.dataSourceB.getRepository(UserB);
-  const updateFieldsB: any = {};
-  if (name) updateFieldsB.name = name;
-  if (birthDay) updateFieldsB.birthDay = birthDay;
-  if (address) updateFieldsB.address = address;
+    const userBRepo = this.dataSourceB.getRepository(UserB);
+    const updateFieldsB: any = {};
+    if (name) updateFieldsB.name = name;
+    if (birthDay) updateFieldsB.birthDay = birthDay;
+    if (address) updateFieldsB.address = address;
 
-  if (Object.keys(updateFieldsB).length > 0) {
-    await userBRepo
-      .createQueryBuilder()
-      .update()
-      .set(updateFieldsB)
-      .where('userId = :userId', { userId }) // Assuming userId same in both dbs
-      .execute();
-  }
+    if (Object.keys(updateFieldsB).length > 0) {
+      await userBRepo
+        .createQueryBuilder()
+        .update()
+        .set(updateFieldsB)
+        .where('userId = :userId', { userId }) // Assuming userId same in both dbs
+        .execute();
+    }
 
-  return { message: 'Teacher updated successfully' };
-}
+    return { message: 'Teacher updated successfully' };
+  };
 
   deleteUser = async (userId: number) => {
     // Kiểm tra user có tồn tại không
-    const user = await User
-      .createQueryBuilder('user')
-      .where('user.userId = :userId', { userId })
-      .getOne();
+    const user = await User.createQueryBuilder('user').where('user.userId = :userId', { userId }).getOne();
 
     if (!user) {
       throw new Error('User not found');
     }
 
-    await User
-    .createQueryBuilder()
-    .update()
-    .set({ isDeleted: true })
-    .where('userId = :userId', { userId })
-    .execute();
+    await User.createQueryBuilder().update().set({ isDeleted: true }).where('userId = :userId', { userId }).execute();
 
-  const userBRepo = this.dataSourceB.getRepository(UserB);
+    const userBRepo = this.dataSourceB.getRepository(UserB);
     await userBRepo
-    .createQueryBuilder()
-    .update()
-    .set({ isDeleted: true })
-    .where('userId = :userId', { userId })
-    .execute();
+      .createQueryBuilder()
+      .update()
+      .set({ isDeleted: true })
+      .where('userId = :userId', { userId })
+      .execute();
 
-  return { message: 'Student deleted successfully' };
-    }
+    return { message: 'Student deleted successfully' };
+  };
 
   createStudent = async (body: UpdateUserDto) => {
     const { name, birthDay, address, classRoomName, schoolName } = body;
@@ -1013,40 +984,38 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
     let classRoomId: number | undefined = undefined;
 
     if (classRoomName) {
-      const classRoom = await ClassRoom
-        .createQueryBuilder('class')
+      const classRoom = await ClassRoom.createQueryBuilder('class')
         .where('class.name = :classRoomName', { classRoomName })
         .getOne();
-        if (classRoom) {
-          classRoomId = classRoom.classroomId;
-        }
+      if (classRoom) {
+        classRoomId = classRoom.classroomId;
       }
+    }
 
     if (schoolName) {
-      const school = await School
-        .createQueryBuilder('school')
+      const school = await School.createQueryBuilder('school')
         .where('school.name = :schoolName', { schoolName })
         .getOne();
       if (school) {
         schoolId = school.schoolId;
       }
     }
-      // Cập nhật các thông tin cá nhân
-      const removeVietnameseTones = (str) => {
-        return str.normalize('NFD')
-                  .replace(/[\u0300-\u036f]/g, '')
-                  .replace(/đ/g, 'd')
-                  .replace(/Đ/g, 'D')
-                  .replace(/\s+/g, '') // bỏ khoảng trắng
-                  .toLowerCase();
-      };
-      const email = removeVietnameseTones(name) + '@gmail.com'; // Tạo email mặc định từ tên
-      const password = '123456';
-      const code = 'USER';
-      const isDeleted = false;
-      const isApproved = true;
-      const user = await User
-      .createQueryBuilder()
+    // Cập nhật các thông tin cá nhân
+    const removeVietnameseTones = (str) => {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .replace(/\s+/g, '') // bỏ khoảng trắng
+        .toLowerCase();
+    };
+    const email = removeVietnameseTones(name) + '@gmail.com'; // Tạo email mặc định từ tên
+    const password = '123456';
+    const code = 'USER';
+    const isDeleted = false;
+    const isApproved = true;
+    const user = await User.createQueryBuilder()
       .insert()
       .into(User)
       .values({
@@ -1058,23 +1027,22 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
         code,
         schoolId,
         isDeleted,
-        isApproved
+        isApproved,
       })
       .execute();
 
-      const userId = user.identifiers[0].userId;
+    const userId = user.identifiers[0].userId;
 
-      await ClassStudent
-        .createQueryBuilder()
-        .insert()
-        .values({
-          studentId: userId,
-          classroomId: classRoomId,
-        })
-        .execute();
-    
+    await ClassStudent.createQueryBuilder()
+      .insert()
+      .values({
+        studentId: userId,
+        classroomId: classRoomId,
+      })
+      .execute();
+
     const userBRepo = this.dataSourceB.getRepository(UserB);
-      await userBRepo
+    await userBRepo
       .createQueryBuilder()
       .insert()
       .into(UserB)
@@ -1086,11 +1054,11 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
         password,
         code,
         isDeleted,
-        isApproved
+        isApproved,
       })
       .execute();
     return { message: 'Student created successfully' };
-  }
+  };
 
   createTeacher = async (body: UpdateUserDto) => {
     const { name, birthDay, address, classRoomName, schoolName } = body;
@@ -1098,40 +1066,38 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
     let classRoomId: number | undefined = undefined;
 
     if (classRoomName) {
-      const classRoom = await ClassRoom
-        .createQueryBuilder('class')
+      const classRoom = await ClassRoom.createQueryBuilder('class')
         .where('class.name = :classRoomName', { classRoomName })
         .getOne();
-        if (classRoom) {
-          classRoomId = classRoom.classroomId;
-        }
+      if (classRoom) {
+        classRoomId = classRoom.classroomId;
       }
+    }
 
     if (schoolName) {
-      const school = await School
-        .createQueryBuilder('school')
+      const school = await School.createQueryBuilder('school')
         .where('school.name = :schoolName', { schoolName })
         .getOne();
       if (school) {
         schoolId = school.schoolId;
       }
     }
-      // Cập nhật các thông tin cá nhân
-      const removeVietnameseTones = (str) => {
-        return str.normalize('NFD')
-                  .replace(/[\u0300-\u036f]/g, '')
-                  .replace(/đ/g, 'd')
-                  .replace(/Đ/g, 'D')
-                  .replace(/\s+/g, '') // bỏ khoảng trắng
-                  .toLowerCase();
-      };
-      const email = removeVietnameseTones(name) + '@gmail.com'; // Tạo email mặc định từ tên
-      const password = '123456';
-      const code = 'TEACHER';
-      const isDeleted = false;
-      const isApproved = true;
-      const user = await User
-      .createQueryBuilder()
+    // Cập nhật các thông tin cá nhân
+    const removeVietnameseTones = (str) => {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .replace(/\s+/g, '') // bỏ khoảng trắng
+        .toLowerCase();
+    };
+    const email = removeVietnameseTones(name) + '@gmail.com'; // Tạo email mặc định từ tên
+    const password = '123456';
+    const code = 'TEACHER';
+    const isDeleted = false;
+    const isApproved = true;
+    const user = await User.createQueryBuilder()
       .insert()
       .into(User)
       .values({
@@ -1143,23 +1109,22 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
         code,
         schoolId,
         isDeleted,
-        isApproved
+        isApproved,
       })
       .execute();
 
-      const userId = user.identifiers[0].userId;
+    const userId = user.identifiers[0].userId;
 
-      await ClassTeacher
-        .createQueryBuilder()
-        .insert()
-        .values({
-          teacherId: userId,
-          classroomId: classRoomId,
-        })
-        .execute();
-    
+    await ClassTeacher.createQueryBuilder()
+      .insert()
+      .values({
+        teacherId: userId,
+        classroomId: classRoomId,
+      })
+      .execute();
+
     const userBRepo = this.dataSourceB.getRepository(UserB);
-      await userBRepo
+    await userBRepo
       .createQueryBuilder()
       .insert()
       .into(UserB)
@@ -1171,9 +1136,9 @@ return GenerateUtil.paginate({ data: formattedData, itemCount, query });
         password,
         code,
         isDeleted,
-        isApproved
+        isApproved,
       })
       .execute();
     return { message: 'Teacher created successfully' };
-  }
+  };
 }

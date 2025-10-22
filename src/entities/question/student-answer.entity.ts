@@ -9,7 +9,7 @@ import { Question } from './question.entity';
 export class StudentAnswer extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'question_exam_user_id' }) // Định nghĩa ID mới
   questionExamUserId: number;
-  
+
   @DBColumn({
     name: 'exam_attempt_id',
     type: 'bigint',

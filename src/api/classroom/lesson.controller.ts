@@ -9,7 +9,7 @@ import { Lesson } from '../../entities/class/lesson.entity';
 export class LessonsController {
   constructor(
     @InjectRepository(Lesson)
-    private readonly lessonRepository: Repository<Lesson>
+    private readonly lessonRepository: Repository<Lesson>,
   ) {}
 
   @Get()
@@ -21,42 +21,33 @@ export class LessonsController {
     try {
       // Validate and parse the classRoomId
       const classRoomId = parseInt(classRoomIdStr, 10);
-      
+
       if (isNaN(classRoomId)) {
         throw new HttpException('Invalid classroom ID: must be a number', HttpStatus.BAD_REQUEST);
       }
-    
+
       // Fetch lessons associated with the classroom
       const lessons = await this.lessonRepository.find({
         where: { classRoomId: classRoomId },
-        select: [
-          'lessonId', 
-          'lessonName', 
-          'imageLocation', 
-          'videoLocation',
-          'createdDate'
-        ],
+        select: ['lessonId', 'lessonName', 'imageLocation', 'videoLocation', 'createdDate'],
         order: {
-          createdDate: 'ASC' // Order by creation date
-        }
+          createdDate: 'ASC', // Order by creation date
+        },
       });
-      
+
       return lessons;
     } catch (error) {
       // Re-throw known HttpExceptions
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       // Log the error for debugging
       console.error('Error fetching lessons:', error);
       console.error('Error details:', error.message);
-      
+
       // Return a generic error
-      throw new HttpException(
-        'Failed to fetch lessons',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      throw new HttpException('Failed to fetch lessons', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

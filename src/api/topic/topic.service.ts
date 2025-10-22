@@ -79,7 +79,12 @@ export class TopicService {
     return classRoom;
   };
 
-  updateById = async (topicId: number, user: CacheUser, body: UpdateTopicDto, permissionCode: string): Promise<Topic> => {
+  updateById = async (
+    topicId: number,
+    user: CacheUser,
+    body: UpdateTopicDto,
+    permissionCode: string,
+  ): Promise<Topic> => {
     const topic = await Topic.findOne({ where: { topicId } });
     if (!topic) throw new App404Exception('id', { topicId });
 

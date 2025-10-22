@@ -11,7 +11,10 @@ export class PermissionHelper {
     const permissionId = await Permission.findOneBy({ code: permissionCode });
     const role = await RoleHelper.getRoleByUserId(userId);
     if (!role || !permissionId) return false;
-    const isPermission = await RolePermission.findOneBy({ code: role.roleCode, permissionId: permissionId.permissionId });
+    const isPermission = await RolePermission.findOneBy({
+      code: role.roleCode,
+      permissionId: permissionId.permissionId,
+    });
     if (!isPermission) return false;
     return true;
   };

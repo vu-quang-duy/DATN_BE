@@ -41,7 +41,6 @@ export class Question extends AbstractTimeEntity {
   })
   creatorEmail: string;
 
-
   @DBColumn({
     name: 'image_location',
     type: 'varchar',
@@ -71,7 +70,6 @@ export class Question extends AbstractTimeEntity {
     default: QuestionType.MULTIPLE_ANSWERS,
   })
   questionType: QuestionType;
-
 
   // RELATIONSHIP
 

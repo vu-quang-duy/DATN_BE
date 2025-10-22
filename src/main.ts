@@ -13,6 +13,7 @@ async function bootstrap() {
   const logger = new Logger('main');
 
   const app = await NestFactory.create(AppModule);
+
   app.use('/videos', express.static('/home/tuyentrinh/Desktop/sign_school/uploads/videos'));
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
@@ -31,10 +32,10 @@ async function bootstrap() {
     'http://202.191.56.11:3000',
     'http://127.0.0.1:3000',
     'http://172.24.0.1:3000',
-    'https://wesign.ibme.edu.vn'
+    'https://wesign.ibme.edu.vn',
   ];
 
-app.enableCors({
+  app.enableCors({
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -45,16 +46,16 @@ app.enableCors({
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: [
-      'Content-Type', 
-      'Accept', 
+      'Content-Type',
+      'Accept',
       'Authorization',
       'Cache-Control',
       'X-Requested-With',
       'Origin',
-      'authorization' // lowercase version too
+      'authorization', // lowercase version too
     ],
     preflightContinue: false,
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
   });
 
   // Add response logging middleware AFTER CORS
@@ -69,11 +70,11 @@ app.enableCors({
   const port = ENV.PORT;
 
   await app.listen(port, '0.0.0.0');
-  
-  logger.verbose(`====== App url: http://202.191.56.11:8088/${globalPrefix}`);
-  logger.verbose(`====== Swagger url: http://202.191.56.11:8088/${swaggerEndpoint}`);
-  // logger.verbose(`====== App url: http://localhost:8088/${globalPrefix}`);
-  // logger.verbose(`====== Swagger url: http://localhost:8088/${swaggerEndpoint}`);
+
+  // logger.verbose(`====== App url: http://202.191.56.11:8088/${globalPrefix}`);
+  // logger.verbose(`====== Swagger url: http://202.191.56.11:8088/${swaggerEndpoint}`);
+  logger.verbose(`====== App url: http://localhost:8088/${globalPrefix}`);
+  logger.verbose(`====== Swagger url: http://localhost:8088/${swaggerEndpoint}`);
 }
 
 bootstrap();

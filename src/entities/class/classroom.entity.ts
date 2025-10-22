@@ -1,6 +1,6 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { BeforeUpdate, PrimaryGeneratedColumn, Entity, JoinColumn, OneToMany, ManyToOne, OneToOne} from 'typeorm';
+import { BeforeUpdate, PrimaryGeneratedColumn, Entity, JoinColumn, OneToMany, ManyToOne, OneToOne } from 'typeorm';
 import { AbstractTimeEntity } from '../entity.interface';
 import { ClassStudent } from './class-student.entity';
 import { ClassTeacher } from './class-teacher.entity';

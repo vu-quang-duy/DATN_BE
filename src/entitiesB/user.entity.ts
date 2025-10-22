@@ -1,6 +1,6 @@
 import { EntityNameConst } from 'src/constant/entity-name';
 import { DBColumn } from 'src/decorator/swagger.decorator';
-import { PrimaryGeneratedColumn, Entity, OneToMany} from 'typeorm';
+import { PrimaryGeneratedColumn, Entity, OneToMany } from 'typeorm';
 import { AbstractTimeEntity } from '../entities/entity.interface';
 import { Gender } from 'src/constant/enum-common';
 import { QuestionB } from './question.entity';
@@ -14,7 +14,6 @@ export enum UserStatus {
 export class UserB extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'user_id' }) // Định nghĩa ID mới
   userId: number;
-
 
   @DBColumn({
     name: 'password',
@@ -59,7 +58,7 @@ export class UserB extends AbstractTimeEntity {
   address: string;
 
   @DBColumn({ type: 'datetime', name: 'birth_day', precision: 6, nullable: true })
-  birthDay:Date;
+  birthDay: Date;
 
   @DBColumn({ type: 'enum', name: 'gender', enum: Gender, default: Gender.MALE })
   gender: Gender;
@@ -84,7 +83,6 @@ export class UserB extends AbstractTimeEntity {
   isApproved: boolean;
 
   // RELATIONSHIP
-    @OneToMany(() => QuestionB, (question) => question.creator)
-    questions: QuestionB[];
-  
+  @OneToMany(() => QuestionB, (question) => question.creator)
+  questions: QuestionB[];
 }

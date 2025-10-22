@@ -10,11 +10,11 @@ import { User } from '../entities/user/user.entity';
 
 @Entity(EntityNameConst.EXAM_ATTEMPT)
 export class ExamAttemptB {
-  static countBy(arg0: { studentId: any; isFinished: boolean; }) {
+  static countBy(arg0: { studentId: any; isFinished: boolean }) {
     throw new Error('Method not implemented.');
   }
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'user_exam_id' }) // Định nghĩa ID mới
-    userExamId: number;
+  userExamId: number;
   @DBColumn({
     name: 'user_id',
     type: 'bigint',
@@ -47,7 +47,7 @@ export class ExamAttemptB {
           const result = value.readUInt8(0) === 1;
           return result;
         }
-    
+
         const result = value === 1;
         return result;
       },
@@ -57,7 +57,7 @@ export class ExamAttemptB {
   isFinished: boolean;
 
   // RELATIONSHIP
-  @ManyToOne(() => ExamB, (exam) => exam.examAttempts)  // Quan hệ Many-to-One với bảng Exam
+  @ManyToOne(() => ExamB, (exam) => exam.examAttempts) // Quan hệ Many-to-One với bảng Exam
   @JoinColumn({ name: 'exam_id' })
   exam: ExamB;
 

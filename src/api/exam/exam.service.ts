@@ -45,8 +45,8 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path); // ⬅️ Gắn đúng path ffmpeg
 export class ExamService {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
-    @InjectDataSource('dbB') private readonly dataSourceB: DataSource) {}
-  
+    @InjectDataSource('dbB') private readonly dataSourceB: DataSource,
+  ) {}
 
   search = async (query: SearchExamDto): Promise<PageDto<EXAM>> => {
     const [data, itemCount] = await EXAM.findAndCount({
@@ -78,80 +78,76 @@ export class ExamService {
     const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
 
     // 1. Lấy toàn bộ bài kiểm tra
-    const exams = await examRepo
-      .createQueryBuilder("exam")
-      .select(["exam.examId", "exam.name"])
-      .getMany();
+    const exams = await examRepo.createQueryBuilder('exam').select(['exam.examId', 'exam.name']).getMany();
 
     // ✅ 2. Lấy danh sách examId của các bài practice
     const practiceExamIdsRaw = await examVocabularyRepo
-      .createQueryBuilder("ev")
-      .select("DISTINCT ev.examId", "examId")
+      .createQueryBuilder('ev')
+      .select('DISTINCT ev.examId', 'examId')
       .getRawMany();
 
-    const practiceExamIdSet = new Set(practiceExamIdsRaw.map(e => Number(e.examId)));
+    const practiceExamIdSet = new Set(practiceExamIdsRaw.map((e) => Number(e.examId)));
 
     // 3. Lấy toàn bộ exam attempt của user
-  const examAttempts = await examAttemptRepo
-    .createQueryBuilder("user_exam_mapping")
-    .select([
-      "user_exam_mapping.score",
-      "user_exam_mapping.studentId",
-      "user_exam_mapping.isFinished",
-      "user_exam_mapping.examId",
-    ])
-    .where("user_exam_mapping.studentId = :studentId", { studentId: query.userId })
-    .getMany();
+    const examAttempts = await examAttemptRepo
+      .createQueryBuilder('user_exam_mapping')
+      .select([
+        'user_exam_mapping.score',
+        'user_exam_mapping.studentId',
+        'user_exam_mapping.isFinished',
+        'user_exam_mapping.examId',
+      ])
+      .where('user_exam_mapping.studentId = :studentId', { studentId: query.userId })
+      .getMany();
 
-  const practiceExamAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
-  const practiceAttempts = await practiceExamAttemptRepo
-    .createQueryBuilder("practice_exam_mapping")
-    .select([
-      "practice_exam_mapping.score",
-      "practice_exam_mapping.studentId",
-      "practice_exam_mapping.isFinished",
-      "practice_exam_mapping.examId",
-    ])
-    .where("practice_exam_mapping.studentId = :studentId", { studentId: query.userId })
-    .getMany();
+    const practiceExamAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
+    const practiceAttempts = await practiceExamAttemptRepo
+      .createQueryBuilder('practice_exam_mapping')
+      .select([
+        'practice_exam_mapping.score',
+        'practice_exam_mapping.studentId',
+        'practice_exam_mapping.isFinished',
+        'practice_exam_mapping.examId',
+      ])
+      .where('practice_exam_mapping.studentId = :studentId', { studentId: query.userId })
+      .getMany();
 
-  // Gộp chung 2 loại attempt
-  const allAttempts = [...examAttempts, ...practiceAttempts];
-
+    // Gộp chung 2 loại attempt
+    const allAttempts = [...examAttempts, ...practiceAttempts];
 
     // 4. Gộp attempt theo examId
     const attemptMap: Record<number, any> = {};
-    allAttempts.forEach(item => {
-  // Convert scores to numbers for proper comparison
-  const itemScore = item.score !== null && item.score !== undefined ? Number(item.score) : null;
-  
-  if (!attemptMap[item.examId]) {
-    attemptMap[item.examId] = {
-      ...item,
-      score: itemScore, // Store as number
-      attemptCount: item.isFinished ? 1 : 0,
-    };
-  } else {
-    const existing = attemptMap[item.examId];
-    const existingScore = existing.score !== null && existing.score !== undefined ? Number(existing.score) : null;
+    allAttempts.forEach((item) => {
+      // Convert scores to numbers for proper comparison
+      const itemScore = item.score !== null && item.score !== undefined ? Number(item.score) : null;
 
-    // Now compare numbers properly
-    if (itemScore !== null && (existingScore === null || itemScore > existingScore)) {
-      existing.score = itemScore;
-    }
+      if (!attemptMap[item.examId]) {
+        attemptMap[item.examId] = {
+          ...item,
+          score: itemScore, // Store as number
+          attemptCount: item.isFinished ? 1 : 0,
+        };
+      } else {
+        const existing = attemptMap[item.examId];
+        const existingScore = existing.score !== null && existing.score !== undefined ? Number(existing.score) : null;
 
-    if (item.isFinished) {
-      existing.isFinished = true;
-    }
+        // Now compare numbers properly
+        if (itemScore !== null && (existingScore === null || itemScore > existingScore)) {
+          existing.score = itemScore;
+        }
 
-    existing.attemptCount += item.isFinished ? 1 : 0;
-  }
-});
+        if (item.isFinished) {
+          existing.isFinished = true;
+        }
+
+        existing.attemptCount += item.isFinished ? 1 : 0;
+      }
+    });
 
     // 5. Merge kết quả
-    let finalData = exams.map(exam => {
+    let finalData = exams.map((exam) => {
       const attempt = attemptMap[exam.examId];
-      const examType = practiceExamIdSet.has(Number(exam.examId)) ? "practice" : "quiz";
+      const examType = practiceExamIdSet.has(Number(exam.examId)) ? 'practice' : 'quiz';
 
       // Make sure examType is explicitly set in the return object
       if (attempt) {
@@ -177,36 +173,32 @@ export class ExamService {
       }
     });
 
-    if (query.examType && query.examType.trim() !== "") {
-      finalData = finalData.filter(exam => exam.examType === query.examType);
+    if (query.examType && query.examType.trim() !== '') {
+      finalData = finalData.filter((exam) => exam.examType === query.examType);
     }
 
-    if (query.name && query.name.trim() !== "") {
-      finalData = finalData.filter(exam => 
-        exam.examName.toLowerCase().includes(query.name.toLowerCase())
-      );
+    if (query.name && query.name.trim() !== '') {
+      finalData = finalData.filter((exam) => exam.examName.toLowerCase().includes(query.name.toLowerCase()));
     }
 
-  if (query.isFinished !== undefined && query.isFinished !== null) {
-      const isFinishedBool = query.isFinished === "1";
+    if (query.isFinished !== undefined && query.isFinished !== null) {
+      const isFinishedBool = query.isFinished === '1';
 
-    finalData = finalData.filter(exam => {
-      // Convert exam.isFinished to boolean for comparison
-      const examIsFinished = exam.isFinished === true;
-      return examIsFinished === isFinishedBool;
-    });
-  }
+      finalData = finalData.filter((exam) => {
+        // Convert exam.isFinished to boolean for comparison
+        const examIsFinished = exam.isFinished === true;
+        return examIsFinished === isFinishedBool;
+      });
+    }
 
     // 6. Sắp xếp và phân trang
-    const validOrderFields = ["examId", "score", "studentId", "isFinished"];
-    const orderField = query.orderBy && validOrderFields.includes(query.orderBy)
-      ? query.orderBy
-      : "examId";
+    const validOrderFields = ['examId', 'score', 'studentId', 'isFinished'];
+    const orderField = query.orderBy && validOrderFields.includes(query.orderBy) ? query.orderBy : 'examId';
 
-    const orderDirection = query.sortBy?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+    const orderDirection = query.sortBy?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     finalData.sort((a, b) => {
-      if (orderDirection === "ASC") {
+      if (orderDirection === 'ASC') {
         return a[orderField] > b[orderField] ? 1 : -1;
       } else {
         return a[orderField] < b[orderField] ? 1 : -1;
@@ -217,185 +209,169 @@ export class ExamService {
     return GenerateUtil.paginate({ data: paginatedData, itemCount: finalData.length, query });
   };
 
-getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
-  const examRepo = this.dataSourceB.getRepository(ExamB);
-  const examVideoRepo = this.dataSource.getRepository(ExamVideo);
-  const userRepo = this.dataSource.getRepository(User);
-  const classStudentRepo = this.dataSource.getRepository(ClassStudent);
-  const classRepo = this.dataSource.getRepository(ClassRoom);
-  const userPracticeRepo = this.dataSource.getRepository(PracticeExamAttempt);
-  const classTeacherRepo = this.dataSource.getRepository(ClassTeacher); // Add this repository
+  getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
+    console.log('🟢 DEBUG START getListPracticeExam');
+    console.log('teacherId raw:', teacherId, 'query:', query);
 
-  // Get teacher's class IDs first
-  const teacherClasses = await classTeacherRepo.find({
-    where: { teacherId: teacherId }
-  });
-  const teacherClassIds = teacherClasses.map(tc => tc.classroomId);
-  // If teacher has no classes, return empty result
-  if (teacherClassIds.length === 0) {
-    return {
-      content: [],
-      itemCount: 0,
-    };
-  }
+    const examRepo = this.dataSourceB.getRepository(ExamB);
+    const examVideoRepo = this.dataSource.getRepository(ExamVideo);
+    const userRepo = this.dataSource.getRepository(User);
+    const classStudentRepo = this.dataSource.getRepository(ClassStudent);
+    const classRepo = this.dataSource.getRepository(ClassRoom);
+    const userPracticeRepo = this.dataSource.getRepository(PracticeExamAttempt);
+    const classTeacherRepo = this.dataSource.getRepository(ClassTeacher);
 
-  // Get students from teacher's classes only
-  const studentsInTeacherClasses = await classStudentRepo.find({
-    where: { classroomId: In(teacherClassIds) }
-  });
-  const allowedStudentIds = studentsInTeacherClasses.map(cs => cs.studentId);
-  // If no students in teacher's classes, return empty result
-  if (allowedStudentIds.length === 0) {
-    return {
-      content: [],
-      itemCount: 0,
-    };
-  }
+    const teacherIdNum = Number(teacherId);
+    if (isNaN(teacherIdNum)) {
+      console.warn('⚠️ teacherId is not a number!');
+      return { content: [], itemCount: 0 };
+    }
 
-  // 1. Subquery: Lấy thời điểm mới nhất cho mỗi (userId, examId) - chỉ cho students của teacher
-  const latestVideosSubQuery = examVideoRepo
-    .createQueryBuilder("sub")
-    .select("sub.userId", "userId")
-    .addSelect("sub.examId", "examId")
-    .addSelect("MAX(sub.createdDate)", "maxCreatedDate")
-    .where("sub.userId IN (:...allowedStudentIds)", { allowedStudentIds })
-    .groupBy("sub.userId")
-    .addGroupBy("sub.examId");
+    // 1️⃣ Lấy class của teacher
+    const teacherClasses = await classTeacherRepo.find({ where: { teacherId: teacherIdNum } });
+    const teacherClassIds = teacherClasses.map((tc) => Number(tc.classroomId));
+    if (teacherClassIds.length === 0) return { content: [], itemCount: 0 };
 
-  // 2. Join lại để lấy videoUrl tương ứng
-  const latestVideos = await examVideoRepo
-    .createQueryBuilder("ev")
-    .innerJoin(
-      "(" + latestVideosSubQuery.getQuery() + ")",
-      "latest",
-      "ev.userId = latest.userId AND ev.examId = latest.examId AND ev.createdDate = latest.maxCreatedDate"
-    )
-    .setParameters(latestVideosSubQuery.getParameters())
-    .select([
-      "ev.userId AS userId",
-      "ev.examId AS examId",
-      "ev.videoUrl AS videoUrl",
-    ])
-    .getRawMany();
-  // 3. Gom videoUrls lại theo cặp (userId, examId)
-  const groupedMap = new Map<string, {
-    userId: number;
-    examId: number;
-    videoUrls: string[];
-  }>();
+    // 2️⃣ Lấy students trong class
+    const studentsInTeacherClasses = await classStudentRepo.find({
+      where: { classroomId: In(teacherClassIds) },
+    });
+    const allowedStudentIds = studentsInTeacherClasses.map((cs) => Number(cs.studentId));
+    if (allowedStudentIds.length === 0) return { content: [], itemCount: 0 };
 
-  for (const v of latestVideos) {
-    const key = `${v.examId}-${v.userId}`;
-    if (!groupedMap.has(key)) {
-      groupedMap.set(key, {
-        userId: Number(v.userId),
-        examId: Number(v.examId),
-        videoUrls: [],
+    // 3️⃣ Lấy video mới nhất
+    const latestVideosSubQuery = examVideoRepo
+      .createQueryBuilder('sub')
+      .select('sub.userId', 'userId')
+      .addSelect('sub.examId', 'examId')
+      .addSelect('MAX(sub.createdDate)', 'maxCreatedDate')
+      .where('sub.userId IN (:...allowedStudentIds)', { allowedStudentIds })
+      .groupBy('sub.userId')
+      .addGroupBy('sub.examId');
+
+    const latestVideos = await examVideoRepo
+      .createQueryBuilder('ev')
+      .innerJoin(
+        '(' + latestVideosSubQuery.getQuery() + ')',
+        'latest',
+        'ev.userId = latest.userId AND ev.examId = latest.examId AND ev.createdDate = latest.maxCreatedDate',
+      )
+      .setParameters(latestVideosSubQuery.getParameters())
+      .select(['ev.userId AS userId', 'ev.examId AS examId', 'ev.videoUrl AS videoUrl'])
+      .getRawMany();
+
+    // Gom nhóm video
+    const groupedMap = new Map();
+    for (const v of latestVideos) {
+      const key = `${v.examId}-${v.userId}`;
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, { userId: Number(v.userId), examId: Number(v.examId), videoUrls: [] });
+      }
+      groupedMap.get(key).videoUrls.push(v.videoUrl);
+    }
+    const grouped = Array.from(groupedMap.values());
+
+    // 4️⃣ Lấy all attempts
+    const allAttempts = await userPracticeRepo.find({
+      where: { studentId: In(allowedStudentIds) },
+    });
+
+    // Nhóm attempt
+    const attemptMap = new Map();
+    for (const attempt of allAttempts) {
+      const key = `${attempt.examId}-${attempt.studentId}`;
+      if (!attemptMap.has(key)) attemptMap.set(key, []);
+      attemptMap.get(key).push(attempt);
+    }
+
+    // ✅ Tạo targetPairs và statusMap 1 lần duy nhất
+    const targetPairs = new Set();
+    const statusMap = new Map();
+    for (const [key, attempts] of attemptMap.entries()) {
+      const sorted = attempts.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
+      const latest = sorted[0];
+      if (latest) {
+        targetPairs.add(key);
+        statusMap.set(key, latest.isFinished ? 'finished' : 'in-progress');
+      }
+    }
+
+    // 5️⃣ Lọc video theo các bài có attempt
+    const filteredGrouped = grouped.filter((v) => targetPairs.has(`${v.examId}-${v.userId}`));
+
+    // 6️⃣ Lấy thông tin bổ sung
+    const userIds = [...new Set(filteredGrouped.map((v) => v.userId))];
+    const examIds = [...new Set(filteredGrouped.map((v) => v.examId))];
+    const [users, exams, classStudents, classRooms] = await Promise.all([
+      userRepo.find({ where: { userId: In(userIds) } }),
+      examRepo.find({ where: { examId: In(examIds) } }),
+      classStudentRepo.find({ where: { studentId: In(userIds) } }),
+      classRepo.find({ where: { classroomId: In(teacherClassIds) } }),
+    ]);
+
+    const userMap = new Map(users.map((u) => [Number(u.userId), u.name]));
+    const examMap = new Map(exams.map((e) => [Number(e.examId), e.name]));
+    const classStudentMap = new Map(classStudents.map((cs) => [Number(cs.studentId), Number(cs.classroomId)]));
+    const classRoomMap = new Map(classRooms.map((c) => [Number(c.classroomId), c.name]));
+
+    // 7️⃣ Gộp kết quả cuối cùng
+    let result = filteredGrouped
+      .map((v) => {
+        const classRoomId = classStudentMap.get(Number(v.userId)) || null;
+        return {
+          userId: v.userId,
+          examId: v.examId,
+          videoUrls: v.videoUrls,
+          name: userMap.get(v.userId) || null,
+          classRoomId,
+          classRoomName: classRoomMap.get(classRoomId) || null,
+          examName: examMap.get(v.examId) || null,
+        };
+      })
+      .filter((item) => {
+        const teacherClassIdsNum = teacherClassIds.map(Number);
+        return item.classRoomId && teacherClassIdsNum.includes(item.classRoomId);
       });
+
+    // ✅ Thêm status, score, isScored
+    result = result.map((item) => {
+      const key = `${item.examId}-${item.userId}`;
+      const latestAttempt = allAttempts.find((a) => a.examId === item.examId && a.studentId === item.userId);
+      return {
+        ...item,
+        status: statusMap.get(key) || 'unknown',
+        score: latestAttempt?.score ?? null,
+        isScored: latestAttempt?.score !== null,
+      };
+    });
+
+    if (query.name && query.name.trim() !== '') {
+      result = result.filter((exam) => exam.examName && exam.examName.toLowerCase().includes(query.name.toLowerCase()));
     }
-    groupedMap.get(key)!.videoUrls.push(v.videoUrl);
-  }
-  const grouped = Array.from(groupedMap.values());
-  // 4. Lấy tất cả các attempt để kiểm tra tình trạng - chỉ cho students của teacher
-  const allAttempts = await userPracticeRepo.find({
-    where: { studentId: In(allowedStudentIds) }
-  });
 
-  // Nhóm theo examId-studentId
-  const attemptMap = new Map<string, PracticeExamAttempt[]>();
-  for (const attempt of allAttempts) {
-    const key = `${attempt.examId}-${attempt.studentId}`;
-    if (!attemptMap.has(key)) {
-      attemptMap.set(key, []);
-    }
-    attemptMap.get(key)!.push(attempt);
-  }
-  // 5. Lọc ra những cặp thỏa mãn:
-  // - Chưa từng làm (không có isFinished = 1)
-  // - Hoặc đã từng làm (isFinished = 1) và lần mới nhất là isFinished = 0
-  const targetPairs = new Set<string>();
-  for (const [key, attempts] of attemptMap.entries()) {
-    const sorted = attempts.sort(
-      (a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
-    );
-    const latest = sorted[0];
-    const hasFinishedBefore = attempts.some(a => a.isFinished === true);
+    console.log('✅ Final result count:', result.length);
+    console.log('🟢 DEBUG END getListPracticeExam');
 
-    if (!hasFinishedBefore || (hasFinishedBefore && latest.isFinished === false)) {
-      targetPairs.add(key);
-    }
-  }
-  // 6. Lọc danh sách video theo targetPairs
-  const filteredGrouped = grouped.filter(v => {
-    const key = `${v.examId}-${v.userId}`;
-    return targetPairs.has(key);
-  });
-  // 7. Lấy thông tin bổ sung
-  const userIds = [...new Set(filteredGrouped.map(v => v.userId))];
-  const examIds = [...new Set(filteredGrouped.map(v => v.examId))];
-
-  const [users, exams, classStudents, classRooms] = await Promise.all([
-    userRepo.find({ where: { userId: In(userIds) } }),
-    examRepo.find({ where: { examId: In(examIds) } }),
-    classStudentRepo.find({ where: { studentId: In(userIds) } }),
-    classRepo.find({
-      where: {
-        classroomId: In(teacherClassIds) // Only get teacher's classes
-      },
-    }),
-  ]);
-  // 8. Tạo lookup maps
-  const userMap = new Map(users.map(u => [Number(u.userId), u.name]));
-  const examMap = new Map(exams.map(e => [Number(e.examId), e.name]));
-  const classStudentMap = new Map(classStudents.map(cs => [Number(cs.studentId), Number(cs.classroomId)]));
-  const classRoomMap = new Map(classRooms.map(c => [Number(c.classroomId), c.name]));
-  // 9. Gộp dữ liệu kết quả - chỉ bao gồm students trong classes của teacher
-  let result = filteredGrouped.map(v => {
-    const classRoomId = classStudentMap.get(Number(v.userId)) || null;
-    return {
-      userId: v.userId,
-      examId: v.examId,
-      videoUrls: v.videoUrls,
-      name: userMap.get(v.userId) || null,
-      classRoomId,
-      classRoomName: classRoomMap.get(classRoomId) || null,
-      examName: examMap.get(v.examId) || null,
-    };
-  }).filter(item => {
-    // Double check: only include students from teacher's classes
-    const teacherClassIdsNum = teacherClassIds.map(id => Number(id));
-    return item.classRoomId && teacherClassIdsNum.includes(item.classRoomId);
-  });
-  // Apply name filter if provided
-  if (query.name && query.name.trim() !== "") {
-    result = result.filter(exam => 
-      exam.examName && exam.examName.toLowerCase().includes(query.name.toLowerCase())
-    );
-  }
-
-  return {
-    content: result,
-    itemCount: result.length,
+    return { content: result, itemCount: result.length };
   };
-};
 
-  addPracticeExam = async(body: CreatePracticeExamDto) => {
-    const {name, classRoomId, isPrivate,  practiceWords} = body;
+  addPracticeExam = async (body: CreatePracticeExamDto) => {
+    const { name, classRoomId, isPrivate, practiceWords } = body;
     const examRepo = this.dataSourceB.getRepository(ExamB);
     const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
 
-     const exam = await examRepo
-    .createQueryBuilder()
-    .insert()
-    .into(ExamB)
-    .values({
-      name, 
-      classRoomId,
-      isPrivate
-    })
-    .execute();
+    const exam = await examRepo
+      .createQueryBuilder()
+      .insert()
+      .into(ExamB)
+      .values({
+        name,
+        classRoomId,
+        isPrivate,
+      })
+      .execute();
 
-    const examId =Number(exam.identifiers[0].examId);
+    const examId = Number(exam.identifiers[0].examId);
 
     await examVocabularyRepo
       .createQueryBuilder()
@@ -405,29 +381,29 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
         practiceWords.map((word) => ({
           vocabularyId: word.vocabularyId,
           examId: examId,
-          content: word.content, 
-        }))
+          content: word.content,
+        })),
       )
       .execute();
-  }
+  };
 
-  addExam = async(body: CreateExamDto) => {
-    const {name, classRoomId, isPrivate, questionIds} = body;
+  addExam = async (body: CreateExamDto) => {
+    const { name, classRoomId, isPrivate, questionIds } = body;
     const examRepo = this.dataSourceB.getRepository(ExamB);
     const examQuestionRepo = this.dataSource.getRepository(ExamQuestion);
 
-     const exam = await examRepo
-    .createQueryBuilder()
-    .insert()
-    .into(ExamB)
-    .values({
-      name, 
-      classRoomId,
-      isPrivate
-    })
-    .execute();
+    const exam = await examRepo
+      .createQueryBuilder()
+      .insert()
+      .into(ExamB)
+      .values({
+        name,
+        classRoomId,
+        isPrivate,
+      })
+      .execute();
 
-    const examId =Number(exam.identifiers[0].examId);
+    const examId = Number(exam.identifiers[0].examId);
 
     await examQuestionRepo
       .createQueryBuilder()
@@ -437,85 +413,86 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
         questionIds.map((questionId) => ({
           examId,
           questionId: Number(questionId),
-        })))
+        })),
+      )
       .execute();
-  }
+  };
 
-  editExam = async(body: UpdateExamDto) => {
-  console.log('body', body);
-  
-  const { examId, examType, name, classRoomId, isPrivate } = body;
-  const examRepo = this.dataSourceB.getRepository(ExamB);
-  
-  // Update the main exam record
-  await examRepo
-    .createQueryBuilder()
-    .update(ExamB)
-    .set({
-      name,
-      classRoomId,
-      isPrivate
-    })
-    .where("examId = :examId", { examId })
-    .execute();
+  editExam = async (body: UpdateExamDto) => {
+    console.log('body', body);
 
-  if (examType === 'quiz') {
-    const { questionIds } = body;
-    const examQuestionRepo = this.dataSource.getRepository(ExamQuestion);
-    
-    // Delete existing exam questions
-    await examQuestionRepo
+    const { examId, examType, name, classRoomId, isPrivate } = body;
+    const examRepo = this.dataSourceB.getRepository(ExamB);
+
+    // Update the main exam record
+    await examRepo
       .createQueryBuilder()
-      .delete()
-      .from(ExamQuestion)
-      .where("examId = :examId", { examId })
+      .update(ExamB)
+      .set({
+        name,
+        classRoomId,
+        isPrivate,
+      })
+      .where('examId = :examId', { examId })
       .execute();
-    
-    // Insert new exam questions
-    if (questionIds && questionIds.length > 0) {
+
+    if (examType === 'quiz') {
+      const { questionIds } = body;
+      const examQuestionRepo = this.dataSource.getRepository(ExamQuestion);
+
+      // Delete existing exam questions
       await examQuestionRepo
         .createQueryBuilder()
-        .insert()
-        .into(ExamQuestion)
-        .values(
-          questionIds.map((questionId) => ({
-            examId,
-            questionId: Number(questionId),
-          }))
-        )
+        .delete()
+        .from(ExamQuestion)
+        .where('examId = :examId', { examId })
         .execute();
-    }
-  } else if (examType === 'practice') {
-    const { practiceWords } = body;
-    const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
-    
-    // Delete existing exam vocabulary
-    await examVocabularyRepo
-      .createQueryBuilder()
-      .delete()
-      .from(ExamVocabulary)
-      .where("examId = :examId", { examId })
-      .execute();
-    
-    // Insert new exam vocabulary
-    if (practiceWords && practiceWords.length > 0) {
+
+      // Insert new exam questions
+      if (questionIds && questionIds.length > 0) {
+        await examQuestionRepo
+          .createQueryBuilder()
+          .insert()
+          .into(ExamQuestion)
+          .values(
+            questionIds.map((questionId) => ({
+              examId,
+              questionId: Number(questionId),
+            })),
+          )
+          .execute();
+      }
+    } else if (examType === 'practice') {
+      const { practiceWords } = body;
+      const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+
+      // Delete existing exam vocabulary
       await examVocabularyRepo
         .createQueryBuilder()
-        .insert()
-        .into(ExamVocabulary)
-        .values(
-          practiceWords.map((word) => ({
-            vocabularyId: word.vocabularyId,
-            examId: examId,
-            content: word.content,
-          }))
-        )
+        .delete()
+        .from(ExamVocabulary)
+        .where('examId = :examId', { examId })
         .execute();
-    }
-  }
-}
 
-      getDetailExam = async (examId: number) => {
+      // Insert new exam vocabulary
+      if (practiceWords && practiceWords.length > 0) {
+        await examVocabularyRepo
+          .createQueryBuilder()
+          .insert()
+          .into(ExamVocabulary)
+          .values(
+            practiceWords.map((word) => ({
+              vocabularyId: word.vocabularyId,
+              examId: examId,
+              content: word.content,
+            })),
+          )
+          .execute();
+      }
+    }
+  };
+
+  getDetailExam = async (examId: number) => {
     const examQuestionRepo = this.dataSource.getRepository(ExamQuestion);
     const questionRepo = this.dataSource.getRepository(Question);
 
@@ -523,9 +500,7 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
     const [data, itemCount] = await examQuestionRepo
       .createQueryBuilder('question_exam_mapping')
       .where('question_exam_mapping.examId = :examId', { examId })
-      .select([
-        'question_exam_mapping.questionId',
-      ])
+      .select(['question_exam_mapping.questionId'])
       .getManyAndCount();
 
     // 2. Với mỗi questionId, lấy content từ Question
@@ -538,9 +513,7 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
       .getMany();
 
     // 3. Map questionId => content
-    const questionMap = new Map(
-      questions.map((question) => [question.questionId, question.content])
-    );
+    const questionMap = new Map(questions.map((question) => [question.questionId, question.content]));
 
     // 4. Format dữ liệu trả về
     const formattedData = data.map((exam) => {
@@ -556,7 +529,7 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
     };
   };
 
-    getDetailPracticeExam = async (examId: number) => {
+  getDetailPracticeExam = async (examId: number) => {
     const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
     const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
 
@@ -564,10 +537,7 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
     const [data, itemCount] = await examVocabularyRepo
       .createQueryBuilder('vocabulary_exam_mapping')
       .where('vocabulary_exam_mapping.examId = :examId', { examId })
-      .select([
-        'vocabulary_exam_mapping.vocabularyId',
-        'vocabulary_exam_mapping.content',
-      ])
+      .select(['vocabulary_exam_mapping.vocabularyId', 'vocabulary_exam_mapping.content'])
       .getManyAndCount();
 
     // 2. Với mỗi vocabularyId, lấy content từ Vocabulary
@@ -580,9 +550,7 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
       .getMany();
 
     // 3. Map vocabularyId => content
-    const vocabMap = new Map(
-      vocabularies.map((vocab) => [vocab.vocabularyId, vocab.content])
-    );
+    const vocabMap = new Map(vocabularies.map((vocab) => [vocab.vocabularyId, vocab.content]));
 
     // 4. Format dữ liệu trả về
     const formattedData = data.map((exam) => {
@@ -599,95 +567,96 @@ getListPracticeExam = async (query: SearchExamAttemptDto, teacherId) => {
     };
   };
 
-  getDetailPracticeExamToScore = async (examId: number, userId: number) => { 
-  const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
-  const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
-  const examRepo = this.dataSourceB.getRepository(ExamB);
-  const userRepo = this.dataSource.getRepository(User);
-  const examVideoRepo = this.dataSource.getRepository(ExamVideo);
+  getDetailPracticeExamToScore = async (examId: number, userId: number) => {
+    const examVocabularyRepo = this.dataSource.getRepository(ExamVocabulary);
+    const vocabularyRepo = this.dataSource.getRepository(Vocabulary);
+    const examRepo = this.dataSourceB.getRepository(ExamB);
+    const userRepo = this.dataSource.getRepository(User);
+    const examVideoRepo = this.dataSource.getRepository(ExamVideo);
 
-  // 1. Lấy danh sách câu hỏi theo examId
-  const examVocabList = await examVocabularyRepo.find({
-    where: { examId },
-    order: { vocabularyExamId: 'ASC' },
-    select: ['vocabularyId', 'content'],
-  });
+    // 1. Lấy danh sách câu hỏi theo examId
+    const examVocabList = await examVocabularyRepo.find({
+      where: { examId },
+      order: { vocabularyExamId: 'ASC' },
+      select: ['vocabularyId', 'content'],
+    });
 
-  const vocabularyIds = examVocabList.map(item => item.vocabularyId);
+    const vocabularyIds = examVocabList.map((item) => item.vocabularyId);
 
-  // 2. Lấy nội dung Vocabulary tương ứng
-  const vocabularies = await vocabularyRepo.find({
-    where: { vocabularyId: In(vocabularyIds) },
-  });
-  const vocabMap = new Map(vocabularies.map(v => [v.vocabularyId, v.content]));
+    // 2. Lấy nội dung Vocabulary tương ứng
+    const vocabularies = await vocabularyRepo.find({
+      where: { vocabularyId: In(vocabularyIds) },
+    });
+    const vocabMap = new Map(vocabularies.map((v) => [v.vocabularyId, v.content]));
 
-  // 3. Lấy exam và user info
-  const exam = await examRepo.findOne({ where: { examId } });
-  const user = await userRepo.findOne({ where: { userId } });
+    // 3. Lấy exam và user info
+    const exam = await examRepo.findOne({ where: { examId } });
+    const user = await userRepo.findOne({ where: { userId } });
 
-  // 4. Lấy tất cả video theo examId + userId, order giảm dần theo createdDate
-  const allVideos = await examVideoRepo.find({
-  where: { examId, userId },
-  order: { createdDate: 'DESC' }, // mới nhất trước
-  select: ['videoUrl', 'aiAnswer', 'createdDate', 'videoExamId'], // id để sắp lại
-});
+    // 4. Lấy tất cả video theo examId + userId, order giảm dần theo createdDate
+    const allVideos = await examVideoRepo.find({
+      where: { examId, userId },
+      order: { createdDate: 'DESC' }, // mới nhất trước
+      select: ['videoUrl', 'aiAnswer', 'createdDate', 'videoExamId'], // id để sắp lại
+    });
 
-// 2. Nếu không có video nào thì return sớm
-if (allVideos.length === 0) {
-  const formattedNoVideo = examVocabList.map((item) => ({
-    examId,
-    examName: exam?.name || '',
-    userId,
-    userName: user?.name || '',
-    vocabularyId: item.vocabularyId,
-    contentFromExamVocabulary: item.content,
-    contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-    videos: [],
-  }));
+    // 2. Nếu không có video nào thì return sớm
+    if (allVideos.length === 0) {
+      const formattedNoVideo = examVocabList.map((item) => ({
+        examId,
+        examName: exam?.name || '',
+        userId,
+        userName: user?.name || '',
+        vocabularyId: item.vocabularyId,
+        contentFromExamVocabulary: item.content,
+        contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
+        videos: [],
+      }));
 
-  return {
-    data: formattedNoVideo,
-    total: formattedNoVideo.length,
+      return {
+        data: formattedNoVideo,
+        total: formattedNoVideo.length,
+      };
+    }
+
+    // 3. Tìm createdDate mới nhất
+    const latestCreatedDate = allVideos[0].createdDate;
+
+    // 4. Lọc ra các video trong lần làm bài đó
+    const latestVideos = allVideos.filter((v) => v.createdDate.getTime() === latestCreatedDate.getTime());
+
+    // 5. Sắp xếp lại theo thứ tự mapping-id tăng dần (tức là id ASC)
+    latestVideos.sort((a, b) => a.videoExamId - b.videoExamId);
+
+    // 6. Ghép từng video vào từng câu hỏi theo thứ tự
+    const formatted = examVocabList.map((item, index) => {
+      const video = latestVideos[index];
+      const questionVideos = video
+        ? [
+            {
+              videoUrl: video.videoUrl,
+              aiAnswer: video.aiAnswer || null,
+            },
+          ]
+        : [];
+
+      return {
+        examId,
+        examName: exam?.name || '',
+        userId,
+        userName: user?.name || '',
+        vocabularyId: item.vocabularyId,
+        contentFromExamVocabulary: item.content,
+        contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
+        videos: questionVideos,
+      };
+    });
+
+    return {
+      data: formatted,
+      total: formatted.length,
+    };
   };
-}
-
-// 3. Tìm createdDate mới nhất
-const latestCreatedDate = allVideos[0].createdDate;
-
-// 4. Lọc ra các video trong lần làm bài đó
-const latestVideos = allVideos.filter(
-  v => v.createdDate.getTime() === latestCreatedDate.getTime()
-);
-
-// 5. Sắp xếp lại theo thứ tự mapping-id tăng dần (tức là id ASC)
-latestVideos.sort((a, b) => a.videoExamId - b.videoExamId);
-
-// 6. Ghép từng video vào từng câu hỏi theo thứ tự
-const formatted = examVocabList.map((item, index) => {
-  const video = latestVideos[index];
-  const questionVideos = video ? [{
-    videoUrl: video.videoUrl,
-    aiAnswer: video.aiAnswer || null,
-  }] : [];
-
-  return {
-    examId,
-    examName: exam?.name || '',
-    userId,
-    userName: user?.name || '',
-    vocabularyId: item.vocabularyId,
-    contentFromExamVocabulary: item.content,
-    contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-    videos: questionVideos,
-  };
-});
-
-return {
-  data: formatted,
-  total: formatted.length,
-};
-}
-
 
   getById = async (examId: number): Promise<EXAM> => {
     const exam = await EXAM.findOne({
@@ -881,195 +850,184 @@ return {
     });
   };
 
-submitPracticeTest = async (
-  files: Express.Multer.File[],
-  body: any
-) => {
-  const { examId, userId } = body;
+  submitPracticeTest = async (files: Express.Multer.File[], body: any) => {
+    const { examId, userId } = body;
 
-  const examVideoRepo = this.dataSource.getRepository(ExamVideo);
-  const userExamRepo = this.dataSource.getRepository(PracticeExamAttempt);
+    const examVideoRepo = this.dataSource.getRepository(ExamVideo);
+    const userExamRepo = this.dataSource.getRepository(PracticeExamAttempt);
 
-  const VIDEO_PUBLIC_BASE_URL = 'http://localhost:8088/videos';
-  const SUPPORTED_FORMATS = ['.webm', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.m4v'];
-  
-  const processedFiles = [];
+    const VIDEO_PUBLIC_BASE_URL = 'http://localhost:8088/videos';
+    const SUPPORTED_FORMATS = ['.webm', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.m4v'];
 
-  for (const file of files) {
-    const inputPath = file.path;
-    const ext = path.extname(file.originalname).toLowerCase();
+    const processedFiles = [];
 
-    // Bỏ qua định dạng không hỗ trợ
-    if (!SUPPORTED_FORMATS.includes(ext) && ext !== '.mp4') continue;
+    for (const file of files) {
+      const inputPath = file.path;
+      const ext = path.extname(file.originalname).toLowerCase();
 
-    const baseName = path.basename(file.originalname, ext);
-    const timestamp = Date.now();
-    const outputFilename = `${baseName}_${timestamp}.mp4`;
-    const finalVideoPath = path.join('/home/tuyentrinh/Desktop/sign_school/uploads/videos', outputFilename);
-    const publicVideoUrl = `${VIDEO_PUBLIC_BASE_URL}/${outputFilename}`;
+      // Bỏ qua định dạng không hỗ trợ
+      if (!SUPPORTED_FORMATS.includes(ext) && ext !== '.mp4') continue;
 
-    try {
-      if (ext === '.mp4') {
-        // Nếu là mp4 thì chỉ copy
-        fs.copyFileSync(inputPath, finalVideoPath);
-      } else {
-        // Nếu không phải mp4 thì convert sang mp4
-        await new Promise<void>((resolve, reject) => {
-          ffmpeg(inputPath)
-            .toFormat('mp4')
-            .videoCodec('libx264')
-            .audioCodec('aac')
-            .videoBitrate('1000k')
-            .audioBitrate('128k')
-            .size('640x480')
-            .fps(30)
-            .on('end', resolve)
-            .on('error', reject)
-            .save(finalVideoPath);
+      const baseName = path.basename(file.originalname, ext);
+      const timestamp = Date.now();
+      const outputFilename = `${baseName}_${timestamp}.mp4`;
+      const finalVideoPath = path.join('/home/tuyentrinh/Desktop/sign_school/uploads/videos', outputFilename);
+      const publicVideoUrl = `${VIDEO_PUBLIC_BASE_URL}/${outputFilename}`;
+
+      try {
+        if (ext === '.mp4') {
+          // Nếu là mp4 thì chỉ copy
+          fs.copyFileSync(inputPath, finalVideoPath);
+        } else {
+          // Nếu không phải mp4 thì convert sang mp4
+          await new Promise<void>((resolve, reject) => {
+            ffmpeg(inputPath)
+              .toFormat('mp4')
+              .videoCodec('libx264')
+              .audioCodec('aac')
+              .videoBitrate('1000k')
+              .audioBitrate('128k')
+              .size('640x480')
+              .fps(30)
+              .on('end', resolve)
+              .on('error', reject)
+              .save(finalVideoPath);
+          });
+        }
+
+        // Gọi AI model
+        const response = await axios.post(
+          'https://wesign.ibme.edu.vn/ai/t3/ai/detection',
+          { videoUrl: publicVideoUrl },
+          { headers: { 'Content-Type': 'application/json' } },
+        );
+
+        const detectedWord = response.data?.action_name || null;
+
+        processedFiles.push({
+          videoFileName: outputFilename, // tên file sau khi xử lý
+          publicUrl: publicVideoUrl,
+          detectedWord,
         });
+      } catch (err) {
+        console.error(`Failed to process file ${file.originalname}:`, err);
+        continue; // bỏ qua file lỗi
       }
-
-      // Gọi AI model
-      const response = await axios.post(
-        'https://wesign.ibme.edu.vn/ai/t3/ai/detection',
-        { videoUrl: publicVideoUrl },
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-
-      const detectedWord = response.data?.action_name || null;
-
-      processedFiles.push({
-        videoFileName: outputFilename, // tên file sau khi xử lý
-        publicUrl: publicVideoUrl,
-        detectedWord,
-      });
-
-    } catch (err) {
-      console.error(`Failed to process file ${file.originalname}:`, err);
-      continue; // bỏ qua file lỗi
     }
-  }
 
-  // Insert vào DB
-  if (processedFiles.length > 0) {
-    const insertValues = processedFiles.map(file => ({
-      userId,
-      examId,
-      videoUrl: file.videoFileName,
-      aiAnswer: file.detectedWord,
-    }));
-
-    await examVideoRepo
-      .createQueryBuilder()
-      .insert()
-      .into(ExamVideo)
-      .values(insertValues)
-      .execute();
-
-    await userExamRepo
-      .createQueryBuilder()
-      .insert()
-      .into(PracticeExamAttempt)
-      .values({
+    // Insert vào DB
+    if (processedFiles.length > 0) {
+      const insertValues = processedFiles.map((file) => ({
+        userId,
         examId,
-        studentId: userId,
-      })
-      .execute();
-  }
-};
+        videoUrl: file.videoFileName,
+        aiAnswer: file.detectedWord,
+      }));
+
+      await examVideoRepo.createQueryBuilder().insert().into(ExamVideo).values(insertValues).execute();
+
+      await userExamRepo
+        .createQueryBuilder()
+        .insert()
+        .into(PracticeExamAttempt)
+        .values({
+          examId,
+          studentId: userId,
+        })
+        .execute();
+    }
+  };
 
   async examScoring(body: ExamScoringDto) {
     const { examId, score, userId, isFinished } = body;
 
     const examBRepo = this.dataSource.getRepository(ExamAttempt);
-      await examBRepo
-            .createQueryBuilder()
-            .insert()
-            .into(ExamAttempt)
-            .values({
-              studentId: userId,
-              examId,
-              score: Number(score),
-              isFinished
-            })
-            .execute();
+    await examBRepo
+      .createQueryBuilder()
+      .insert()
+      .into(ExamAttempt)
+      .values({
+        studentId: userId,
+        examId,
+        score: Number(score),
+        isFinished,
+      })
+      .execute();
     return { success: true };
   }
 
   async resetExam(examId: number, body: ResetExamDto) {
     const { userId } = body;
-    
+
     const examAttemptRepo = this.dataSource.getRepository(ExamAttempt);
-    
+
     // Check if the exam exists for this user
     const existingAttempts = await examAttemptRepo
-      .createQueryBuilder("attempt")
-      .where("attempt.studentId = :userId AND attempt.examId = :examId", 
-             { userId, examId })
+      .createQueryBuilder('attempt')
+      .where('attempt.studentId = :userId AND attempt.examId = :examId', { userId, examId })
       .getMany();
 
     // Calculate current attempt count and highest score
-    const finishedAttempts = existingAttempts.filter(attempt => attempt.isFinished);
+    const finishedAttempts = existingAttempts.filter((attempt) => attempt.isFinished);
     const attemptCount = finishedAttempts.length;
-    
+
     // Find highest score
     let highestScore = 0;
     if (finishedAttempts.length > 0) {
-      highestScore = Math.max(...finishedAttempts.map(attempt => attempt.score));
+      highestScore = Math.max(...finishedAttempts.map((attempt) => attempt.score));
     }
-  
-    return { 
-      success: true, 
-      message: 'Exam reset successfully', 
-      attemptCount, 
-      highestScore 
+
+    return {
+      success: true,
+      message: 'Exam reset successfully',
+      attemptCount,
+      highestScore,
     };
   }
 
   async resetPracticeExam(examId: number, body: ResetExamDto) {
     const { userId } = body;
-    
+
     const examAttemptRepo = this.dataSource.getRepository(PracticeExamAttempt);
-    
+
     // Check if the exam exists for this user
     const existingAttempts = await examAttemptRepo
-      .createQueryBuilder("attempt")
-      .where("attempt.studentId = :userId AND attempt.examId = :examId", 
-             { userId, examId })
+      .createQueryBuilder('attempt')
+      .where('attempt.studentId = :userId AND attempt.examId = :examId', { userId, examId })
       .getMany();
 
     // Calculate current attempt count and highest score
-    const finishedAttempts = existingAttempts.filter(attempt => attempt.isFinished);
+    const finishedAttempts = existingAttempts.filter((attempt) => attempt.isFinished);
     const attemptCount = finishedAttempts.length;
     // Find highest score
     let highestScore = 0;
     if (finishedAttempts.length > 0) {
-      highestScore = Math.max(...finishedAttempts.map(attempt => attempt.score));
+      highestScore = Math.max(...finishedAttempts.map((attempt) => attempt.score));
     }
-    
-    return { 
-      success: true, 
-      message: 'Exam practice reset successfully', 
-      attemptCount, 
-      highestScore 
+
+    return {
+      success: true,
+      message: 'Exam practice reset successfully',
+      attemptCount,
+      highestScore,
     };
   }
 
-  async practiceExamScoring(body:PracticeExamScoringDto) {
+  async practiceExamScoring(body: PracticeExamScoringDto) {
     const { examId, score, userId, isFinished } = body;
 
     const examBRepo = this.dataSource.getRepository(PracticeExamAttempt);
-      await examBRepo
-            .createQueryBuilder()
-            .insert()
-            .into(PracticeExamAttempt)
-            .values({
-              studentId: userId,
-              examId,
-              score,
-              isFinished
-            })
-            .execute();
+    await examBRepo
+      .createQueryBuilder()
+      .insert()
+      .into(PracticeExamAttempt)
+      .values({
+        studentId: userId,
+        examId,
+        score,
+        isFinished,
+      })
+      .execute();
     return { success: true };
   }
 }

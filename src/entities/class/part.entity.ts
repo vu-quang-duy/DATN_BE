@@ -13,21 +13,21 @@ export class Part extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'part_id' })
   partId: number;
 
-  @DBColumn({ 
+  @DBColumn({
     name: 'part_name',
     type: 'varchar',
   })
   partName: string;
 
-  @DBColumn({ 
-    name: 'lesson_id' ,
+  @DBColumn({
+    name: 'lesson_id',
     type: 'bigint',
   })
   lessonId: number;
 
   // RELATIONSHIP
   @ManyToOne(() => Lesson, (lesson) => lesson.part, {
-      onDelete: 'CASCADE',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'lesson_id' })
   lesson: Lesson;

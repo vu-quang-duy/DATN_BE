@@ -13,35 +13,35 @@ export class Lesson extends AbstractTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'lesson_id' })
   lessonId: number;
 
-  @DBColumn({ 
+  @DBColumn({
     name: 'lesson_name',
     type: 'varchar',
   })
   lessonName: string;
 
-  @DBColumn({ 
-    name: 'image_location', 
+  @DBColumn({
+    name: 'image_location',
     type: 'varchar',
-    nullable: true 
+    nullable: true,
   })
   imageLocation: string;
-  
-  @DBColumn({ 
-    name: 'video_location', 
+
+  @DBColumn({
+    name: 'video_location',
     type: 'varchar',
-    nullable: true 
+    nullable: true,
   })
   videoLocation: string;
 
-  @DBColumn({ 
-    name: 'class_room_id' ,
+  @DBColumn({
+    name: 'class_room_id',
     type: 'bigint',
   })
   classRoomId: number;
 
   // RELATIONSHIP
   @ManyToOne(() => ClassRoom, (classRoom) => classRoom.lesson, {
-      onDelete: 'CASCADE',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'class_room_id' })
   classroom: ClassRoom;

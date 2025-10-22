@@ -22,7 +22,7 @@ export class HashUtil {
   };
 
   static signAccessToken = async (sub: string, jwtService: JwtService) => {
-    const payload: JWTPayload = { sub};
+    const payload: JWTPayload = { sub };
 
     const token = await jwtService.signAsync(payload, {
       secret: ENV.JWT.JWT_SECRET,

@@ -18,7 +18,9 @@ export class UpdateExamAttempt1734762441185 implements MigrationInterface {
     await queryRunner.changeColumns(EntityNameConst.STUDENT_ANSWER, [
       {
         oldColumn: new TableColumn(MigrationConst.bigIntColumn('answer_id')),
-        newColumn: new TableColumn(MigrationConst.bigIntColumn('selected_answers', { isNullable: true, isArray: true })),
+        newColumn: new TableColumn(
+          MigrationConst.bigIntColumn('selected_answers', { isNullable: true, isArray: true }),
+        ),
       },
     ]);
   }

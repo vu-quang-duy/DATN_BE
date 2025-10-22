@@ -8,7 +8,7 @@ import { EXAM } from './exam.entity';
 @Entity(EntityNameConst.EXAM_ATTEMPT)
 export class ExamAttempt extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'user_exam_id' }) // Định nghĩa ID mới
-    userExamId: number;
+  userExamId: number;
   @DBColumn({
     name: 'user_id',
     type: 'bigint',
@@ -36,12 +36,12 @@ export class ExamAttempt extends BaseEntity {
     width: 1,
     default: 0, // mặc định là 0 (false)
     transformer: {
-      from: (value) => {  
+      from: (value) => {
         if (Buffer.isBuffer(value)) {
           const result = value.readUInt8(0) === 1;
           return result;
         }
-    
+
         const result = value === 1;
         return result;
       },

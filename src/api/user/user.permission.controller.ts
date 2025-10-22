@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Body, Get, Param, Post, Put, Req, Query, UseGuards} from '@nestjs/common';
+import { Body, Get, Param, Post, Put, Req, Query, UseGuards } from '@nestjs/common';
 import { EntityNameConst } from 'src/constant/entity-name';
 import { ApiHandleResponse } from 'src/decorator/api.decorator';
 import { IsAuthController } from 'src/decorator/auth.decorator';
@@ -9,7 +9,7 @@ import { User } from 'src/entities/user/user.entity';
 import { VocabularyView } from 'src/entities/vocabulary/vocabulary-view.entity';
 import { UserAction, UserSummary } from './user.permission.interface';
 import { UserService } from './user.service';
-import {AccessTokenGuard} from '../../auth/access-token.guard'
+import { AccessTokenGuard } from '../../auth/access-token.guard';
 
 @IsAuthController(`${EntityNameConst.USER}`, false)
 export class UserPermissionController implements Record<UserAction, any> {

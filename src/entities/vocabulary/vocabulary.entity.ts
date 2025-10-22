@@ -38,14 +38,14 @@ export class Vocabulary extends AbstractTimeEntity {
   @DBColumn({
     name: 'is_private',
     type: 'bit',
-  //   default: 0,
-  // })
-  // private: Buffer;
-  transformer: {
-    to: (value: boolean) => value ? Buffer.from([1]) : Buffer.from([0]), // Lưu vào DB
-    from: (value: Buffer) => value[0] === 1, // Lấy từ DB
-  },
-})
+    //   default: 0,
+    // })
+    // private: Buffer;
+    transformer: {
+      to: (value: boolean) => (value ? Buffer.from([1]) : Buffer.from([0])), // Lưu vào DB
+      from: (value: Buffer) => value[0] === 1, // Lấy từ DB
+    },
+  })
   isPrivate: boolean;
 
   @DBColumn({

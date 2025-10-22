@@ -29,88 +29,88 @@ import { Vocabulary } from 'src/entities/vocabulary/vocabulary.entity';
 
 @Injectable()
 export class QuestionService {
-  constructor(@InjectDataSource() private dataSource: DataSource,
-@InjectDataSource('dbB') private readonly dataSourceB: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectDataSource('dbB') private readonly dataSourceB: DataSource,
+  ) {}
 
-search = async (query: SearchQuestionDto) => {
-  const questionAlias = 'question';
-  const answerAlias = 'answer';
+  search = async (query: SearchQuestionDto) => {
+    const questionAlias = 'question';
+    const answerAlias = 'answer';
 
-  const qb = this.dataSource
-    .getRepository(Question)
-    .createQueryBuilder(questionAlias)
-    .leftJoinAndSelect(`${questionAlias}.answerResList`, answerAlias, `${answerAlias}.correct = 1`)
-    .where(QuestionHelper.getFilterSearchQuestion(query))
-    .orderBy(`${questionAlias}.questionId`, 'DESC')
-    .skip(query.skip)
-    .take(query.take);
+    const qb = this.dataSource
+      .getRepository(Question)
+      .createQueryBuilder(questionAlias)
+      .leftJoinAndSelect(`${questionAlias}.answerResList`, answerAlias, `${answerAlias}.correct = 1`)
+      .where(QuestionHelper.getFilterSearchQuestion(query))
+      .orderBy(`${questionAlias}.questionId`, 'DESC')
+      .skip(query.skip)
+      .take(query.take);
 
-  const [data, itemCount] = await qb.getManyAndCount();
+    const [data, itemCount] = await qb.getManyAndCount();
 
-  // ✅ Lấy classRoomId duy nhất từ danh sách câu hỏi
-  const classRoomIds = [...new Set(data.map((item) => item.classRoomId))];
+    // ✅ Lấy classRoomId duy nhất từ danh sách câu hỏi
+    const classRoomIds = [...new Set(data.map((item) => item.classRoomId))];
 
-  // ✅ Lấy tên lớp từ bảng classRoom
-  const classRepo = this.dataSource.getRepository(ClassRoom);
-  const classRooms = await classRepo.find({
-    where: { classroomId: In(classRoomIds) },
-  });
+    // ✅ Lấy tên lớp từ bảng classRoom
+    const classRepo = this.dataSource.getRepository(ClassRoom);
+    const classRooms = await classRepo.find({
+      where: { classroomId: In(classRoomIds) },
+    });
 
-  // ✅ Map classRoomId → name
-  const classRoomMap = new Map(
-    classRooms.map((item) => [item.classroomId, item.name])
-  );
+    // ✅ Map classRoomId → name
+    const classRoomMap = new Map(classRooms.map((item) => [item.classroomId, item.name]));
 
-  // ✅ Gắn thêm tên lớp + convert correct từ Buffer → boolean
-  let dataWithClassName = data.map((item) => ({
-    ...item,
-    className: classRoomMap.get(item.classRoomId) || '',
-    answerResList: item.answerResList.map((ans) => ({
-      ...ans,
-      correct: ans.correct?.[0] === 1, // convert Buffer to boolean
-    })),
-  }));
+    // ✅ Gắn thêm tên lớp + convert correct từ Buffer → boolean
+    let dataWithClassName = data.map((item) => ({
+      ...item,
+      className: classRoomMap.get(item.classRoomId) || '',
+      answerResList: item.answerResList.map((ans) => ({
+        ...ans,
+        correct: ans.correct?.[0] === 1, // convert Buffer to boolean
+      })),
+    }));
 
+    // ✅ Filter by question name
+    if (query.content && query.content.trim() !== '') {
+      dataWithClassName = dataWithClassName.filter(
+        (question) => question.content && question.content.toLowerCase().includes(query.content.toLowerCase()),
+      );
+    }
 
-  // ✅ Filter by question name
-  if (query.content && query.content.trim() !== "") {
-    dataWithClassName = dataWithClassName.filter(question => 
-      question.content && question.content.toLowerCase().includes(query.content.toLowerCase())
-    );
-  }
+    // ✅ Filter by class name
+    if (query.classRoomName && query.classRoomName.trim() !== '') {
+      dataWithClassName = dataWithClassName.filter(
+        (question) =>
+          question.className && question.className.toLowerCase().includes(query.classRoomName.toLowerCase()),
+      );
+    }
 
-  // ✅ Filter by class name
-  if (query.classRoomName && query.classRoomName.trim() !== "") {
-    dataWithClassName = dataWithClassName.filter(question => 
-      question.className && question.className.toLowerCase().includes(query.classRoomName.toLowerCase())
-    );
-  }
-
-  return GenerateUtil.paginate({ data: dataWithClassName, itemCount, query });
-};
+    return GenerateUtil.paginate({ data: dataWithClassName, itemCount, query });
+  };
 
   async createQuestion(body: CreateQuestionDto) {
-    const {content, imageLocation, classRoomId, questionType, fileType, explanation, videoLocation} = body;
-  
-    const questionRepo = this.dataSource.getRepository(Question)
+    const { content, imageLocation, classRoomId, questionType, fileType, explanation, videoLocation } = body;
+
+    const questionRepo = this.dataSource.getRepository(Question);
 
     const question = await questionRepo
-    .createQueryBuilder()
-    .insert()
-    .into(Question)
-    .values({
-      content,
-      imageLocation,
-      classRoomId,
-      questionType,
-      fileType,
-      videoLocation,
-      explanation
-    })
-    .execute()
+      .createQueryBuilder()
+      .insert()
+      .into(Question)
+      .values({
+        content,
+        imageLocation,
+        classRoomId,
+        questionType,
+        fileType,
+        videoLocation,
+        explanation,
+      })
+      .execute();
 
     const questionId = question.identifiers[0].questionId;
-    
+
     body.answerReqs.map(async (answer) => {
       const answerRep = new Answer();
       answerRep.content = answer.content;
@@ -233,34 +233,36 @@ search = async (query: SearchQuestionDto) => {
     return true;
   };
 
-deleteList = async (body: { questionIds: number[] }) => {
-  const questionRepository = this.dataSource.getRepository(Question);
-  const answerRepository = this.dataSource.getRepository(Answer)
-  const numericIds = body.questionIds
-  console.log('🔍 Received questionIds:', numericIds);
-  console.log('🔍 Types:', body.questionIds.map(id => typeof id));
+  deleteList = async (body: { questionIds: number[] }) => {
+    const questionRepository = this.dataSource.getRepository(Question);
+    const answerRepository = this.dataSource.getRepository(Answer);
+    const numericIds = body.questionIds;
+    console.log('🔍 Received questionIds:', numericIds);
+    console.log(
+      '🔍 Types:',
+      body.questionIds.map((id) => typeof id),
+    );
 
-  try {
-    await answerRepository
-      .createQueryBuilder()
-      .delete()
-      .where('question_id IN (:...ids)', { ids: numericIds })
-      .execute();
-    // Using query builder - more explicit
-    const result = await questionRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Question)
-      .where('question_id IN (:...ids)', { ids: numericIds })
-      .execute();
-         
-    return result;
-       
-  } catch (error) {
-    console.error('❌ Delete error:', error);
-    throw error;
-  }
-}
+    try {
+      await answerRepository
+        .createQueryBuilder()
+        .delete()
+        .where('question_id IN (:...ids)', { ids: numericIds })
+        .execute();
+      // Using query builder - more explicit
+      const result = await questionRepository
+        .createQueryBuilder()
+        .delete()
+        .from(Question)
+        .where('question_id IN (:...ids)', { ids: numericIds })
+        .execute();
+
+      return result;
+    } catch (error) {
+      console.error('❌ Delete error:', error);
+      throw error;
+    }
+  };
 
   deleteAnswers = async (answerId: number, user: CacheUser, permissionCode): Promise<any> => {
     const isPermission = await PermissionHelper.isPermissionChange(user.userId, permissionCode);
@@ -275,156 +277,151 @@ deleteList = async (body: { questionIds: number[] }) => {
     return true;
   };
 
-getQuestionOfExam = async (id: number): Promise<PageDto<Question>> => {
-  console.log('id', id);
-  
-  // Get repositories
-  const examRepository = this.dataSourceB.getRepository(ExamB);
-  const examQuestionRepository = this.dataSource.getRepository(ExamQuestion);
-  const classRepository = this.dataSource.getRepository(ClassRoom);
-  const practiceQuestionRepository = this.dataSource.getRepository(ExamVocabulary);
-  const vocabularyRepository = this.dataSource.getRepository(Vocabulary);
+  getQuestionOfExam = async (id: number): Promise<PageDto<Question>> => {
+    console.log('id', id);
 
-  // Get exam details
-  const exam = await examRepository.findOne({
-    where: { examId: id }
-  });
+    // Get repositories
+    const examRepository = this.dataSourceB.getRepository(ExamB);
+    const examQuestionRepository = this.dataSource.getRepository(ExamQuestion);
+    const classRepository = this.dataSource.getRepository(ClassRoom);
+    const practiceQuestionRepository = this.dataSource.getRepository(ExamVocabulary);
+    const vocabularyRepository = this.dataSource.getRepository(Vocabulary);
 
-  // Check if exam exists in ExamQuestion table to determine examType
-  const examQuestion = await examQuestionRepository.findOne({
-    where: { examId: id }
-  });
-  const examType = examQuestion ? 'quiz' : 'practice';
+    // Get exam details
+    const exam = await examRepository.findOne({
+      where: { examId: id },
+    });
 
-  let formattedData: any[];
-  let itemCount: number;
+    // Check if exam exists in ExamQuestion table to determine examType
+    const examQuestion = await examQuestionRepository.findOne({
+      where: { examId: id },
+    });
+    const examType = examQuestion ? 'quiz' : 'practice';
 
-  if (examType === 'quiz') {
-    // Current logic for quiz type
-    const [data, count] = await Question.findAndCount({
-      where: {
-        exams: {
-          examId: id,
+    let formattedData: any[];
+    let itemCount: number;
+
+    if (examType === 'quiz') {
+      // Current logic for quiz type
+      const [data, count] = await Question.findAndCount({
+        where: {
+          exams: {
+            examId: id,
+          },
         },
-      },
-      relations: { answerResList: true, exams: true },
-    });
+        relations: { answerResList: true, exams: true },
+      });
 
-    itemCount = count;
+      itemCount = count;
 
-    // Get unique classRoomIds from the questions
-    const classRoomIds = [...new Set(data.map(question => question.classRoomId))];
-    
-    // Get classroom details for all unique classRoomIds
-    const classRooms = await classRepository.find({
-      where: { classroomId: In(classRoomIds) }
-    });
-    
-    // Create a map for quick lookup
-    const classRoomMap = new Map(
-      classRooms.map(classroom => [classroom.classroomId, classroom.name])
-    );
+      // Get unique classRoomIds from the questions
+      const classRoomIds = [...new Set(data.map((question) => question.classRoomId))];
 
-    // Convert Buffer to boolean and add additional data
-    formattedData = data.map((question) => {
-      const updatedAnswers = question.answerResList?.map((answer) => {
-        const correctValue =
-          Buffer.isBuffer(answer.correct)
-            ? answer.correct[0] === 1
-            : (answer.correct as { data: number[] })?.data?.[0] === 1;
+      // Get classroom details for all unique classRoomIds
+      const classRooms = await classRepository.find({
+        where: { classroomId: In(classRoomIds) },
+      });
+
+      // Create a map for quick lookup
+      const classRoomMap = new Map(classRooms.map((classroom) => [classroom.classroomId, classroom.name]));
+
+      // Convert Buffer to boolean and add additional data
+      formattedData = data.map((question) => {
+        const updatedAnswers =
+          question.answerResList?.map((answer) => {
+            const correctValue = Buffer.isBuffer(answer.correct)
+              ? answer.correct[0] === 1
+              : (answer.correct as { data: number[] })?.data?.[0] === 1;
+
+            return {
+              ...answer,
+              correct: correctValue,
+            };
+          }) || [];
 
         return {
-          ...answer,
-          correct: correctValue,
+          ...question,
+          answerResList: updatedAnswers,
+          examName: exam?.name || '',
+          examType,
+          classRoomName: classRoomMap.get(question.classRoomId) || '',
         };
-      }) || [];
+      });
+    } else {
+      // Practice type logic - get vocabulary data from practiceQuestionRepository
+      const [practiceData, practiceCount] = await practiceQuestionRepository.findAndCount({
+        where: { examId: id },
+      });
 
-      return {
-        ...question,
-        answerResList: updatedAnswers,
-        examName: exam?.name || '',
-        examType,
-        classRoomName: classRoomMap.get(question.classRoomId) || '',
-      };
+      itemCount = practiceCount;
+
+      // Get unique vocabularyIds from practice data
+      const vocabularyIds = [...new Set(practiceData.map((item) => item.vocabularyId))];
+
+      // Get vocabulary details including topicId
+      const vocabularies = await vocabularyRepository.find({
+        where: { vocabularyId: In(vocabularyIds) },
+      });
+
+      // Create a map for quick vocabulary lookup
+      const vocabularyMap = new Map(vocabularies.map((vocab) => [vocab.vocabularyId, vocab]));
+
+      // For practice, the "questions" are the vocabulary items
+      formattedData = practiceData.map((practiceItem) => {
+        const vocabulary = vocabularyMap.get(practiceItem.vocabularyId);
+        const cleanContent = practiceItem.content?.split('-')[0]?.trim() || '';
+
+        return {
+          vocabularyId: practiceItem.vocabularyId,
+          content: cleanContent,
+          isPrivate: vocabulary?.isPrivate || false,
+          topicId: vocabulary?.topicId || null,
+          examName: exam?.name || '',
+          examType,
+          classRoomId: exam?.classRoomId || null,
+        };
+      });
+    }
+
+    return GenerateUtil.paginate({
+      data: formattedData,
+      itemCount,
+      query: {},
     });
-
-  } else {
-    // Practice type logic - get vocabulary data from practiceQuestionRepository
-    const [practiceData, practiceCount] = await practiceQuestionRepository.findAndCount({
-      where: { examId: id }
-    });
-
-    itemCount = practiceCount;
-
-    // Get unique vocabularyIds from practice data
-    const vocabularyIds = [...new Set(practiceData.map(item => item.vocabularyId))];
-    
-    // Get vocabulary details including topicId
-    const vocabularies = await vocabularyRepository.find({
-      where: { vocabularyId: In(vocabularyIds) }
-    });
-
-    // Create a map for quick vocabulary lookup
-    const vocabularyMap = new Map(
-      vocabularies.map(vocab => [vocab.vocabularyId, vocab])
-    );
-
-    // For practice, the "questions" are the vocabulary items
-    formattedData = practiceData.map((practiceItem) => {
-      const vocabulary = vocabularyMap.get(practiceItem.vocabularyId);
-      const cleanContent = practiceItem.content?.split('-')[0]?.trim() || '';
-
-      return {
-        vocabularyId: practiceItem.vocabularyId,
-        content: cleanContent,
-        isPrivate: vocabulary?.isPrivate || false,
-        topicId: vocabulary?.topicId || null,
-        examName: exam?.name || '',
-        examType,
-        classRoomId: exam?.classRoomId || null,
-      };
-    });
-  }
-
-  return GenerateUtil.paginate({ 
-    data: formattedData, 
-    itemCount, 
-    query: {}
-  });
-};
+  };
 
   getListQuestionClass = async (classRoomId?: any) => {
-  const questionAlias = 'question';
-  const answerAlias = 'answer';
+    const questionAlias = 'question';
+    const answerAlias = 'answer';
 
-  const qb = this.dataSource
-    .getRepository(Question)
-    .createQueryBuilder(questionAlias)
-    .leftJoinAndSelect(`${questionAlias}.answerResList`, answerAlias)
-    .where(`${questionAlias}.classRoomId = :classRoomId`, { classRoomId })
-    .orderBy(`${questionAlias}.questionId`, 'DESC');
+    const qb = this.dataSource
+      .getRepository(Question)
+      .createQueryBuilder(questionAlias)
+      .leftJoinAndSelect(`${questionAlias}.answerResList`, answerAlias)
+      .where(`${questionAlias}.classRoomId = :classRoomId`, { classRoomId })
+      .orderBy(`${questionAlias}.questionId`, 'DESC');
 
-  const [data, itemCount] = await qb.getManyAndCount();
+    const [data, itemCount] = await qb.getManyAndCount();
 
-  // ✅ Lấy classRoomId duy nhất từ danh sách câu hỏi
-  const classRepo = this.dataSource.getRepository(ClassRoom);
-  const classRoom = await classRepo.findOne({
-    where: { classroomId: classRoomId },
-  });
+    // ✅ Lấy classRoomId duy nhất từ danh sách câu hỏi
+    const classRepo = this.dataSource.getRepository(ClassRoom);
+    const classRoom = await classRepo.findOne({
+      where: { classroomId: classRoomId },
+    });
 
-  const className = classRoom?.name || '';
+    const className = classRoom?.name || '';
 
-  const dataWithClassName = data.map((item) => ({
-    ...item,
-    className,
-    answerResList: item.answerResList.map((ans) => ({
-      ...ans,
-      correct: typeof ans.correct === 'boolean' ? ans.correct : ans.correct?.[0] === 1,
-    })),
-  }));
-  return {
-    data: dataWithClassName,
-    total: itemCount,
+    const dataWithClassName = data.map((item) => ({
+      ...item,
+      className,
+      answerResList: item.answerResList.map((ans) => ({
+        ...ans,
+        correct: typeof ans.correct === 'boolean' ? ans.correct : ans.correct?.[0] === 1,
+      })),
+    }));
+    return {
+      data: dataWithClassName,
+      total: itemCount,
+    };
   };
-};
 }

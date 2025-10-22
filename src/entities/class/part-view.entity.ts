@@ -45,10 +45,11 @@ export class PartView extends AbstractCreatedIdEntity {
     name: 'view_count',
     type: 'bigint',
     default: 0,
-    transformer: { 
-      from: (value: string | number) => Number(value), 
-      to: (value: number) => value 
-  }})
+    transformer: {
+      from: (value: string | number) => Number(value),
+      to: (value: number) => value,
+    },
+  })
   viewCount: number;
 
   // RELATIONSHIP
