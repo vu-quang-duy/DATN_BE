@@ -896,6 +896,9 @@ export class UserService {
     if (name) updateFields.name = name;
     if (birthDay) updateFields.birthDay = birthDay;
     if (address) updateFields.address = address;
+    if (body.phoneNumber) updateFields.phoneNumber = body.phoneNumber;
+    if (body.email) updateFields.email = body.email;
+
     if (Object.keys(updateFields).length > 0) {
       await User.createQueryBuilder().update().set(updateFields).where('userId = :userId', { userId }).execute();
     }
@@ -950,6 +953,8 @@ export class UserService {
     if (name) updateFieldsB.name = name;
     if (birthDay) updateFieldsB.birthDay = birthDay;
     if (address) updateFieldsB.address = address;
+    if (body.email) updateFieldsB.email = body.email;
+    if (body.phoneNumber) updateFieldsB.phoneNumber = body.phoneNumber;
 
     if (Object.keys(updateFieldsB).length > 0) {
       await userBRepo
