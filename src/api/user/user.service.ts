@@ -762,6 +762,7 @@ export class UserService {
         'classStudent.classStudentId',
         'classroom.name',
         'classroom.classroomId',
+        'user.phoneNumber',
       ]);
 
     const [data, itemCount] = await queryBuilder.getManyAndCount();
@@ -775,6 +776,7 @@ export class UserService {
         schoolName: student.school?.name || 'Không có',
         email: student.email || 'Không có',
         classRoomName: firstClassName,
+        phoneNumber: student.phoneNumber || 'Không có',
       };
     });
 
@@ -1019,6 +1021,7 @@ export class UserService {
         schoolId,
         isDeleted,
         isApproved,
+        phoneNumber,
       })
       .execute();
 
@@ -1091,6 +1094,7 @@ export class UserService {
         schoolId,
         isDeleted,
         isApproved,
+        phoneNumber
       })
       .execute();
 
