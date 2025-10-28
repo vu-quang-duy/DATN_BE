@@ -2,7 +2,7 @@ import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
 import { Inject, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as redisStore from 'cache-manager-redis-store';
+// import * as redisStore from 'cache-manager-redis-store';
 import { UploadModule } from './api/upload/upload.module';
 import { UserModule } from './api/user/user.module';
 import { AuthModule } from './auth/auth.module';

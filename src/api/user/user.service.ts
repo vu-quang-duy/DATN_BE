@@ -979,7 +979,7 @@ export class UserService {
   };
 
   createStudent = async (body: UpdateUserDto) => {
-    const { name, birthDay, address, classRoomName, schoolName } = body;
+    const { name, birthDay, address, classRoomName, schoolName, email, phoneNumber } = body;
     let schoolId: number | undefined = undefined;
     let classRoomId: number | undefined = undefined;
 
@@ -1001,17 +1001,8 @@ export class UserService {
       }
     }
     // Cập nhật các thông tin cá nhân
-    const removeVietnameseTones = (str) => {
-      return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .replace(/\s+/g, '') // bỏ khoảng trắng
-        .toLowerCase();
-    };
-    const email = removeVietnameseTones(name) + '@gmail.com'; // Tạo email mặc định từ tên
-    const password = '123456';
+
+    const password = phoneNumber || '123456';
     const code = 'USER';
     const isDeleted = false;
     const isApproved = true;
@@ -1061,7 +1052,7 @@ export class UserService {
   };
 
   createTeacher = async (body: UpdateUserDto) => {
-    const { name, birthDay, address, classRoomName, schoolName } = body;
+    const { name, birthDay, address, classRoomName, schoolName, email, phoneNumber } = body;
     let schoolId: number | undefined = undefined;
     let classRoomId: number | undefined = undefined;
 
@@ -1082,18 +1073,8 @@ export class UserService {
         schoolId = school.schoolId;
       }
     }
-    // Cập nhật các thông tin cá nhân
-    const removeVietnameseTones = (str) => {
-      return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .replace(/\s+/g, '') // bỏ khoảng trắng
-        .toLowerCase();
-    };
-    const email = removeVietnameseTones(name) + '@gmail.com'; // Tạo email mặc định từ tên
-    const password = '123456';
+
+    const password = phoneNumber || '123456';
     const code = 'TEACHER';
     const isDeleted = false;
     const isApproved = true;

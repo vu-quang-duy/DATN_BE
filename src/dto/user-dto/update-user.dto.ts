@@ -15,4 +15,10 @@ export class UpdateUserDto {
 
   @IsSwaggerString({}, false)
   readonly birthDay: string;
+
+  @IsSwaggerString({ maxLength: 100 }, false)
+  readonly email: string;
+
+  @IsSwaggerString({ maxLength: 15 }, false)
+  readonly phoneNumber: string;
 }
