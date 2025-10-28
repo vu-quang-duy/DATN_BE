@@ -675,6 +675,7 @@ export class UserService {
         'classStudent.classStudentId', // ít nhất 1 field của classStudent
         'classroom.name',
         'classroom.classroomId',
+        'user.phoneNumber',
       ])
       .getManyAndCount();
     const formattedData = data.map((student) => {
@@ -685,6 +686,7 @@ export class UserService {
         schoolId: student.school?.schoolId || 'Không có',
         schoolName: student.school?.name || 'Không có',
         classRoomName: firstClassName,
+        phoneNumber: student.phoneNumber || 'Không có',
       };
     });
 
@@ -817,6 +819,7 @@ export class UserService {
         'school.name',
         'classTeacher.classTeacherId',
         'classroom.name',
+        'user.phoneNumber',
       ])
       .getManyAndCount();
     const formattedData = data.map((teacher) => {
@@ -830,6 +833,7 @@ export class UserService {
         city: teacher.address || 'Không có',
         email: teacher.email || 'Không có',
         classRoomName: firstClassName,
+        phoneNumber: teacher.phoneNumber || 'Không có',
       };
     });
 
@@ -1094,7 +1098,7 @@ export class UserService {
         schoolId,
         isDeleted,
         isApproved,
-        phoneNumber
+        phoneNumber,
       })
       .execute();
 
