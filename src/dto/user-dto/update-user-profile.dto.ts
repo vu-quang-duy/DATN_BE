@@ -2,7 +2,7 @@ import { Gender } from 'src/constant/enum-common';
 import { IsSwaggerEnum, IsSwaggerString } from 'src/decorator/swagger.decorator';
 
 export class UpdateUserProfileDto {
-  @IsSwaggerString({ default: 'thanhtung38', maxLength: 50 }, false)
+  @IsSwaggerString({ default: 'thanhtung', maxLength: 50 }, false)
   readonly name: string;
 
   @IsSwaggerString({}, false)

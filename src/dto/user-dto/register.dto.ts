@@ -5,17 +5,17 @@ export class RegisterDto {
   // @IsSwaggerString({ default: 'username' }, false)
   // readonly username: string;
 
-  @IsSwaggerString({ default: 'thanhtung38', maxLength: 50 }, false)
+  @IsSwaggerString({ default: 'thanhtung', maxLength: 50 }, false)
   readonly name: string;
 
-  @IsSwaggerString({ default: '123456' })
+  @IsSwaggerString({ default: 'Tuandat0802@' })
   readonly password: string;
 
-  @IsSwaggerString({})
+  @IsSwaggerString({ default: 'nguyendat0802@gmail.com'})
   readonly email: string;
 
-  @IsSwaggerString({}, false)
-  readonly phoneNumber: string;
+  @IsSwaggerString({ default: 'Tuandat0802@' })
+  readonly confirm: string;
 
   @IsSwaggerEnum({ enum: RoleCode }, false)
   readonly role: typeof RoleCode;
