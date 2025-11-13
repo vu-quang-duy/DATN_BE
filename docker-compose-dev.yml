@@ -1,0 +1,58 @@
+version: '3.6'
+
+networks:
+  datn-network-dev:
+    driver: bridge
+
+volumes: # add this section
+  datn-mysql-volume-dev:
+  datn-redis-volume-dev:
+  datn-minio-volume-dev:
+
+services:
+  db:
+    container_name: datn-database-mysql-dev
+    image: mysql:8.0
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - datn-network-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      # MYSQL_USER: ${DB_USERNAME}
+      # MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - datn-mysql-volume-dev:/var/lib/mysql
+    ports:
+      - 3307:3306
+  redis:
+    container_name: datn-redis-dev
+    image: redis:7.2.4
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - datn-network-dev
+    volumes:
+      - datn-redis-volume-dev:/data
+    ports:
+      - ${REDIS_PORT}:6379
+  minio:
+    container_name: datn-minio-dev
+    image: minio/minio:latest
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - datn-network-dev
+    environment:
+      MINIO_ROOT_USER: ${API_KEY} # Access key
+      MINIO_ROOT_PASSWORD: ${API_SECRET} # Secret key
+    volumes:
+      - datn-minio-volume-dev:/data # Volume để lưu trữ dữ liệu
+    ports:
+      - ${MINIO_PORT}:${MINIO_PORT}
+      - ${MINIO_CONSOLE}:${MINIO_CONSOLE}
+    command: server --console-address ":9001" /data # Lệnh khởi động MinIO server với thư mục /data

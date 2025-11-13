@@ -1,0 +1,62 @@
+version: '3.6'
+
+networks:
+  datn-network:
+    driver: bridge
+
+volumes: # add this section
+  datn-mysql-volume:
+  datn-redis-volume:
+
+services:
+  db:
+    container_name: datn-database-mysql-${NODE_ENV}
+    image: mysql:8.0
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - datn-network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - datn-mysql-volume:/var/lib/mysql
+      - C:/Users/Tran Anh Duc/Desktop/backup.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 3307:3306
+  redis:
+    container_name: datn-redis-${NODE_ENV}
+    image: redis:7.2.4
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - datn-network
+    volumes:
+      - datn-redis-volume:/data
+    ports:
+      - ${REDIS_PORT}:6379
+  app:
+    container_name: datn-app-container-${NODE_ENV}
+    # untag image, tag build khi chạy bằng docker
+    # tag image, untag build khi build cái mới
+    # image: datn:v5
+    build:
+      context: .
+      target: production
+    env_file:
+      - .env
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - ${PORT}:${PORT}
+    networks:
+      - datn-network
+    depends_on:
+      - db
+      - redis

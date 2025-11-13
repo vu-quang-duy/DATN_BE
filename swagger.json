@@ -1,0 +1,6014 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/lessons": {
+      "get": {
+        "operationId": "LessonsController_getLessonsByClassroom",
+        "summary": "Get lessons by classroom ID",
+        "parameters": [
+          {
+            "name": "classRoomId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns lessons for the specified classroom"
+          },
+          "400": {
+            "description": "Invalid classroom ID"
+          }
+        },
+        "tags": [
+          "lessons"
+        ]
+      }
+    },
+    "/api/user/health-check": {
+      "get": {
+        "operationId": "UserController_healthCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/login": {
+      "post": {
+        "operationId": "UserController_login",
+        "summary": "Login account with username password",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/all-student-list": {
+      "get": {
+        "operationId": "UserController_getAllStudentList",
+        "summary": "Get all student list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classRoomId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "schoolId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/student-list": {
+      "get": {
+        "operationId": "UserController_getStudentList",
+        "summary": "Get student list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classRoomId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "schoolId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/teacher-list": {
+      "get": {
+        "operationId": "UserController_getTeacherList",
+        "summary": "Get teacher list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classRoomId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "schoolId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/school-list": {
+      "get": {
+        "operationId": "UserController_getSchoolList",
+        "summary": "Get school list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/class-list": {
+      "get": {
+        "operationId": "UserController_getClassList",
+        "summary": "Get class list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/search": {
+      "get": {
+        "operationId": "UserController_search",
+        "summary": "Get data for author list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "enum": [
+                "APPROVED",
+                "PENDING",
+                "REJECTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleCode",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "USER",
+              "enum": [
+                "TEACHER",
+                "VOLUNTEER",
+                "USER",
+                "ADMIN",
+                "ADMIN_CODE_SERVICE"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/statistics/{id}": {
+      "get": {
+        "operationId": "UserController_getStatisticsById",
+        "summary": "Get user statistics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserStatistic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/search-statistics": {
+      "get": {
+        "operationId": "UserController_searchStatistics",
+        "summary": "Get user statistics",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserStatistic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/{id}": {
+      "get": {
+        "operationId": "UserController_getProfileById",
+        "summary": "Get user info by id",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      },
+      "put": {
+        "operationId": "UserController_updateUser",
+        "summary": "Update User",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/register": {
+      "post": {
+        "operationId": "UserController_register",
+        "summary": "register account with username password",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterDto"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/register/verify-otp": {
+      "post": {
+        "operationId": "UserController_verify",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/vocabulary/view": {
+      "post": {
+        "operationId": "UserController_viewVocabulary",
+        "summary": "add vocabulary view",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VocabularyView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/vocabulary/recent-view/{id}": {
+      "get": {
+        "operationId": "UserController_getRecentVocabViews",
+        "summary": "Get recent vocabulary views by user ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VocabularyView"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/lesson/view": {
+      "post": {
+        "operationId": "UserController_viewLesson",
+        "summary": "add lesson view",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/lesson/recent-view/{id}": {
+      "get": {
+        "operationId": "UserController_getRecentLessonViews",
+        "summary": "Get recent lesson views by user ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PartView"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/lesson/full-view/{id}": {
+      "get": {
+        "operationId": "UserController_getFullLessonViews",
+        "summary": "Get full lesson views by user ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PartView"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/vocabulary/full-view/{id}": {
+      "get": {
+        "operationId": "UserController_getFullVocabularyViews",
+        "summary": "Get full vocabulary views by user ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VocabularyView"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/test/full-view/{id}": {
+      "get": {
+        "operationId": "UserController_getFullTestsCompleted",
+        "summary": "Get full test completed by user ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExamAttempt"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/test/full-result": {
+      "get": {
+        "operationId": "UserController_getFullTestResults",
+        "summary": "Get full test results by user ID",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "examId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "score",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isFinished",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "attemptCount",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExamAttempt"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/delete/{id}": {
+      "put": {
+        "operationId": "UserController_deleteStudent",
+        "summary": "Delete User",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/create-student": {
+      "post": {
+        "operationId": "UserController_createStudent",
+        "summary": "create new student",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/create-teacher": {
+      "post": {
+        "operationId": "UserController_createTeacher",
+        "summary": "create new teacher",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/profile": {
+      "get": {
+        "operationId": "UserPermissionController_user__GetMyProfile",
+        "summary": "Get user profile by JWT",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      },
+      "put": {
+        "operationId": "UserPermissionController_user__UpdateMyProfile",
+        "summary": "Get user profile by JWT",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/class-joined": {
+      "get": {
+        "operationId": "UserPermissionController_getClassJoined",
+        "summary": "Get class joined",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/authorization/{id}": {
+      "put": {
+        "operationId": "UserPermissionController_user__AuthorizationTeacher",
+        "summary": "Authorization teacher by JWT",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/change-password": {
+      "put": {
+        "operationId": "UserPermissionController_user__ChangePassword",
+        "summary": "Change password by JWT",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeUserPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/upload-auth/file": {
+      "post": {
+        "operationId": "UploadPermissionController_upload__File",
+        "summary": "Upload a file to storage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "upload"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/upload-auth/image": {
+      "post": {
+        "operationId": "UploadPermissionController_upload__Image",
+        "summary": "Upload a file to storage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "upload"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/class_room/all-student/{id}": {
+      "get": {
+        "operationId": "ClassRoomPermissionController_classroom__GetAllStudent",
+        "summary": "Get all student in class",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      }
+    },
+    "/api/class_room": {
+      "post": {
+        "operationId": "ClassRoomPermissionController_classroom__CreateClass",
+        "summary": "Create a new class",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClassroomDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassRoom"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      }
+    },
+    "/api/class_room/{id}": {
+      "put": {
+        "operationId": "ClassRoomPermissionController_classroom__UpdateClass",
+        "summary": "Update a class",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClassroomDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      },
+      "delete": {
+        "operationId": "ClassRoomPermissionController_classroom__DeleteClass",
+        "summary": "Delete a class",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      },
+      "get": {
+        "operationId": "ClassroomController_getProfileById",
+        "summary": "Get classroom info by id",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      }
+    },
+    "/api/class_room/update-student-in-class/{id}": {
+      "put": {
+        "operationId": "ClassRoomPermissionController_updateStudentInClass",
+        "summary": "update student in class",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      }
+    },
+    "/api/class_room/join/{id}": {
+      "post": {
+        "operationId": "ClassRoomPermissionController_classroom__JoinClass",
+        "summary": "Join a class",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinClassDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      }
+    },
+    "/api/class_room/leave/{id}": {
+      "delete": {
+        "operationId": "ClassRoomPermissionController_classroom__LeaveClass",
+        "summary": "Leave a class",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinClassDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      }
+    },
+    "/api/class_room/all": {
+      "get": {
+        "operationId": "ClassroomController_search",
+        "summary": "Get classroom list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "enum": [
+                "APPROVED",
+                "PENDING",
+                "REJECTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "classLevel",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "enum": [
+                "Lớp 1",
+                "Lớp 2",
+                "Lớp 3",
+                "Lớp 4",
+                "Lớp 5"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "teacherId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "classCode",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isTeacherCreated",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassRoom"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "class_room"
+        ]
+      }
+    },
+    "/api/vocabulary-auth": {
+      "post": {
+        "operationId": "VocabularyPermissionController_vocabulary__Create_Vocabulary",
+        "summary": "vocabulary__Create_Vocabulary",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVocabularyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassRoom"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vocabulary"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vocabulary-auth/{id}": {
+      "put": {
+        "operationId": "VocabularyPermissionController_vocabulary__Update_Vocabulary",
+        "summary": "Update a vocabulary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVocabularyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vocabulary"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vocabulary-auth/delete-list": {
+      "delete": {
+        "operationId": "VocabularyPermissionController_vocabulary__Delete_Vocabulary",
+        "summary": "Delete a vocabulary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vocabulary"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/vocabulary/all": {
+      "get": {
+        "operationId": "VocabularyController_search",
+        "summary": "Get all vocabulary",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "content",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "enum": [
+                "APPROVED",
+                "PENDING",
+                "REJECTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "vocabularyType",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "WORD",
+              "enum": [
+                "WORD",
+                "SENTENCE",
+                "PARAGRAPH"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "classroomId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "topicId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "creatorId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isPrivate",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vocabulary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vocabulary"
+        ]
+      }
+    },
+    "/api/vocabulary/{id}": {
+      "get": {
+        "operationId": "VocabularyController_getProfileById",
+        "summary": "Get vocabulary by id",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vocabulary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vocabulary"
+        ]
+      }
+    },
+    "/api/topic-auth": {
+      "post": {
+        "operationId": "TopicPermissionController_topic__CreateTopic",
+        "summary": "Create a new TOPIC",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTopicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "topic"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/topic-auth/{id}": {
+      "put": {
+        "operationId": "TopicPermissionController_topic__UpdateTopic",
+        "summary": "Update a TOPIC",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTopicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "topic"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "TopicPermissionController_topic__DeleteTopic",
+        "summary": "Delete a TOPIC",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "topic"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/topic/all": {
+      "get": {
+        "operationId": "TopicController_search",
+        "summary": "Get Topic list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classroomId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "creatorId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isCommon",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topic"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "topic"
+        ]
+      }
+    },
+    "/api/topic/{id}": {
+      "get": {
+        "operationId": "TopicController_getProfileById",
+        "summary": "Get topic info by id",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "topic"
+        ]
+      }
+    },
+    "/api/question/class/{id}": {
+      "get": {
+        "operationId": "QuestionPermissionController_getListQuestionClass",
+        "summary": "Get list question of class",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      }
+    },
+    "/api/question/add-list": {
+      "post": {
+        "operationId": "QuestionPermissionController_question__AddListQuestion",
+        "summary": "Add list question",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      }
+    },
+    "/api/question/{id}": {
+      "put": {
+        "operationId": "QuestionPermissionController_question__UpdateQuestion",
+        "summary": "Update a question",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      },
+      "delete": {
+        "operationId": "QuestionPermissionController_question__DeleteQuestion",
+        "summary": "Delete a question",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      },
+      "get": {
+        "operationId": "QuestionController_getProfileById",
+        "summary": "Get question info by id",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      }
+    },
+    "/api/question/delete-list": {
+      "delete": {
+        "operationId": "QuestionPermissionController_deleteList",
+        "summary": "Delete questions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      }
+    },
+    "/api/question/answers/{id}": {
+      "delete": {
+        "operationId": "QuestionPermissionController_deleteAnswers",
+        "summary": "Delete answers of question",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      }
+    },
+    "/api/question/all": {
+      "get": {
+        "operationId": "QuestionController_search",
+        "summary": "Get question list",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "content",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classRoomId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "creatorId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "classRoomName",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileType",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "EXISTED",
+              "enum": [
+                "TEXT",
+                "NOT_EXISTED",
+                "EXISTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "questionType",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "ONE_ANSWER",
+              "enum": [
+                "ONE_ANSWER",
+                "MULTIPLE_ANSWERS"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      }
+    },
+    "/api/question/question-of-exam/{id}": {
+      "get": {
+        "operationId": "QuestionController_getQuestionOfExam",
+        "summary": "Get question list of exam",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "question"
+        ]
+      }
+    },
+    "/api/exam/all-exams": {
+      "get": {
+        "operationId": "ExamPermissionController_getListExam",
+        "summary": "Get list exam for user",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isFinished",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "examId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "score",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "examType",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classRoomName",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamAttempt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/all-practice-exams/{teacherId}": {
+      "get": {
+        "operationId": "ExamPermissionController_getListPracticeExam",
+        "summary": "Get list practice exam for teacher to score",
+        "parameters": [
+          {
+            "name": "teacherId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isFinished",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "examId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "score",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "examType",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classRoomName",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamAttempt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/exam-saved": {
+      "post": {
+        "operationId": "ExamPermissionController_saveExamsSaved",
+        "summary": "Save exam answer for user",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EXAM"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/submit-practice": {
+      "post": {
+        "operationId": "ExamPermissionController_submitPracticeTest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PracticeExamScoringDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/exam-scoring": {
+      "post": {
+        "operationId": "ExamPermissionController_examScoring",
+        "summary": "Scoring exam",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExamScoringDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamAttempt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/practice-exam-scoring": {
+      "post": {
+        "operationId": "ExamPermissionController_practiceExamScoring",
+        "summary": "Scoring practice exam",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PracticeExamScoringDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeExamAttempt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/reset/{examId}": {
+      "post": {
+        "operationId": "ExamPermissionController_resetExam",
+        "summary": "Reset exam for redo",
+        "parameters": [
+          {
+            "name": "examId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetExamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamAttempt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/practice-exam/reset/{examId}": {
+      "post": {
+        "operationId": "ExamPermissionController_resetPracticeExam",
+        "summary": "Reset practice exam for redo",
+        "parameters": [
+          {
+            "name": "examId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetExamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeExamAttempt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/practice-exams/{examId}": {
+      "get": {
+        "operationId": "ExamPermissionController_getDetailPracticeExam",
+        "summary": "Get detail practice exam",
+        "parameters": [
+          {
+            "name": "examId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamVocabulary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/detail-exam/{id}": {
+      "get": {
+        "operationId": "ExamPermissionController_getDetailExam",
+        "summary": "Get detail exam",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamQuestion"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/practice-exams-to-score/{examId}/{userId}": {
+      "get": {
+        "operationId": "ExamPermissionController_getDetailPracticeExamToScore",
+        "summary": "Get detail practice exam to score",
+        "parameters": [
+          {
+            "name": "examId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamVideo"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/practice-exams": {
+      "post": {
+        "operationId": "ExamPermissionController_addPracticeExam",
+        "summary": "Create practice exam ",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePracticeExamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamB"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/add-exam": {
+      "post": {
+        "operationId": "ExamPermissionController_addExam",
+        "summary": "Create exam ",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamB"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/edit-exam": {
+      "put": {
+        "operationId": "ExamPermissionController_editExam",
+        "summary": "Edit exam ",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamB"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/all": {
+      "get": {
+        "operationId": "ExamController_search",
+        "summary": "Get all exams",
+        "parameters": [
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "createdDate",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "default": "DESC",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "classRoomId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "creatorId",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isPrivate",
+            "required": false,
+            "in": "query",
+            "description": "not required",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EXAM"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/{id}": {
+      "get": {
+        "operationId": "ExamController_getProfileById",
+        "summary": "Get exam info by id",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EXAM"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    },
+    "/api/exam/exam-saved/{id}": {
+      "get": {
+        "operationId": "ExamController_getExamsSaved",
+        "summary": "Get all exams saved by user",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response data template after processing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EXAM"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "The response data template after processing encounters exception",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "exam"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Bluequant API APIs document",
+    "description": "",
+    "version": "3.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "required",
+            "default": "dev_admin@gmail.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "required",
+            "default": "123456"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "JWTPayload": {
+        "type": "object",
+        "properties": {
+          "sub": {
+            "type": "string",
+            "description": "required"
+          },
+          "iat": {
+            "type": "number",
+            "description": "required"
+          },
+          "exp": {
+            "type": "number",
+            "description": "required"
+          }
+        },
+        "required": [
+          "sub",
+          "iat",
+          "exp"
+        ]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/JWTPayload"
+          },
+          "token": {
+            "type": "string",
+            "description": "required",
+            "default": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImNyZWF0ZUF0IjoiMjAyNC0wMy0yMVQxNDo0OToyNC41ODRaIiwiaWF0IjoxNzExMDMyNTY0LCJleHAiOjE3MTE2MzczNjR9.fL37HAKp-s7IShQmDaB1C54ijhZlUQ1fIBtasnELyPE"
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "required",
+            "default": 604800
+          }
+        },
+        "required": [
+          "payload",
+          "token",
+          "expiresIn"
+        ]
+      },
+      "ErrorDataResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "required"
+          },
+          "message": {
+            "type": "string",
+            "description": "required"
+          },
+          "error": {
+            "type": "string",
+            "description": "required"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "error"
+        ]
+      },
+      "DefaultResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "description": "required"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ErrorDataResponse"
+          }
+        },
+        "required": [
+          "status",
+          "data"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "password": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatarLocation": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "birthDay": {
+            "type": "datetime"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ],
+            "default": "MALE"
+          },
+          "code": {
+            "type": "string"
+          },
+          "isDeleted": {
+            "type": "bit",
+            "default": 0
+          },
+          "isApproved": {
+            "type": "bit",
+            "default": 0
+          },
+          "schoolId": {
+            "type": "bigint"
+          },
+          "houseStreet": {
+            "type": "string"
+          },
+          "ward": {
+            "type": "string"
+          },
+          "district": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "password",
+          "name",
+          "avatarLocation",
+          "email",
+          "phoneNumber",
+          "address",
+          "birthDay",
+          "gender",
+          "code",
+          "isDeleted",
+          "isApproved",
+          "schoolId",
+          "houseStreet",
+          "ward",
+          "district",
+          "city"
+        ]
+      },
+      "UserStatistic": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "userStatisticId": {
+            "type": "number",
+            "description": "required",
+            "default": 1
+          },
+          "totalClassesJoined": {
+            "type": "bigint",
+            "default": 0
+          },
+          "vocabularyViews": {
+            "type": "bigint",
+            "default": 0
+          },
+          "lessonViews": {
+            "type": "bigint",
+            "default": 0
+          },
+          "testsCompleted": {
+            "type": "bigint",
+            "default": 0
+          },
+          "averageScore": {
+            "type": "numeric",
+            "default": 0
+          },
+          "userId": {
+            "type": "bigint"
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "userStatisticId",
+          "totalClassesJoined",
+          "vocabularyViews",
+          "lessonViews",
+          "testsCompleted",
+          "averageScore",
+          "userId"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "not required",
+            "default": "thanhtung",
+            "maxLength": 50
+          },
+          "email": {
+            "type": "email",
+            "description": "required"
+          },
+          "password": {
+            "type": "string",
+            "description": "required",
+            "default": "123456"
+          },
+          "confirm": {
+            "type": "string",
+            "description": "not required"
+          },
+          "role": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "TEACHER",
+              "VOLUNTEER",
+              "USER",
+              "ADMIN",
+              "ADMIN_CODE_SERVICE"
+            ]
+          }
+        },
+        "required": [
+          "password",
+          "email"
+        ]
+      },
+      "VerifyEmailDto": {
+        "type": "object",
+        "properties": {
+          "otpNum": {
+            "type": "number",
+            "description": "required",
+            "default": 123456
+          },
+          "email": {
+            "type": "string",
+            "description": "required"
+          }
+        },
+        "required": [
+          "otpNum",
+          "email"
+        ]
+      },
+      "VocabularyView": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "vocabularyViewId": {
+            "type": "number",
+            "description": "required",
+            "default": 1
+          },
+          "userId": {
+            "type": "bigint"
+          },
+          "vocabularyId": {
+            "type": "bigint"
+          },
+          "lastViewedAt": {
+            "type": "timestamp"
+          },
+          "viewCount": {
+            "type": "bigint",
+            "default": 0
+          }
+        },
+        "required": [
+          "createdDate",
+          "vocabularyViewId",
+          "userId",
+          "vocabularyId",
+          "lastViewedAt",
+          "viewCount"
+        ]
+      },
+      "PartView": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "partViewId": {
+            "type": "number",
+            "description": "required",
+            "default": 1
+          },
+          "userId": {
+            "type": "bigint"
+          },
+          "partId": {
+            "type": "bigint",
+            "default": 0
+          },
+          "lessonId": {
+            "type": "bigint"
+          },
+          "lastViewedAt": {
+            "type": "timestamp"
+          },
+          "viewCount": {
+            "type": "bigint",
+            "default": 0
+          }
+        },
+        "required": [
+          "createdDate",
+          "partViewId",
+          "userId",
+          "partId",
+          "lessonId",
+          "lastViewedAt",
+          "viewCount"
+        ]
+      },
+      "ExamAttempt": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "bigint"
+          },
+          "examId": {
+            "type": "bigint"
+          },
+          "score": {
+            "type": "string"
+          },
+          "isFinished": {
+            "type": "bit",
+            "default": 0
+          }
+        },
+        "required": [
+          "studentId",
+          "examId",
+          "score",
+          "isFinished"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "required",
+            "default": "John Doe",
+            "maxLength": 50
+          },
+          "address": {
+            "type": "string",
+            "description": "not required",
+            "maxLength": 255
+          },
+          "classRoomName": {
+            "type": "string",
+            "description": "required",
+            "maxLength": 50
+          },
+          "schoolName": {
+            "type": "string",
+            "description": "required",
+            "maxLength": 50
+          },
+          "birthDay": {
+            "type": "string",
+            "description": "not required"
+          }
+        },
+        "required": [
+          "name",
+          "classRoomName",
+          "schoolName"
+        ]
+      },
+      "UpdateUserProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "not required",
+            "default": "thanhtung",
+            "maxLength": 50
+          },
+          "avatarLocation": {
+            "type": "string",
+            "description": "not required"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "not required"
+          },
+          "birthDay": {
+            "type": "string",
+            "description": "not required"
+          },
+          "address": {
+            "type": "string",
+            "description": "not required"
+          },
+          "gender": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ]
+          },
+          "schoolId": {
+            "type": "string",
+            "description": "not required"
+          },
+          "houseStreet": {
+            "type": "string",
+            "description": "not required"
+          },
+          "ward": {
+            "type": "string",
+            "description": "not required"
+          },
+          "district": {
+            "type": "string",
+            "description": "not required"
+          },
+          "city": {
+            "type": "string",
+            "description": "not required"
+          }
+        }
+      },
+      "ChangeUserPasswordDto": {
+        "type": "object",
+        "properties": {
+          "oldPassword": {
+            "type": "string",
+            "description": "not required",
+            "default": "123456"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "not required",
+            "default": "666666"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "description": "not required",
+            "default": "888888"
+          }
+        }
+      },
+      "UploadFileDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "array",
+            "items": {
+              "type": "file",
+              "format": "binary"
+            }
+          },
+          "type": {
+            "type": "number",
+            "description": "not required",
+            "enum": []
+          }
+        }
+      },
+      "UploadImageDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "array",
+            "items": {
+              "type": "file",
+              "format": "binary"
+            }
+          },
+          "type": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "USER_AVATAR",
+              "USER_COVER_IMAGE",
+              "CLASS_THUMBNAIL"
+            ]
+          }
+        }
+      },
+      "CreateClassroomDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "required",
+            "default": "name"
+          },
+          "description": {
+            "type": "string",
+            "description": "not required",
+            "default": "description"
+          },
+          "thumbnailPath": {
+            "type": "string",
+            "description": "not required",
+            "default": "thumbnail.jpg"
+          },
+          "classCode": {
+            "type": "string",
+            "description": "not required",
+            "default": "A1B2C3"
+          },
+          "classLevel": {
+            "type": "string",
+            "description": "required",
+            "enum": [
+              "Lớp 1",
+              "Lớp 2",
+              "Lớp 3",
+              "Lớp 4",
+              "Lớp 5"
+            ]
+          },
+          "teacherId": {
+            "type": "number",
+            "description": "required"
+          }
+        },
+        "required": [
+          "name",
+          "classLevel",
+          "teacherId"
+        ]
+      },
+      "ClassRoom": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "name": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          },
+          "imageLocation": {
+            "type": "string"
+          },
+          "teacherId": {
+            "type": "bigint"
+          },
+          "description": {
+            "type": "string"
+          },
+          "classCode": {
+            "type": "string"
+          },
+          "schoolId": {
+            "type": "bigint"
+          },
+          "isTeacherCreated": {
+            "type": "boolean",
+            "default": false
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "PENDING",
+              "REJECTED"
+            ],
+            "default": "PENDING"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "classLevel": {
+            "type": "string",
+            "enum": [
+              "Lớp 1",
+              "Lớp 2",
+              "Lớp 3",
+              "Lớp 4",
+              "Lớp 5"
+            ]
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "name",
+          "thumbnailPath",
+          "imageLocation",
+          "teacherId",
+          "description",
+          "classCode",
+          "schoolId",
+          "isTeacherCreated",
+          "status",
+          "slug",
+          "classLevel"
+        ]
+      },
+      "UpdateClassroomDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "not required"
+          },
+          "description": {
+            "type": "string",
+            "description": "not required"
+          },
+          "thumbnailPath": {
+            "type": "string",
+            "description": "not required"
+          },
+          "status": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "APPROVED",
+              "PENDING",
+              "REJECTED"
+            ]
+          }
+        }
+      },
+      "JoinClassDto": {
+        "type": "object",
+        "properties": {
+          "studentCode": {
+            "type": "string",
+            "description": "required",
+            "default": "202420001"
+          }
+        },
+        "required": [
+          "studentCode"
+        ]
+      },
+      "CreateVocabularyDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "required",
+            "default": "content"
+          },
+          "description": {
+            "type": "string",
+            "description": "not required"
+          },
+          "topicId": {
+            "type": "number",
+            "description": "required"
+          },
+          "classroomId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "creatorId": {
+            "type": "number",
+            "description": "required"
+          },
+          "vocabularyType": {
+            "type": "string",
+            "description": "required",
+            "enum": [
+              "WORD",
+              "SENTENCE",
+              "PARAGRAPH"
+            ],
+            "default": "WORD"
+          },
+          "status": {
+            "type": "string",
+            "description": "required",
+            "enum": [
+              "APPROVED",
+              "PENDING",
+              "REJECTED"
+            ],
+            "default": "PENDING"
+          },
+          "imagesPath": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "videosPath": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "description": "required"
+          }
+        },
+        "required": [
+          "content",
+          "topicId",
+          "creatorId",
+          "vocabularyType",
+          "status",
+          "isPrivate"
+        ]
+      },
+      "UpdateVocabularyDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "not required"
+          },
+          "description": {
+            "type": "string",
+            "description": "not required"
+          },
+          "imagesPath": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "videosPath": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "APPROVED",
+              "PENDING",
+              "REJECTED"
+            ]
+          },
+          "classroomId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "description": "not required"
+          },
+          "vocabularyType": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "WORD",
+              "SENTENCE",
+              "PARAGRAPH"
+            ],
+            "default": "WORD"
+          }
+        }
+      },
+      "Vocabulary": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "content": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "bit"
+          },
+          "topicId": {
+            "type": "bigint"
+          },
+          "vocabularyType": {
+            "type": "string",
+            "enum": [
+              "WORD",
+              "SENTENCE",
+              "PARAGRAPH"
+            ],
+            "default": "WORD"
+          },
+          "classroomId": {
+            "type": "bigint"
+          },
+          "partId": {
+            "type": "bigint"
+          },
+          "creatorId": {
+            "type": "bigint"
+          },
+          "creatorEmail": {
+            "type": "string"
+          },
+          "imagesPath": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "videosPath": {
+            "type": "string"
+          },
+          "lessonId": {
+            "type": "bigint"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "PENDING",
+              "REJECTED"
+            ],
+            "default": "PENDING"
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "content",
+          "description",
+          "isPrivate",
+          "topicId",
+          "vocabularyType",
+          "classroomId",
+          "partId",
+          "creatorId",
+          "creatorEmail",
+          "imagesPath",
+          "note",
+          "videosPath",
+          "lessonId",
+          "slug",
+          "status"
+        ]
+      },
+      "CreateTopicDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "required",
+            "default": "name"
+          },
+          "classroomId": {
+            "type": "number",
+            "description": "required"
+          },
+          "imageLocation": {
+            "type": "string",
+            "description": "not required"
+          },
+          "description": {
+            "type": "string",
+            "description": "not required"
+          },
+          "creatorId": {
+            "type": "number",
+            "description": "required"
+          },
+          "isCommon": {
+            "type": "boolean",
+            "description": "not required"
+          }
+        },
+        "required": [
+          "name",
+          "classroomId",
+          "creatorId"
+        ]
+      },
+      "Topic": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "name": {
+            "type": "string"
+          },
+          "classroomId": {
+            "type": "bigint"
+          },
+          "imageLocation": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "creatorEmail": {
+            "type": "string"
+          },
+          "creatorId": {
+            "type": "string"
+          },
+          "isCommon": {
+            "type": "bit"
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "name",
+          "classroomId",
+          "imageLocation",
+          "description",
+          "creatorEmail",
+          "creatorId",
+          "isCommon"
+        ]
+      },
+      "UpdateTopicDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "not required",
+            "default": "name"
+          },
+          "classroomId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "imageLocation": {
+            "type": "string",
+            "description": "not required"
+          },
+          "description": {
+            "type": "string",
+            "description": "not required"
+          },
+          "isCommon": {
+            "type": "boolean",
+            "description": "not required"
+          }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "content": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "classRoomId": {
+            "type": "bigint"
+          },
+          "creatorEmail": {
+            "type": "string"
+          },
+          "imageLocation": {
+            "type": "string"
+          },
+          "videoLocation": {
+            "type": "string"
+          },
+          "fileType": {
+            "type": "string",
+            "enum": [
+              "TEXT",
+              "NOT_EXISTED",
+              "EXISTED"
+            ],
+            "default": "EXISTED"
+          },
+          "questionType": {
+            "type": "string",
+            "enum": [
+              "ONE_ANSWER",
+              "MULTIPLE_ANSWERS"
+            ],
+            "default": "MULTIPLE_ANSWERS"
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "content",
+          "explanation",
+          "classRoomId",
+          "creatorEmail",
+          "imageLocation",
+          "videoLocation",
+          "fileType",
+          "questionType"
+        ]
+      },
+      "UpdateQuestionDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "not required",
+            "default": "content"
+          },
+          "classRoomId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "imageLocation": {
+            "type": "string",
+            "description": "not required"
+          },
+          "videoLocation": {
+            "type": "string",
+            "description": "not required"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "not required"
+          },
+          "description": {
+            "type": "string",
+            "description": "not required"
+          },
+          "fileType": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "TEXT",
+              "NOT_EXISTED",
+              "EXISTED"
+            ],
+            "default": "EXISTED"
+          },
+          "questionType": {
+            "type": "string",
+            "description": "not required",
+            "enum": [
+              "ONE_ANSWER",
+              "MULTIPLE_ANSWERS"
+            ],
+            "default": "ONE_ANSWER"
+          },
+          "answerReqs": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "updateAnswerReqs": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        }
+      },
+      "EXAM": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "name": {
+            "type": "string"
+          },
+          "classRoomId": {
+            "type": "bigint"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "private": {
+            "type": "bit"
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "name",
+          "classRoomId",
+          "createdBy",
+          "private"
+        ]
+      },
+      "PracticeExamScoringDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "examId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "score": {
+            "type": "number",
+            "description": "not required"
+          },
+          "isFinished": {
+            "type": "boolean",
+            "description": "not required"
+          },
+          "attemptCount": {
+            "type": "number",
+            "description": "not required"
+          }
+        }
+      },
+      "ExamScoringDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "examId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "score": {
+            "type": "number",
+            "description": "not required"
+          },
+          "isFinished": {
+            "type": "boolean",
+            "description": "not required"
+          },
+          "attemptCount": {
+            "type": "number",
+            "description": "not required"
+          },
+          "type": {
+            "type": "string",
+            "description": "not required"
+          }
+        }
+      },
+      "PracticeExamAttempt": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "studentId": {
+            "type": "bigint"
+          },
+          "examId": {
+            "type": "bigint"
+          },
+          "score": {
+            "type": "string"
+          },
+          "isFinished": {
+            "type": "bit",
+            "default": 0
+          }
+        },
+        "required": [
+          "createdDate",
+          "studentId",
+          "examId",
+          "score",
+          "isFinished"
+        ]
+      },
+      "ResetExamDto": {
+        "type": "object",
+        "properties": {
+          "examId": {
+            "type": "number",
+            "description": "not required"
+          },
+          "userId": {
+            "type": "number",
+            "description": "not required"
+          }
+        }
+      },
+      "ExamVocabulary": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "vocabularyExamId": {
+            "type": "number",
+            "description": "required",
+            "default": 1
+          },
+          "vocabularyId": {
+            "type": "bigint"
+          },
+          "examId": {
+            "type": "bigint"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdDate",
+          "vocabularyExamId",
+          "vocabularyId",
+          "examId",
+          "content"
+        ]
+      },
+      "ExamQuestion": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "bigint"
+          },
+          "examId": {
+            "type": "bigint"
+          }
+        },
+        "required": [
+          "questionId",
+          "examId"
+        ]
+      },
+      "ExamVideo": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "videoExamId": {
+            "type": "number",
+            "description": "required",
+            "default": 1
+          },
+          "videoUrl": {
+            "type": "string"
+          },
+          "aiAnswer": {
+            "type": "string"
+          },
+          "examId": {
+            "type": "bigint"
+          },
+          "userId": {
+            "type": "bigint"
+          }
+        },
+        "required": [
+          "createdDate",
+          "videoExamId",
+          "videoUrl",
+          "aiAnswer",
+          "examId",
+          "userId"
+        ]
+      },
+      "PracticeWordDto": {
+        "type": "object",
+        "properties": {
+          "vocabularyId": {
+            "type": "number",
+            "description": "required"
+          },
+          "content": {
+            "type": "string",
+            "description": "required",
+            "example": "Em hãy biểu diễn - bực mình"
+          },
+          "topicId": {
+            "type": "number",
+            "description": "required"
+          }
+        },
+        "required": [
+          "vocabularyId",
+          "content",
+          "topicId"
+        ]
+      },
+      "CreatePracticeExamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "required",
+            "default": "name"
+          },
+          "classRoomId": {
+            "type": "number",
+            "description": "required"
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "description": "not required"
+          },
+          "practiceWords": {
+            "description": "required",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PracticeWordDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "classRoomId",
+          "practiceWords"
+        ]
+      },
+      "ExamB": {
+        "type": "object",
+        "properties": {
+          "createdDate": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "updatedAt": {
+            "type": "date",
+            "description": "Example: 2025-10-18T02:17:46.007Z",
+            "default": "2025-10-18T02:17:46.007Z"
+          },
+          "name": {
+            "type": "string"
+          },
+          "classRoomId": {
+            "type": "bigint"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "bit"
+          }
+        },
+        "required": [
+          "createdDate",
+          "updatedAt",
+          "name",
+          "classRoomId",
+          "createdBy",
+          "isPrivate"
+        ]
+      },
+      "CreateExamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "required",
+            "default": "name"
+          },
+          "classRoomId": {
+            "type": "number",
+            "description": "required"
+          },
+          "numberOfQuestions": {
+            "type": "number",
+            "description": "required"
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "description": "not required"
+          },
+          "questionIds": {
+            "description": "required",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "classRoomId",
+          "numberOfQuestions",
+          "questionIds"
+        ]
+      },
+      "UpdateExamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "not required",
+            "default": "name"
+          },
+          "examType": {
+            "type": "string",
+            "description": "not required"
+          },
+          "examId": {
+            "type": "number",
+            "description": "required"
+          },
+          "classRoomId": {
+            "type": "number",
+            "description": "required"
+          },
+          "numberOfQuestions": {
+            "type": "number",
+            "description": "not required"
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "description": "not required"
+          },
+          "questionIds": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          },
+          "practiceWords": {
+            "description": "not required",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PracticeWordDto"
+            }
+          }
+        },
+        "required": [
+          "examId",
+          "classRoomId"
+        ]
+      }
+    }
+  }
+}
