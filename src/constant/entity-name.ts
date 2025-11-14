@@ -29,4 +29,6 @@ export const EntityNameConst = Object.freeze({
   STUDENT_PROFILE: 'student_profile',
   EXAM_QUESTION: 'question_exam_mapping',
   USER_STATISTIC: 'user_statistic',
+  STATISTICS: 'statistics',
 });
+
