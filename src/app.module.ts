@@ -17,6 +17,10 @@ import { TopicModule } from './api/topic/topic.module';
 import { QuestionModule } from './api/question/question.module';
 import { ExamModule } from './api/exam/exam.module';
 import { LessonsModule } from './api/classroom/lesson.module';
+ // 
+=======
+import { StatisticsModule } from './api/statistics/statistics.module';
+ // 
 
 @Module({
   imports: [
@@ -53,6 +57,10 @@ import { LessonsModule } from './api/classroom/lesson.module';
     TopicModule,
     QuestionModule,
     ExamModule,
+ // 
+=======
+    StatisticsModule,
+ // 
   ],
   controllers: [],
   providers: [],

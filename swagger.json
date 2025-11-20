@@ -1548,7 +1548,7 @@
       },
       "put": {
         "operationId": "UserPermissionController_user__UpdateMyProfile",
-        "summary": "Get user profile by JWT",
+        "summary": "Update user profile by JWT",
         "parameters": [],
         "requestBody": {
           "required": true,

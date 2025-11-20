@@ -18,7 +18,10 @@ import { ExamVideo } from 'src/entities/exam/exam-video.entity';
 import { diskStorage } from 'multer';
 import { PracticeExamAttempt } from 'src/entities/exam/practice-attempt.entity';
 import { ExamQuestion } from 'src/entities/exam/exam-question.entity';
+
 import { memoryStorage } from 'multer';
+
+
 
 @IsAuthController(EntityNameConst.EXAM, false)
 export class ExamPermissionController {
@@ -74,15 +77,21 @@ export class ExamPermissionController {
   // async submitPracticeTest(@UploadedFiles() files: Express.Multer.File[], @Body() body: PracticeExamScoringDto) {
   //   return await this.examService.submitPracticeTest(files, body);
   // }
-  @Post('/submit-practice')
-  @UseInterceptors(
-    FilesInterceptor('videos', 10, {
-      storage: memoryStorage(), // LƯU VÀO RAM (Buffer)
-    }),
-  )
-  async submitPracticeTest(@UploadedFiles() files: Express.Multer.File[], @Body() body: PracticeExamScoringDto) {
-    return await this.examService.submitPracticeTest(files, body);
-  }
+@Post('/submit-practice')
+  @UseInterceptors(
+    FilesInterceptor('videos', 10, {
+      storage: diskStorage({
+        destination: '/home/tuyentrinh/Desktop/sign_school/uploads/videos',
+        
+        filename: (req, file, callback) => {
+          callback(null, file.originalname);
+        },
+      }),
+    }), 
+  )
+  async submitPracticeTest(@UploadedFiles() files: Express.Multer.File[], @Body() body: PracticeExamScoringDto) {
+    return await this.examService.submitPracticeTest(files, body);
+  }
 
   @Post('/exam-scoring')
   @ApiHandleResponse({
@@ -90,7 +99,7 @@ export class ExamPermissionController {
     summary: 'Scoring exam',
   })
   async examScoring(@Body() body: ExamScoringDto) {
-    return await this.examService.examScoring(body);
+    return await (this.examService as any).examScoring(body);
   }
 
   @Post('/practice-exam-scoring')

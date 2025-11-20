@@ -1,9 +1,9 @@
 // export const MY_MINIO_CONFIG = {
 //   ENDPOINT: process.env.NODE_ENV === 'local' ? 'localhost' : '202.191.56.11',
 //   PORT: 9002,
-//   ACCESS_KEY: process.env.MINIO_ACCESS_KEY_1 || 'admin',
-//   SECRET_KEY: process.env.MINIO_SECRET_KEY_1 || 'NewStrongPassword123',
-//   BUCKET: process.env.MINIO_BUCKET_1 || 'my-private-bucket',
+//   ACCESS_KEY: 'admin',
+//   SECRET_KEY: 'NewStrongPassword123',
+//   BUCKET:  'my-private-bucket',
 //   USE_SSL: process.env.MINIO_USE_SSL === 'true',
 // };
 
@@ -17,11 +17,14 @@
 // };
 // console.log(process.env.MINIO_BUCKET_1);
 
+const isLocal = process.env.NODE_ENV === 'development';
+
 export const MY_MINIO_CONFIG = {
-  ENDPOINT: 'localhost',
-  PORT: 9002,
-  ACCESS_KEY: 'admin',
-  SECRET_KEY: 'Password12345@',
+  ENDPOINT: isLocal ? 'localhost' : '202.191.56.11',
+  PORT: isLocal ? 9000 : 9001,
+  
+  ACCESS_KEY: isLocal ? 'admin' : 'root',
+  SECRET_KEY: isLocal ? 'Password12345@' : 'Tuyen18072001',
   BUCKET: 'wesign',
-  USE_SSL: process.env.MINIO_USE_SSL === 'true',
+  USE_SSL: isLocal ? process.env.MINIO_USE_SSL === 'false' : process.env.MINIO_USE_SSL === 'true',
 };

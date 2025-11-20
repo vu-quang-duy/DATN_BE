@@ -11,7 +11,11 @@ export class RegisterDto {
   @IsSwaggerString({ default: 'Tuandat0802@' })
   readonly password: string;
 
+ // 
   @IsSwaggerString({ default: 'nguyendat0802@gmail.com' })
+=======
+  @IsSwaggerString({ default: 'nguyendat0802@gmail.com'})
+ // 
   readonly email: string;
 
   @IsSwaggerString({ default: 'Tuandat0802@' })
