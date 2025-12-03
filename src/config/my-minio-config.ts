@@ -19,7 +19,7 @@
 
 export const MY_MINIO_CONFIG = {
   ENDPOINT: 'localhost',
-  PORT: 9002,
+  PORT: 9000,
   ACCESS_KEY: 'admin',
   SECRET_KEY: 'Password12345@',
   BUCKET: 'wesign',
