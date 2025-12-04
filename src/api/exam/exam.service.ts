@@ -48,7 +48,7 @@ export class ExamService {
     @InjectDataSource() private dataSource: DataSource,
     @InjectDataSource('dbB') private readonly dataSourceB: DataSource,
     private readonly minioService: MinioService, // ✅ bỏ any
-  ) { }
+  ) {}
 
   search = async (query: SearchExamDto): Promise<PageDto<EXAM>> => {
     const [data, itemCount] = await EXAM.findAndCount({
@@ -635,11 +635,11 @@ export class ExamService {
       const video = latestVideos[index];
       const questionVideos = video
         ? [
-          {
-            videoUrl: video.videoUrl,
-            aiAnswer: video.aiAnswer || null,
-          },
-        ]
+            {
+              videoUrl: video.videoUrl,
+              aiAnswer: video.aiAnswer || null,
+            },
+          ]
         : [];
 
       return {
@@ -712,12 +712,12 @@ export class ExamService {
     await Promise.all([
       questionIdsToDelete.length && ExamQuestion.delete({ examId: exam.examId, questionId: In(questionIdsToDelete) }),
       questionIdsToAdd.length &&
-      questionIdsToAdd.map(async (questionId) => {
-        const examQuestion = new ExamQuestion();
-        examQuestion.questionId = questionId;
-        examQuestion.examId = exam.examId;
-        await examQuestion.save();
-      }),
+        questionIdsToAdd.map(async (questionId) => {
+          const examQuestion = new ExamQuestion();
+          examQuestion.questionId = questionId;
+          examQuestion.examId = exam.examId;
+          await examQuestion.save();
+        }),
     ]);
     await exam.save();
     return await this.getById(exam.examId);
@@ -905,7 +905,6 @@ export class ExamService {
           publicUrl: publicVideoUrl,
           detectedWord,
         });
-
       } catch (err) {
         console.error(`Failed to process file ${file.originalname}:`, err);
         continue;
