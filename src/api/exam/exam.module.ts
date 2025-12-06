@@ -9,4 +9,4 @@ import { VideoUrlService } from 'src/utils/video-url.service';
   providers: [ExamService, MinioService, VideoUrlService],
   controllers: [ExamPermissionController, ExamController],
 })
-export class ExamModule { }
+export class ExamModule {}

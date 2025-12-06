@@ -50,7 +50,7 @@ export class ExamService {
     @InjectDataSource('dbB') private readonly dataSourceB: DataSource,
     private readonly minioService: MinioService, // ✅ bỏ any
     private readonly videoUrlService: VideoUrlService, // ✅ Thêm VideoUrlService
-  ) { }
+  ) {}
 
   search = async (query: SearchExamDto): Promise<PageDto<EXAM>> => {
     const [data, itemCount] = await EXAM.findAndCount({
@@ -725,12 +725,12 @@ export class ExamService {
     await Promise.all([
       questionIdsToDelete.length && ExamQuestion.delete({ examId: exam.examId, questionId: In(questionIdsToDelete) }),
       questionIdsToAdd.length &&
-      questionIdsToAdd.map(async (questionId) => {
-        const examQuestion = new ExamQuestion();
-        examQuestion.questionId = questionId;
-        examQuestion.examId = exam.examId;
-        await examQuestion.save();
-      }),
+        questionIdsToAdd.map(async (questionId) => {
+          const examQuestion = new ExamQuestion();
+          examQuestion.questionId = questionId;
+          examQuestion.examId = exam.examId;
+          await examQuestion.save();
+        }),
     ]);
     await exam.save();
     return await this.getById(exam.examId);
@@ -931,7 +931,7 @@ export class ExamService {
         examId,
         videoUrl: file.videoFileName, // Chỉ lưu tên file
         aiAnswer: file.detectedWord,
-        storageType: 'minio' as 'minio', // ✅ Đánh dấu video mới lưu trong MinIO
+        storageType: 'minio' as const, // ✅ Đánh dấu video mới lưu trong MinIO
       }));
 
       await examVideoRepo.createQueryBuilder().insert().into(ExamVideo).values(insertValues).execute();
