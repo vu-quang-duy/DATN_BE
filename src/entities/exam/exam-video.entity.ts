@@ -24,6 +24,9 @@ export class ExamVideo extends AbstractCreatedIdEntity {
   @DBColumn({ type: 'bigint', name: 'user_id' })
   userId: number;
 
+  @DBColumn({ type: 'varchar', name: 'storage_type', length: 20, default: 'filesystem' })
+  storageType: 'filesystem' | 'minio';
+
   @ManyToOne(() => User, (User) => User.examVideos)
   @JoinColumn({ name: 'user_id' })
   student: User;

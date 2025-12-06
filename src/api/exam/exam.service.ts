@@ -39,6 +39,7 @@ import axios from 'axios';
 import { ClassTeacher } from 'src/entities/class/class-teacher.entity';
 import { filter } from 'rxjs';
 import { MinioService } from 'src/utils/minio';
+import { VideoUrlService } from 'src/utils/video-url.service';
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegInstaller.path); // ⬅️ Gắn đúng path ffmpeg
@@ -48,7 +49,8 @@ export class ExamService {
     @InjectDataSource() private dataSource: DataSource,
     @InjectDataSource('dbB') private readonly dataSourceB: DataSource,
     private readonly minioService: MinioService, // ✅ bỏ any
-  ) {}
+    private readonly videoUrlService: VideoUrlService, // ✅ Thêm VideoUrlService
+  ) { }
 
   search = async (query: SearchExamDto): Promise<PageDto<EXAM>> => {
     const [data, itemCount] = await EXAM.findAndCount({
@@ -599,7 +601,7 @@ export class ExamService {
     const allVideos = await examVideoRepo.find({
       where: { examId, userId },
       order: { createdDate: 'DESC' }, // mới nhất trước
-      select: ['videoUrl', 'aiAnswer', 'createdDate', 'videoExamId'], // id để sắp lại
+      select: ['videoUrl', 'aiAnswer', 'createdDate', 'videoExamId', 'storageType'], // ✅ Thêm storageType
     });
 
     // 2. Nếu không có video nào thì return sớm
@@ -630,29 +632,40 @@ export class ExamService {
     // 5. Sắp xếp lại theo thứ tự mapping-id tăng dần (tức là id ASC)
     latestVideos.sort((a, b) => a.videoExamId - b.videoExamId);
 
-    // 6. Ghép từng video vào từng câu hỏi theo thứ tự
-    const formatted = examVocabList.map((item, index) => {
-      const video = latestVideos[index];
-      const questionVideos = video
-        ? [
-            {
-              videoUrl: video.videoUrl,
-              aiAnswer: video.aiAnswer || null,
-            },
-          ]
-        : [];
+    // 6. Ghép từng video vào từng câu hỏi theo thứ tự + Convert sang full URL
+    const formatted = await Promise.all(
+      examVocabList.map(async (item, index) => {
+        const video = latestVideos[index];
+        let questionVideos = [];
 
-      return {
-        examId,
-        examName: exam?.name || '',
-        userId,
-        userName: user?.name || '',
-        vocabularyId: item.vocabularyId,
-        contentFromExamVocabulary: item.content,
-        contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
-        videos: questionVideos,
-      };
-    });
+        if (video) {
+          // ✅ Convert tên file thành full URL dựa trên storage type
+          const fullVideoUrl = await this.videoUrlService.getVideoUrl(
+            video.videoUrl,
+            video.storageType || 'filesystem', // fallback cho video cũ chưa có storageType
+          );
+
+          questionVideos = [
+            {
+              videoUrl: fullVideoUrl, // ✅ Trả về FULL URL
+              aiAnswer: video.aiAnswer || null,
+              storageType: video.storageType || 'filesystem',
+            },
+          ];
+        }
+
+        return {
+          examId,
+          examName: exam?.name || '',
+          userId,
+          userName: user?.name || '',
+          vocabularyId: item.vocabularyId,
+          contentFromExamVocabulary: item.content,
+          contentFromVocabulary: vocabMap.get(item.vocabularyId) || null,
+          videos: questionVideos,
+        };
+      }),
+    );
 
     return {
       data: formatted,
@@ -712,12 +725,12 @@ export class ExamService {
     await Promise.all([
       questionIdsToDelete.length && ExamQuestion.delete({ examId: exam.examId, questionId: In(questionIdsToDelete) }),
       questionIdsToAdd.length &&
-        questionIdsToAdd.map(async (questionId) => {
-          const examQuestion = new ExamQuestion();
-          examQuestion.questionId = questionId;
-          examQuestion.examId = exam.examId;
-          await examQuestion.save();
-        }),
+      questionIdsToAdd.map(async (questionId) => {
+        const examQuestion = new ExamQuestion();
+        examQuestion.questionId = questionId;
+        examQuestion.examId = exam.examId;
+        await examQuestion.save();
+      }),
     ]);
     await exam.save();
     return await this.getById(exam.examId);
@@ -918,6 +931,7 @@ export class ExamService {
         examId,
         videoUrl: file.videoFileName, // Chỉ lưu tên file
         aiAnswer: file.detectedWord,
+        storageType: 'minio' as 'minio', // ✅ Đánh dấu video mới lưu trong MinIO
       }));
 
       await examVideoRepo.createQueryBuilder().insert().into(ExamVideo).values(insertValues).execute();
