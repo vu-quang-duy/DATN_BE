@@ -17,11 +17,21 @@
 // };
 // console.log(process.env.MINIO_BUCKET_1);
 
+
+// export const MY_MINIO_CONFIG = {
+//   ENDPOINT: 'localhost',
+//   PORT: 9000,
+//   ACCESS_KEY: 'admin',
+//   SECRET_KEY: 'Password12345@',
+//   BUCKET: 'wesign',
+//   USE_SSL: process.env.MINIO_USE_SSL === 'true',
+// };
+
 export const MY_MINIO_CONFIG = {
   ENDPOINT: 'localhost',
-  PORT: 9000,
-  ACCESS_KEY: 'admin',
-  SECRET_KEY: 'Password12345@',
+  PORT: 9001,
+  ACCESS_KEY: 'root',
+  SECRET_KEY: 'Tuyen18072001',
   BUCKET: 'wesign',
   USE_SSL: process.env.MINIO_USE_SSL === 'true',
 };
