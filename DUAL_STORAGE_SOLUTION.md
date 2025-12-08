@@ -59,7 +59,8 @@ const fullVideoUrl = await this.videoUrlService.getVideoUrl(
 
 {
   "videos": [{
-    "videoUrl": "http://localhost:9000/wesign/new_video.mp4?X-Amz-Signature=...",  // Video mới
+    // "videoUrl": "http://localhost:9000/wesign/new_video.mp4?X-Amz-Signature=...",  // Video mới
+    "videoUrl": "http://202.191.56.11:9000/wesign/...",
     "aiAnswer": "hello",
     "storageType": "minio"
   }]
