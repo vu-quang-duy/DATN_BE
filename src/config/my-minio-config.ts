@@ -17,7 +17,6 @@
 // };
 // console.log(process.env.MINIO_BUCKET_1);
 
-
 // export const MY_MINIO_CONFIG = {
 //   ENDPOINT: 'localhost',
 //   PORT: 9000,
@@ -28,7 +27,8 @@
 // };
 
 export const MY_MINIO_CONFIG = {
-  ENDPOINT: 'localhost',
+  // ENDPOINT: 'localhost',
+  ENDPOINT: '202.191.56.11',
   PORT: 9001,
   ACCESS_KEY: 'root',
   SECRET_KEY: 'Tuyen18072001',

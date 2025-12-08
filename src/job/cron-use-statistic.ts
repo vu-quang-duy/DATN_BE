@@ -24,7 +24,7 @@ export class CronUseStatistic {
     }
   };
 
-  @Cron(CronExpression.EVERY_10_SECONDS, { timeZone: ENV.TIME_ZONE })
+  @Cron(CronExpression.EVERY_MINUTE, { timeZone: ENV.TIME_ZONE })
   async updateUseStatistic() {
     await this.cronUserStatistic();
   }

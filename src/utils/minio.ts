@@ -23,7 +23,19 @@ export class MinioService {
   async getUrl(objectName: string, expiry = 7 * 24 * 60 * 60) {
     const bucket = MY_MINIO_CONFIG.BUCKET;
     const url = await this.client.presignedGetObject(bucket, objectName, expiry);
-    console.log(`Presigned URL: ${url}`);
-    return url;
+
+    // FORCE REPLACE localhost -> PUBLIC IP
+    // Fix lỗi: MinIO SDK tự động trả về localhost nếu chạy trên cùng server
+    const publicEndpoint = MY_MINIO_CONFIG.ENDPOINT;
+    const publicPort = MY_MINIO_CONFIG.PORT;
+
+    // Tách URL ra để thay thế host:port
+    const urlObj = new URL(url);
+    urlObj.hostname = publicEndpoint;
+    urlObj.port = publicPort.toString();
+
+    const finalUrl = urlObj.toString();
+    console.log(`Presigned URL (Fixed): ${finalUrl}`);
+    return finalUrl;
   }
 }
