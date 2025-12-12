@@ -19,44 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     } as StrategyOptions);
   }
 
-  // async validate(payload: JWTPayload) {
-  //   const cacheKeyAuth = GenerateUtil.keyAuth(payload);
-  //   let cacheUser: CacheUser = await this.cacheManager.get(cacheKeyAuth);
-
-  //   if (!cacheUser) {
-  //     const user = await User.findOne({
-  //       where: { userId: payload.sub },
-  //       relations: {
-  //         role: {
-  //           rolePermissions: {
-  //             permission: true,
-  //           },
-  //         },
-  //       },
-  //     });
-
-  //     if (!user) {
-  //       throw new App404Exception('sub', payload);
-  //     }
-
-  //     const actions = await ExtractUtil.roleActions(user.role);
-
-  //     cacheUser = {
-  //       userId: user.userId,
-  //       username: user.username,
-  //       // code: user.code,
-  //       code: user.code,
-  //       isSupperAdmin: user.isSupperAdmin,
-  //       actions,
-  //     };
-  //     await this.cacheManager.set(cacheKeyAuth, cacheUser, { ttl: 86400 });
-  //   }
-
-  //   return cacheUser;
-  // }
   async validate(payload: JWTPayload) {
     const email = payload.sub;
     const cacheKeyAuth = GenerateUtil.keyAuth({ sub: email });
+
     let cacheUser: CacheUser = await this.cacheManager.get(cacheKeyAuth);
 
     if (!cacheUser) {
@@ -80,10 +46,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       cacheUser = {
         userId: user.userId,
         name: user.name,
-        // code: user.code,
         code: user.code,
         actions,
       };
+
       await this.cacheManager.set(cacheKeyAuth, cacheUser, { ttl: 86400 });
     }
 

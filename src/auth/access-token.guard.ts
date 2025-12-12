@@ -27,7 +27,10 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
     if (info instanceof JsonWebTokenError) {
       throw new AppException(ERROR_MSG.AUTH_TOKEN_INVALID);
     }
-    if (err || !auth) throw new AppException(ERROR_MSG.AUTH_UNAUTHORIZED_TOKEN);
+    if (err || !auth) {
+      throw new AppException(ERROR_MSG.AUTH_UNAUTHORIZED_TOKEN);
+    }
+
     return auth as any;
   }
 }
