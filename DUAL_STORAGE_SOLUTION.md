@@ -60,7 +60,7 @@ const fullVideoUrl = await this.videoUrlService.getVideoUrl(
 {
   "videos": [{
     // "videoUrl": "http://localhost:9000/wesign/new_video.mp4?X-Amz-Signature=...",  // Video mới
-    "videoUrl": "http://202.191.56.11:9000/wesign/...",
+    "videoUrl": "http://202.191.56.11:9001/wesign/...",
     "aiAnswer": "hello",
     "storageType": "minio"
   }]
@@ -130,7 +130,7 @@ npm run start:dev
              ↓ VideoUrlService.getVideoUrl()
              │
 ┌────────────────────────────────────────────┐
-│ ✅ http://localhost:9000/wesign/          │
+│ ✅ http://localhost:9001/wesign/          │
 │    new_video.mp4?X-Amz-Signature=...       │
 │    (presigned URL, 7 days)                 │
 └────────────────────────────────────────────┘
@@ -155,7 +155,7 @@ npm run start:dev
 ### Video mới không xem được?
 **Check:**
 1. File có trong MinIO bucket `wesign` không?
-2. MinIO service có chạy không? (`localhost:9000`)
+2. MinIO service có chạy không? (`localhost:9001`)
 3. `storage_type` trong DB có phải `'minio'` không?
 4. Presigned URL có hết hạn không? (7 ngày)
 
@@ -163,8 +163,8 @@ npm run start:dev
 ```bash
 # Access MinIO Console
 http://localhost:9001
-Username: admin
-Password: Password12345@
+Username: root
+Password: Tuyen18012001
 
 # Check bucket 'wesign'
 ```

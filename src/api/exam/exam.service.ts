@@ -892,7 +892,6 @@ export class ExamService {
           finalBuffer = await this.convertVideoToMp4(file.buffer);
         }
 
-        // Upload lên MinIO riêng (cổng 9002)
         await this.minioService.upload(finalFilename, finalBuffer);
 
         // Lấy URL từ MinIO
