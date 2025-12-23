@@ -26,8 +26,9 @@ export class MinioService {
 
     // FORCE REPLACE localhost -> PUBLIC IP
     // Fix lỗi: MinIO SDK tự động trả về localhost nếu chạy trên cùng server
-    const publicEndpoint = MY_MINIO_CONFIG.ENDPOINT;
-    const publicPort = MY_MINIO_CONFIG.PORT;
+    // Sử dụng PUBLIC_ENDPOINT và PUBLIC_PORT cho URL public
+    const publicEndpoint = MY_MINIO_CONFIG.PUBLIC_ENDPOINT;
+    const publicPort = MY_MINIO_CONFIG.PUBLIC_PORT;
 
     // Tách URL ra để thay thế host:port
     const urlObj = new URL(url);
